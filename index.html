@@ -58,7 +58,7 @@
     main {
       position: relative;
       z-index: 2;
-      max-width: 800px;
+      max-width: 820px;
     }
 
     /* BADGE STATUS */
@@ -83,10 +83,10 @@
       margin-bottom: 2rem;
       letter-spacing: -0.5px;
       transition: all 0.3s ease;
-      min-height: 2.8rem; /* Stabilität beim Tippen */
+      min-height: 2.8rem;
     }
 
-    /* Der blinkende Terminal-Cursor */
+    /* Terminal Cursor */
     .cursor {
       display: inline-block;
       width: 10px;
@@ -101,7 +101,7 @@
       50% { opacity: 0; }
     }
 
-    /* Versteckter Inhalt bis das Tippen fertig ist */
+    /* Content Fade */
     .content-fade {
       opacity: 0;
       transform: translateY(10px);
@@ -124,9 +124,9 @@
       text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
     }
 
-    /* MENÜ VORSCHAU */
+    /* MENÜ STEUERUNG (CYBER HOVER FRAMEWORK) */
     .menu-preview {
-      margin-top: 3rem;
+      margin-top: 2.5rem;
       display: flex;
       flex-wrap: wrap;
       gap: 1.2rem;
@@ -135,22 +135,78 @@
     }
 
     .menu-item {
+      position: relative;
       color: var(--text-muted);
       text-decoration: none;
       font-size: 0.9rem;
-      padding: 0.5rem 1rem;
-      border: 1px solid #222;
-      border-radius: 4px;
-      background: rgba(10, 10, 12, 0.8);
+      padding: 0.6rem 1.2rem;
+      background: rgba(15, 15, 20, 0.6);
+      border: 1px solid #2a2a30;
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      cursor: pointer;
+      user-select: none;
     }
 
+    /* Cyber-Ecken (Subtile Details an den Ecken der Buttons) */
+    .menu-item::before, .menu-item::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-color: var(--cyber-glow);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    /* Oben Links & Unten Rechts Ecken */
+    .menu-item::before {
+      top: -1px;
+      left: -1px;
+      border-top: 2px solid var(--cyber-glow);
+      border-left: 2px solid var(--cyber-glow);
+    }
+
+    .menu-item::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 2px solid var(--cyber-glow);
+      border-right: 2px solid var(--cyber-glow);
+    }
+
+    /* MATRIX HOVER ZUSTAND */
     .menu-item:hover {
       color: var(--cyber-glow);
-      border-color: var(--cyber-glow);
-      background: rgba(0, 255, 204, 0.05);
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.25);
+      border-color: rgba(0, 255, 204, 0.5);
+      background: rgba(0, 255, 204, 0.08);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2), inset 0 0 10px rgba(0, 255, 204, 0.1);
       transform: translateY(-2px);
+    }
+
+    /* Beim Hovern aktivieren sich die Cyber-Ecken */
+    .menu-item:hover::before, .menu-item:hover::after {
+      opacity: 1;
+      width: 10px;
+      height: 10px;
+    }
+
+    /* INTERAKTIVE TERMINAL-PREVIEW BOX */
+    .preview-box {
+      margin-top: 1.5rem;
+      padding: 0.8rem 1rem;
+      background: rgba(5, 5, 8, 0.9);
+      border-left: 3px solid var(--cyber-glow);
+      font-size: 0.85rem;
+      color: #aaa;
+      min-height: 2.8rem;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-text {
+      color: var(--cyber-glow);
+      font-weight: bold;
     }
   </style>
 </head>
@@ -164,10 +220,10 @@
       <span class="status-badge">[ Status: Under Construction ]</span>
     </div>
     
-    <!-- Überschrift wird dynamisch per JavaScript abgetippt -->
+    <!-- Überschrift mit Typewriter-Effekt -->
     <h1 id="typewriter"></h1>
 
-    <!-- Dieser Block blendet sich erst nach dem Abtippen sanft ein -->
+    <!-- Fade-In-Bereich mit deinen festen Absätzen -->
     <div id="fade-container" class="content-fade">
       <p>
         Eine neue, interaktive Plattform ist im Aufbau. 
@@ -176,16 +232,27 @@
         Begleite mich beim lernen.
       </p>
 
+      <p>
+        Ausrüstung und Schnittstellen werden aktuell konfiguriert. 
+        Der Zugriff wird in Kürze freigeschaltet.
+      </p>
+
+      <!-- Interaktives Menü mit Cyber-Hover -->
       <nav class="menu-preview">
-        <a href="#" class="menu-item">// Über mich</a>
-        <a href="#" class="menu-item">// Erfahrungen</a>
-        <a href="#" class="menu-item">// Prinzipien</a>
-        <a href="#" class="menu-item">// Projekte</a>
-        <a href="#" class="menu-item">// Texte & Veröffentlichungen</a>
-        <a href="#" class="menu-item">// Analysen</a>
-        <a href="#" class="menu-item">// Tools</a>
-        <a href="#" class="menu-item">// AI</a>
+        <a href="#" class="menu-item" data-desc="Profil, Hintergrund & persönliche Vision.">// Über mich</a>
+        <a href="#" class="menu-item" data-desc="Stationen, Erfolge & bisherige Meilensteine.">// Erfahrungen</a>
+        <a href="#" class="menu-item" data-desc="Kernwerte, Denkweisen & Arbeitsphilosophie.">// Prinzipien</a>
+        <a href="#" class="menu-item" data-desc="Showcase aktueller Software- & Web-Projekte.">// Projekte</a>
+        <a href="#" class="menu-item" data-desc="Artikel, Aufsätze & schriftliche Gedanken.">// Texte & Veröffentlichungen</a>
+        <a href="#" class="menu-item" data-desc="Datenbasierte Insights & tiefgehende Recherchen.">// Analysen</a>
+        <a href="#" class="menu-item" data-desc="Nützliche Helfer, Skripte & Workflows.">// Tools</a>
+        <a href="#" class="menu-item" data-desc="Prompts, LLM-Experimente & KI-Integrationen.">// AI</a>
       </nav>
+
+      <!-- Dynamische Terminal-Vorschau bei Mouseover -->
+      <div class="preview-box" id="preview-box">
+        <span>SYSTEM: Fahr mit dem Cursor über ein Modul zur Systemanalyse...</span>
+      </div>
     </div>
   </main>
 
@@ -241,22 +308,35 @@
 
     function typeWriter() {
       if (charIndex < textToType.length) {
-        // Fügt den nächsten Buchstaben ein und hält den blinkenden Cursor dahinter
         typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
         charIndex++;
-        
-        // Tipp-Geschwindigkeit: Zufälliger Wert zwischen 50ms und 110ms für echtes Terminal-Feeling
         const randomSpeed = Math.floor(Math.random() * 60) + 50;
         setTimeout(typeWriter, randomSpeed);
       } else {
-        // Wenn fertig: Blende den restlichen Inhalt sanft ein
         fadeContainer.classList.add("visible");
       }
     }
 
-    // Starte den Typewriter nach einer kurzen Verzögerung von 300ms beim Laden der Seite
     window.addEventListener("DOMContentLoaded", () => {
       setTimeout(typeWriter, 300);
+    });
+
+
+    /* 3. INTERAKTIVE MENU-STEUERUNG (HOVER PREVIEW) */
+    const menuItems = document.querySelectorAll('.menu-item');
+    const previewBox = document.getElementById('preview-box');
+    const defaultText = "SYSTEM: Fahr mit dem Cursor über ein Modul zur Systemanalyse...";
+
+    menuItems.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        const desc = item.getAttribute('data-desc');
+        const title = item.innerText;
+        previewBox.innerHTML = `> <span class="preview-text">${title}</span>: ${desc}`;
+      });
+
+      item.addEventListener('mouseleave', () => {
+        previewBox.innerHTML = defaultText;
+      });
     });
   </script>
 </body>
