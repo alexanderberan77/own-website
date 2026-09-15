@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Under Construction | System Active</title>
+  <title>Under Construction | alexander-beran.de</title>
   
   <!-- Google Font: JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 
   <style>
-    /* GLOBAL VARIABLES (Für konsistente Cyber-Farben) */
+    /* GLOBAL VARIABLES */
     :root {
       --bg-color: #0a0a0c;
       --text-main: #e0e0e0;
@@ -49,15 +49,15 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 1; /* Im Hintergrund */
-      opacity: 0.18; /* Subtil halten, damit der Text gut lesbar bleibt */
-      pointer-events: none; /* Klicks gehen durch auf den Text */
+      z-index: 1;
+      opacity: 0.18;
+      pointer-events: none;
     }
 
-    /* INHALTS-CONTAINER (Über dem Canvas) */
+    /* INHALTS-CONTAINER */
     main {
       position: relative;
-      z-index: 2; /* Vor dem Canvas */
+      z-index: 2;
       max-width: 800px;
     }
 
@@ -75,7 +75,7 @@
       background: rgba(255, 183, 3, 0.05);
     }
 
-    /* TYPOGRAFIE */
+    /* TYPOGRAFIE & TYPING EFFECT */
     h1 {
       font-size: 2.2rem;
       font-weight: 700;
@@ -83,6 +83,34 @@
       margin-bottom: 2rem;
       letter-spacing: -0.5px;
       transition: all 0.3s ease;
+      min-height: 2.8rem; /* Stabilität beim Tippen */
+    }
+
+    /* Der blinkende Terminal-Cursor */
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background-color: var(--cyber-glow);
+      margin-left: 5px;
+      animation: blink 0.8s infinite;
+      box-shadow: 0 0 8px var(--cyber-glow);
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Versteckter Inhalt bis das Tippen fertig ist */
+    .content-fade {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .content-fade.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     p {
@@ -128,7 +156,7 @@
 </head>
 <body>
 
-  <!-- Das Canvas für den Matrix-Rain-Effekt -->
+  <!-- Canvas für den Matrix-Rain -->
   <canvas id="matrix-canvas"></canvas>
 
   <main>
@@ -136,38 +164,36 @@
       <span class="status-badge">[ Status: Under Construction ]</span>
     </div>
     
-    <h1>[ Dein Name / Projektname ]</h1>
+    <!-- Überschrift wird dynamisch per JavaScript abgetippt -->
+    <h1 id="typewriter"></h1>
 
-    <p>
-      Eine neue, interaktive Plattform ist im Aufbau. 
-      Hier entsteht ein Website über mich und meine vielfältigen Interessen:
-      Texte, Analysen, Tools, Philosophie KI-Experimente und allerlei Tutorials.
-      Begleite mich beim lernen.
-    </p>
+    <!-- Dieser Block blendet sich erst nach dem Abtippen sanft ein -->
+    <div id="fade-container" class="content-fade">
+      <p>
+        Eine neue, interaktive Plattform ist im Aufbau. 
+        Hier entsteht ein Website über mich und meine vielfältigen Interessen: 
+        Texte, Analysen, Tools, Philosophie KI-Experimente und allerlei Tutorials. 
+        Begleite mich beim lernen.
+      </p>
 
-    <p>
-      Ausrüstung und Schnittstellen werden aktuell konfiguriert. 
-      Der Zugriff wird in Kürze freigeschaltet.
-    </p>
-
-    <nav class="menu-preview">
-      <a href="#" class="menu-item">// Über mich</a>
-      <a href="#" class="menu-item">// Erfahrungen</a>
-      <a href="#" class="menu-item">// Prinzipien</a>
-      <a href="#" class="menu-item">// Projekte</a>
-      <a href="#" class="menu-item">// Texte & Veröffentlichungen</a>
-      <a href="#" class="menu-item">// Analysen</a>
-      <a href="#" class="menu-item">// Tools</a>
-      <a href="#" class="menu-item">// AI</a>
-    </nav>
+      <nav class="menu-preview">
+        <a href="#" class="menu-item">// Über mich</a>
+        <a href="#" class="menu-item">// Erfahrungen</a>
+        <a href="#" class="menu-item">// Prinzipien</a>
+        <a href="#" class="menu-item">// Projekte</a>
+        <a href="#" class="menu-item">// Texte & Veröffentlichungen</a>
+        <a href="#" class="menu-item">// Analysen</a>
+        <a href="#" class="menu-item">// Tools</a>
+        <a href="#" class="menu-item">// AI</a>
+      </nav>
+    </div>
   </main>
 
-  <!-- JAVASCRIPT FÜR DEN MATRIX-REGEN -->
   <script>
+    /* 1. MATRIX RAIN EFFECT */
     const canvas = document.getElementById('matrix-canvas');
     const ctx = canvas.getContext('2d');
 
-    // Canvas an Fenstergröße anpassen
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -175,18 +201,16 @@
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Zeichen für den Regen (Kombination aus Katakana, Zahlen & Cyber-Symbolen)
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789<>{}[]/*+=~#$_';
     const fontSize = 14;
     let columns = Math.floor(canvas.width / fontSize);
     let drops = Array(columns).fill(1);
 
     function drawMatrix() {
-      // Transparenter schwarzer Schleier, um alte Zeichen langsam verblassen zu lassen
       ctx.fillStyle = 'rgba(10, 10, 12, 0.08)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#00ffcc'; // Cyber Cyan Farbe
+      ctx.fillStyle = '#00ffcc';
       ctx.font = fontSize + 'px "JetBrains Mono", monospace';
 
       for (let i = 0; i < drops.length; i++) {
@@ -200,14 +224,40 @@
       }
     }
 
-    // Erneuert die Spalten bei Fenstergrößenänderung
     window.addEventListener('resize', () => {
       columns = Math.floor(canvas.width / fontSize);
       drops = Array(columns).fill(1);
     });
 
-    // 33ms entspricht ca. 30 FPS für flüssige Animation
     setInterval(drawMatrix, 33);
+
+
+    /* 2. TERMINAL TYPEWRITER EFFECT */
+    const textToType = "[ alexander-beran.de ]";
+    const typewriterElement = document.getElementById("typewriter");
+    const fadeContainer = document.getElementById("fade-container");
+    
+    let charIndex = 0;
+
+    function typeWriter() {
+      if (charIndex < textToType.length) {
+        // Fügt den nächsten Buchstaben ein und hält den blinkenden Cursor dahinter
+        typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
+        charIndex++;
+        
+        // Tipp-Geschwindigkeit: Zufälliger Wert zwischen 50ms und 110ms für echtes Terminal-Feeling
+        const randomSpeed = Math.floor(Math.random() * 60) + 50;
+        setTimeout(typeWriter, randomSpeed);
+      } else {
+        // Wenn fertig: Blende den restlichen Inhalt sanft ein
+        fadeContainer.classList.add("visible");
+      }
+    }
+
+    // Starte den Typewriter nach einer kurzen Verzögerung von 300ms beim Laden der Seite
+    window.addEventListener("DOMContentLoaded", () => {
+      setTimeout(typeWriter, 300);
+    });
   </script>
 </body>
 </html>
