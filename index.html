@@ -3,15 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Under Construction</title>
+  <title>Under Construction | System Active</title>
   
-  <!-- Google Font: JetBrains Mono (Einbindung) -->
+  <!-- Google Font: JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 
   <style>
-    /* CSS RESET & GRUNDSTELLUNG */
+    /* GLOBAL VARIABLES (Für konsistente Cyber-Farben) */
+    :root {
+      --bg-color: #0a0a0c;
+      --text-main: #e0e0e0;
+      --text-muted: #888888;
+      --cyber-glow: #00ffcc; /* Neon Cyan */
+      --cyber-alert: #ffb703;
+      --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -19,9 +28,9 @@
     }
 
     body {
-      background-color: #121212; /* Sehr dunkler, eleganter Hintergrund */
-      color: #e0e0e0;            /* Helles Off-White für gute Lesbarkeit */
-      font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-mono);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -29,11 +38,46 @@
       padding: 2rem 10%;
       line-height: 1.8;
       font-size: 1.05rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* CANVAS HINTERGRUND */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1; /* Im Hintergrund */
+      opacity: 0.18; /* Subtil halten, damit der Text gut lesbar bleibt */
+      pointer-events: none; /* Klicks gehen durch auf den Text */
+    }
+
+    /* INHALTS-CONTAINER (Über dem Canvas) */
+    main {
+      position: relative;
+      z-index: 2; /* Vor dem Canvas */
+      max-width: 800px;
+    }
+
+    /* BADGE STATUS */
+    .status-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: var(--cyber-alert);
+      border: 1px solid var(--cyber-alert);
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(255, 183, 3, 0.05);
     }
 
     /* TYPOGRAFIE */
     h1 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 700;
       color: #ffffff;
       margin-bottom: 2rem;
@@ -42,91 +86,70 @@
     }
 
     p {
-      max-width: 720px;
       margin-bottom: 1.5rem;
-      color: #a0a0a0;
-      transition: color 0.3s ease;
+      color: var(--text-muted);
+      transition: color 0.3s ease, text-shadow 0.3s ease;
     }
 
-    /* INTERAKTIVER HOVER-EFFEKT (Das Fundament für den futuristischen Look) */
-    
-    /* 1. Wenn man über Absätze fährt, fangen sie subtil an zu "glühen" */
     p:hover {
-      color: #00ffcc; /* Neon-Cyan Glow */
-      text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+      color: var(--cyber-glow);
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
     }
 
-    /* 2. Titel-Effekt beim Drüberfahren */
-    h1:hover {
-      color: #00ffcc;
-      text-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
-      cursor: default;
-    }
-
-    /* NAVIGATIONS-PROTOTYP (Für deine späteren Sektionen vorbereitet) */
+    /* MENÜ VORSCHAU */
     .menu-preview {
       margin-top: 3rem;
       display: flex;
       flex-wrap: wrap;
       gap: 1.2rem;
-      border-top: 1px solid #2a2a2a;
+      border-top: 1px solid #222;
       padding-top: 2rem;
     }
 
     .menu-item {
-      color: #666;
+      color: var(--text-muted);
       text-decoration: none;
       font-size: 0.9rem;
-      padding: 0.4rem 0.8rem;
-      border: 1px solid transparent;
+      padding: 0.5rem 1rem;
+      border: 1px solid #222;
       border-radius: 4px;
+      background: rgba(10, 10, 12, 0.8);
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
-    /* Futuristischer Cyber-Hover für Navigationspunkte */
     .menu-item:hover {
-      color: #00ffcc;
-      border-color: #00ffcc;
+      color: var(--cyber-glow);
+      border-color: var(--cyber-glow);
       background: rgba(0, 255, 204, 0.05);
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.25);
       transform: translateY(-2px);
-    }
-
-    /* BADGE STATUS */
-    .status-badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      color: #ffb703;
-      border: 1px solid #ffb703;
-      padding: 0.2rem 0.6rem;
-      border-radius: 3px;
-      margin-bottom: 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
     }
   </style>
 </head>
 <body>
+
+  <!-- Das Canvas für den Matrix-Rain-Effekt -->
+  <canvas id="matrix-canvas"></canvas>
 
   <main>
     <div>
       <span class="status-badge">[ Status: Under Construction ]</span>
     </div>
     
-    <h1>[ alexander-beran.de ]</h1>
+    <h1>[ Dein Name / Projektname ]</h1>
 
     <p>
       Eine neue, interaktive Plattform ist im Aufbau. 
-      Hier entsteht eine Webseite für alles, das micht interessiert: 
-      Texte, Analysen, Philosophie, KI-Experimente und vieles mehr.
+      Hier entsteht ein Website über mich und meine vielfältigen Interessen:
+      Texte, Analysen, Tools, Philosophie KI-Experimente und allerlei Tutorials.
+      Begleite mich beim lernen.
     </p>
 
     <p>
       Ausrüstung und Schnittstellen werden aktuell konfiguriert. 
-      Der Zugriff wird bald freigeschaltet.
+      Der Zugriff wird in Kürze freigeschaltet.
     </p>
 
-    <!-- Vorschau auf deine zukünftigen Sektionen (schlicht im Ruhezustand, futuristisch bei Hover) -->
     <nav class="menu-preview">
       <a href="#" class="menu-item">// Über mich</a>
       <a href="#" class="menu-item">// Erfahrungen</a>
@@ -139,5 +162,52 @@
     </nav>
   </main>
 
+  <!-- JAVASCRIPT FÜR DEN MATRIX-REGEN -->
+  <script>
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Canvas an Fenstergröße anpassen
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Zeichen für den Regen (Kombination aus Katakana, Zahlen & Cyber-Symbolen)
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789<>{}[]/*+=~#$_';
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+      // Transparenter schwarzer Schleier, um alte Zeichen langsam verblassen zu lassen
+      ctx.fillStyle = 'rgba(10, 10, 12, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#00ffcc'; // Cyber Cyan Farbe
+      ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    // Erneuert die Spalten bei Fenstergrößenänderung
+    window.addEventListener('resize', () => {
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array(columns).fill(1);
+    });
+
+    // 33ms entspricht ca. 30 FPS für flüssige Animation
+    setInterval(drawMatrix, 33);
+  </script>
 </body>
 </html>
