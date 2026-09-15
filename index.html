@@ -211,18 +211,18 @@
     }
 
 
-    /* DYNAMISCHES DIRECT-POPUP MATRIX PORTAL */
+    /* OVALES MATRIX PORTAL POPUP */
     .direct-portal {
       position: fixed;
       z-index: 100;
-      width: 320px;
-      height: 200px;
+      width: 340px;
+      height: 220px;
       pointer-events: none;
       opacity: 0;
       transform: scale(0.2) translateY(10px);
-      transform-origin: top left;
-      transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                  transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-origin: center center;
+      transition: opacity 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                  transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .direct-portal.open {
@@ -231,7 +231,7 @@
       pointer-events: auto;
     }
 
-    /* Wabernder Matrix-Portal Canvas (Vordergrund für Code-Ränder) */
+    /* Wabernder Matrix-Portal Canvas (Oberste Schicht für verfranzte Ränder) */
     #portal-canvas {
       position: absolute;
       top: 0;
@@ -242,29 +242,45 @@
       pointer-events: none;
     }
 
-    /* Miniatur-Rendering Rahmen */
+    /* Ovales Fenster für das Miniatur-Rendering */
     .portal-screen {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
+      top: 18px;
+      left: 22px;
+      right: 22px;
+      bottom: 18px;
       background: #0a0a0c;
-      border-radius: 4px;
+      border-radius: 50%; /* Macht das Fenster OVAL */
       z-index: 2;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 15px rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(0, 255, 204, 0.3);
+      border: 1px solid rgba(0, 255, 204, 0.3);
     }
 
-    /* Skaliertes iFrame für echtes Live-Miniaturrendering der Zielseite */
+    /* Skaliertes iFrame für echtes Live-Miniaturrendering */
     .portal-iframe {
       width: 1000px;
       height: 625px;
       border: none;
-      transform: scale(0.3);
+      transform: scale(0.3) translate(-20px, -20px);
       transform-origin: 0 0;
-      pointer-events: none; /* Verhindert Interaktion im Minifenster */
+      pointer-events: none;
       background: #0a0a0c;
+    }
+
+    /* Platzhalter-Anzeige für Module ohne eigene HTML-Datei */
+    .portal-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 1rem;
+      background: #0a0a0c;
+      color: var(--cyber-glow);
+      font-size: 0.75rem;
     }
   </style>
 </head>
@@ -273,11 +289,15 @@
   <!-- Canvas für den Matrix-Rain Hintergrund -->
   <canvas id="matrix-canvas"></canvas>
 
-  <!-- DYNAMISCHES DIRECT-PORTAL (Erscheint direkt am Button) -->
+  <!-- DYNAMISCHES OVALES MATRIX-PORTAL -->
   <div class="direct-portal" id="direct-portal">
     <canvas id="portal-canvas"></canvas>
-    <div class="portal-screen">
-      <iframe class="portal-iframe" id="portal-iframe" src="about:blank"></iframe>
+    <div class="portal-screen" id="portal-screen">
+      <iframe class="portal-iframe" id="portal-iframe" style="display:none;"></iframe>
+      <div class="portal-placeholder" id="portal-placeholder" style="display:none;">
+        <h3>[ MODUL IN ARBEIT ]</h3>
+        <p style="color:#888; margin-top:5px;">Schnittstelle wird konfiguriert...</p>
+      </div>
     </div>
   </div>
 
@@ -381,77 +401,73 @@
     });
 
 
-    /* 3. WABERNDER MATRIX-PORTAL CANVAS (2 bis 5 Spalten mit Überschneidung) */
+    /* 3. OVALES, DYNAMISCH-WABERNDES MATRIX-PORTAL (2 BIS 5 SPALTEN TIEFE) */
     const pCanvas = document.getElementById('portal-canvas');
     const pCtx = pCanvas.getContext('2d');
     let portalAnimId = null;
     let time = 0;
 
     function resizePortalCanvas() {
-      pCanvas.width = 320;
-      pCanvas.height = 200;
+      pCanvas.width = 340;
+      pCanvas.height = 220;
     }
     resizePortalCanvas();
 
-    function drawPortalBorder() {
+    function drawOvalPortalBorder() {
       pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-      time += 0.06;
+      time += 0.07;
 
-      const w = pCanvas.width;
-      const h = pCanvas.height;
+      const centerX = pCanvas.width / 2;
+      const centerY = pCanvas.height / 2;
+      const radiusX = 145; // Horizontale Ellipsen-Achse
+      const radiusY = 88;  // Vertikale Ellipsen-Achse
 
       pCtx.font = '10px "JetBrains Mono", monospace';
 
-      // Wir zeichnen 2 bis 5 Zeichen-Schichten/Spalten (Tiefe) am Rand entlang
-      const layers = 4; // Bounding Tiefenschichten
+      // Wir ziehen 120 Strahlen um den vollen Kreis (360 Grad)
+      const totalPoints = 110;
 
-      for (let layer = 0; layer < layers; layer++) {
-        // Farbvariationen für Tiefe
-        const alpha = 1 - (layer * 0.22);
-        pCtx.fillStyle = `rgba(0, 255, 204, ${alpha})`;
+      for (let i = 0; i < totalPoints; i++) {
+        const angle = (i / totalPoints) * Math.PI * 2;
 
-        // RÄNDER OBEN & UNTEN (mit Überschneidung ins Rendering hinein)
-        for (let x = 0; x < w; x += 11) {
-          if (Math.random() > 0.15) {
+        // Waberndes Rauschen per Sinus-Überlagerung für unregelmäßige Kanten
+        const noise = Math.sin(time * 1.5 + angle * 4) * Math.cos(time * 0.8 + angle * 2);
+        
+        // Dynamische Schichttiefe zwischen 2 und 5 Zeichen
+        const dynamicDepth = 2 + Math.floor((Math.sin(time + angle * 3) + 1) * 1.6); // Bereich: 2 bis 5
+
+        for (let layer = 0; layer < dynamicDepth; layer++) {
+          // Verschiebungs-Distanz (Ragt teils ins Oval hinein, teils nach außen)
+          const offsetDist = (layer * 7) + (noise * 6) - 8;
+          
+          const currentRadiusX = radiusX + offsetDist;
+          const currentRadiusY = radiusY + offsetDist;
+
+          const x = centerX + Math.cos(angle) * currentRadiusX;
+          const y = centerY + Math.sin(angle) * currentRadiusY;
+
+          // Deckkraft nimmt nach außen/innen ab
+          const alpha = 1 - (layer * 0.18) - (Math.random() * 0.15);
+          pCtx.fillStyle = `rgba(0, 255, 204, ${Math.max(0.15, alpha)})`;
+
+          // Zufälliges Matrix-Zeichen zeichnen
+          if (Math.random() > 0.1) {
             const char = chars.charAt(Math.floor(Math.random() * chars.length));
-            const waveY = Math.sin(time + x * 0.05 + layer) * 8;
-
-            // Oben (ragt nach unten ins Bild)
-            const yTop = (layer * 8) + waveY + (Math.random() * 4);
-            pCtx.fillText(char, x, 12 + yTop);
-
-            // Unten (ragt nach oben ins Bild)
-            const yBottom = h - (layer * 8) + waveY - (Math.random() * 4);
-            pCtx.fillText(char, x, yBottom - 4);
-          }
-        }
-
-        // RÄNDER LINKS & RECHTS
-        for (let y = 0; y < h; y += 12) {
-          if (Math.random() > 0.15) {
-            const char = chars.charAt(Math.floor(Math.random() * chars.length));
-            const waveX = Math.cos(time + y * 0.05 + layer) * 8;
-
-            // Links (ragt nach rechts ins Bild)
-            const xLeft = (layer * 8) + waveX + (Math.random() * 4);
-            pCtx.fillText(char, 4 + xLeft, y);
-
-            // Rechts (ragt nach links ins Bild)
-            const xRight = w - (layer * 8) + waveX - (Math.random() * 4);
-            pCtx.fillText(char, xRight - 10, y);
+            pCtx.fillText(char, x - 5, y + 4);
           }
         }
       }
 
-      portalAnimId = requestAnimationFrame(drawPortalBorder);
+      portalAnimId = requestAnimationFrame(drawOvalPortalBorder);
     }
 
 
-    /* 4. DIRECT-PORTAL POP-UP LOGIK (Am Button ausgerichtet) */
+    /* 4. DIRECT-PORTAL LOGIK MIT PROPER RE-LOAD HANDLING */
     const menuItems = document.querySelectorAll('.menu-item');
     const previewBox = document.getElementById('preview-box');
     const directPortal = document.getElementById('direct-portal');
     const portalIframe = document.getElementById('portal-iframe');
+    const portalPlaceholder = document.getElementById('portal-placeholder');
     const defaultText = "SYSTEM: Fahr mit dem Cursor über ein Modul zur Systemanalyse...";
     let activeTouchItem = null;
 
@@ -460,45 +476,41 @@
       const title = item.innerText;
       const srcUrl = item.getAttribute('data-src');
 
-      // 1. Text in Terminal-Box unten spiegeln
+      // 1. Terminal-Text spiegeln
       previewBox.innerHTML = `> <span class="preview-text">${title}</span>: ${desc}`;
 
-      // 2. Position des gesuchten Buttons im Ansichtsfenster berechnen
+      // 2. Position des Buttons berechnen
       const rect = item.getBoundingClientRect();
       
-      // Portal leicht oberhalb / versetzt vom Button positionieren
-      let topPos = rect.top - 210;
-      let leftPos = rect.left + (rect.width / 2) - 160;
+      let topPos = rect.top - 230;
+      let leftPos = rect.left + (rect.width / 2) - 170;
 
-      // Korrektur, falls das Portal aus dem Bildschirm ragt
-      if (topPos < 20) topPos = rect.bottom + 10;
+      if (topPos < 15) topPos = rect.bottom + 10;
       if (leftPos < 10) leftPos = 10;
-      if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 330;
+      if (leftPos + 340 > window.innerWidth) leftPos = window.innerWidth - 350;
 
       directPortal.style.top = topPos + 'px';
       directPortal.style.left = leftPos + 'px';
 
-      // 3. Miniatur-Rendering in iFrame laden (nur wenn Quelle da)
-      if (srcUrl) {
-        if (portalIframe.src !== window.location.origin + '/' + srcUrl) {
+      // 3. Inhalt im Oval sauber steuern (Korrektur für den Bug)
+      if (srcUrl && srcUrl.trim() !== "") {
+        portalPlaceholder.style.display = 'none';
+        portalIframe.style.display = 'block';
+
+        // Nur neu zuweisen, wenn src abweicht
+        if (!portalIframe.src.endsWith(srcUrl)) {
           portalIframe.src = srcUrl;
         }
       } else {
-        portalIframe.srcdoc = `
-          <body style="background:#0a0a0c; color:#00ffcc; font-family:monospace; padding:20px; display:flex; justify-content:center; align-items:center; height:100vh; text-align:center;">
-            <div>
-              <h3>[ MODUL IN ARBEIT ]</h3>
-              <p style="color:#888; margin-top:10px;">Schnittstellen werden geladen...</p>
-            </div>
-          </body>
-        `;
+        portalIframe.style.display = 'none';
+        portalPlaceholder.style.display = 'flex';
       }
 
-      // 4. Portal mit Waber-Effekt einblenden
+      // 4. Portal öffnen & Animation starten
       directPortal.classList.add('open');
 
       if (!portalAnimId) {
-        drawPortalBorder();
+        drawOvalPortalBorder();
       }
     }
 
