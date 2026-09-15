@@ -258,7 +258,7 @@
   </main>
 
   <script>
-    /* 1. MATRIX RAIN EFFECT */
+    /* 1. MATRIX RAIN EFFECT (unverändert) */
     const canvas = document.getElementById('matrix-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -300,35 +300,32 @@
     setInterval(drawMatrix, 33);
 
 
-    /* 2. TERMINAL TYPEWRITER EFFECT */
+    /* 2. TERMINAL TYPEWRITER EFFECT (unverändert, Cursor verschwindet am Ende) */
     const textToType = "[ alexander-beran.de ]";
     const typewriterElement = document.getElementById("typewriter");
     const fadeContainer = document.getElementById("fade-container");
     
     let charIndex = 0;
 
-function typeWriter() {
-  if (charIndex < textToType.length) {
-    typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
-    charIndex++;
-    const randomSpeed = Math.floor(Math.random() * 60) + 50;
-    setTimeout(typeWriter, randomSpeed);
-  } else {
-    // 1. Cursor entfernen (Nur den reinen Text stehen lassen)
-    typewriterElement.innerHTML = textToType; 
-    
-    // 2. Inhalt drunter einblenden
-    fadeContainer.classList.add("visible");
-  }
-}
-
+    function typeWriter() {
+      if (charIndex < textToType.length) {
+        typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
+        charIndex++;
+        const randomSpeed = Math.floor(Math.random() * 60) + 50;
+        setTimeout(typeWriter, randomSpeed);
+      } else {
+        // Cursor am Ende entfernen
+        typewriterElement.innerHTML = textToType; 
+        fadeContainer.classList.add("visible");
+      }
+    }
 
     window.addEventListener("DOMContentLoaded", () => {
       setTimeout(typeWriter, 300);
     });
 
 
-    /* 3. SMART HYBRID STEUERUNG (Desktop Hover + Touch Double-Tap) */
+    /* 3. SMART HYBRID STEUERUNG (KORRIGIERT FÜR REALES LINKING) */
     const menuItems = document.querySelectorAll('.menu-item');
     const previewBox = document.getElementById('preview-box');
     const defaultText = "SYSTEM: Fahr mit dem Cursor über ein Modul zur Systemanalyse...";
@@ -349,7 +346,7 @@ function typeWriter() {
     }
 
     menuItems.forEach(item => {
-      // Desktop Mouse Hover
+      // Desktop Mouse Hover (unverändert)
       item.addEventListener('mouseenter', () => {
         showPreview(item);
       });
@@ -358,28 +355,30 @@ function typeWriter() {
         resetPreview();
       });
 
-      // Klick / Touch Steuerung
+      // Klick / Touch Steuerung (HIER LIEGT DIE KORREKTUR)
       item.addEventListener('click', (e) => {
-        // Verhindert das lästige Nach-Oben-Springen!
-        e.preventDefault();
-
-        // Prüfen ob es ein Touch/Mobil-Event ist
+        // Prüfen, ob es ein Touch-Event ist
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
         if (isTouchDevice) {
-          // Erster Tap: Aktiviere Vorschau
+          // Logik für Touch-Geräte
           if (activeTouchItem !== item) {
+            // ERSTER TAP: Blockiere den Link und zeige die Vorschau
+            e.preventDefault(); 
             menuItems.forEach(i => i.classList.remove('active-touch'));
             item.classList.add('active-touch');
             activeTouchItem = item;
             showPreview(item);
           } else {
-            // Zweiter Tap auf denselben Button: Öffne Aktion / Modul
-            alert(`[ SYSTEM ]: Modul "${item.innerText}" wird aktuell konfiguriert.`);
+            // ZWEITER TAP: Erlaube dem Browser, dem href-Link zu folgen
+            // (Wir brauchen hier kein alert(...) oder window.location mehr)
+            // Die Standardaktion des Links wird ausgeführt.
+            return; 
           }
         } else {
-          // Normaler Desktop-Klick
-          alert(`[ SYSTEM ]: Modul "${item.innerText}" wird aktuell konfiguriert.`);
+          // Logik für Desktop (Maus-Klick)
+          // Normaler Klick führt direkt zum href, kein alert mehr.
+          return; 
         }
       });
     });
