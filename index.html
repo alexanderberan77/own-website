@@ -125,7 +125,7 @@
       text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
     }
 
-    /* MENÜ STEUERUNG (CYBER HOVER FRAMEWORK) */
+    /* MENÜ STEUERUNG */
     .menu-preview {
       margin-top: 2.5rem;
       display: flex;
@@ -174,7 +174,6 @@
       border-right: 2px solid var(--cyber-glow);
     }
 
-    /* ACTIVE & HOVER STATES */
     .menu-item:hover, .menu-item.active-touch {
       color: var(--cyber-glow);
       border-color: rgba(0, 255, 204, 0.5);
@@ -190,9 +189,13 @@
       height: 10px;
     }
 
-    /* TERMINAL-PREVIEW BOX */
-    .preview-box {
+    /* PREVIEW CONTAINER & MATRIX PORTAL */
+    .preview-section {
       margin-top: 1.5rem;
+      position: relative;
+    }
+
+    .preview-box {
       padding: 0.8rem 1rem;
       background: rgba(5, 5, 8, 0.9);
       border-left: 3px solid var(--cyber-glow);
@@ -208,6 +211,94 @@
     .preview-text {
       color: var(--cyber-glow);
       font-weight: bold;
+    }
+
+    /* PORTAL WINDOW FRAME */
+    .portal-wrapper {
+      margin-top: 1rem;
+      position: relative;
+      width: 100%;
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    }
+
+    .portal-wrapper.open {
+      height: 220px;
+      opacity: 1;
+    }
+
+    /* Wabernder Matrix-Portal Canvas */
+    #portal-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* Das eigentliche Mini-Vorschau-Fenster */
+    .portal-content {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      background: rgba(10, 10, 15, 0.95);
+      border-radius: 4px;
+      z-index: 2;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: inset 0 0 20px rgba(0, 255, 204, 0.1);
+    }
+
+    /* Fake Browser / Terminal Header im Portal */
+    .portal-header {
+      background: rgba(20, 20, 28, 0.9);
+      padding: 0.4rem 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #222;
+      font-size: 0.7rem;
+      color: var(--cyber-glow);
+    }
+
+    .portal-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .portal-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #444;
+    }
+
+    .portal-body {
+      padding: 1rem;
+      font-size: 0.75rem;
+      color: #bbb;
+      overflow-y: auto;
+      transform: scale(0.92);
+      transform-origin: top left;
+      width: 108%;
+    }
+
+    .portal-body h2 {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .portal-body .sub {
+      color: var(--cyber-glow);
+      margin-bottom: 0.6rem;
     }
   </style>
 </head>
@@ -240,25 +331,45 @@
 
       <!-- Interaktives Menü -->
       <nav class="menu-preview">
-        <a href="uber-mich.html" class="menu-item" data-desc="Profil, Hintergrund & persönliche Vision.">// Über mich</a>
-        <a href="#erfahrungen" class="menu-item" data-desc="Stationen, Erfolge & bisherige Meilensteine.">// Erfahrungen</a>
-        <a href="#prinzipien" class="menu-item" data-desc="Kernwerte, Denkweisen & Arbeitsphilosophie.">// Prinzipien</a>
-        <a href="#projekte" class="menu-item" data-desc="Showcase aktueller Software- & Web-Projekte.">// Projekte</a>
-        <a href="#texte" class="menu-item" data-desc="Artikel, Aufsätze & schriftliche Gedanken.">// Texte & Veröffentlichungen</a>
-        <a href="#analysen" class="menu-item" data-desc="Datenbasierte Insights & tiefgehende Recherchen.">// Analysen</a>
-        <a href="#tools" class="menu-item" data-desc="Nützliche Helfer, Skripte & Workflows.">// Tools</a>
-        <a href="#ai" class="menu-item" data-desc="Prompts, LLM-Experimente & KI-Integrationen.">// AI</a>
+        <a href="uber-mich.html" class="menu-item" data-target="uber-mich" data-desc="Profil, Hintergrund & persönliche Vision.">// Über mich</a>
+        <a href="#erfahrungen" class="menu-item" data-target="erfahrungen" data-desc="Stationen, Erfolge & bisherige Meilensteine.">// Erfahrungen</a>
+        <a href="#prinzipien" class="menu-item" data-target="prinzipien" data-desc="Kernwerte, Denkweisen & Arbeitsphilosophie.">// Prinzipien</a>
+        <a href="#projekte" class="menu-item" data-target="projekte" data-desc="Showcase aktueller Software- & Web-Projekte.">// Projekte</a>
+        <a href="#texte" class="menu-item" data-target="texte" data-desc="Artikel, Aufsätze & schriftliche Gedanken.">// Texte & Veröffentlichungen</a>
+        <a href="#analysen" class="menu-item" data-target="analysen" data-desc="Datenbasierte Insights & tiefgehende Recherchen.">// Analysen</a>
+        <a href="#tools" class="menu-item" data-target="tools" data-desc="Nützliche Helfer, Skripte & Workflows.">// Tools</a>
+        <a href="#ai" class="menu-item" data-target="ai" data-desc="Prompts, LLM-Experimente & KI-Integrationen.">// AI</a>
       </nav>
 
-      <!-- Dynamic Preview Box -->
-      <div class="preview-box" id="preview-box">
-        <span>SYSTEM: Fahr mit dem Cursor über ein Modul zur Systemanalyse...</span>
+      <!-- Dynamic Preview & Matrix Portal Section -->
+      <div class="preview-section">
+        <div class="preview-box" id="preview-box">
+          <span>SYSTEM: Fahr mit dem Cursor über ein Modul für die Portal-Vorschau...</span>
+        </div>
+
+        <!-- MATRIX PORTAL WINDOW -->
+        <div class="portal-wrapper" id="portal-wrapper">
+          <canvas id="portal-canvas"></canvas>
+          <div class="portal-content">
+            <div class="portal-header">
+              <span id="portal-title">LIVE_PREVIEW // uber-mich.html</span>
+              <div class="portal-dots">
+                <span class="portal-dot" style="background:#ff5f56"></span>
+                <span class="portal-dot" style="background:#ffbd2e"></span>
+                <span class="portal-dot" style="background:#27c93f"></span>
+              </div>
+            </div>
+            <div class="portal-body" id="portal-body">
+              <!-- Dynamischer Inhalt für das Portal -->
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
 
   <script>
-    /* 1. MATRIX RAIN EFFECT (unverändert) */
+    /* 1. MATRIX RAIN BACKGROUND */
     const canvas = document.getElementById('matrix-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -269,7 +380,7 @@
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789<>{}[]/*+=~#$_';
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789<>{}[]/*+=~#$_';
     const fontSize = 14;
     let columns = Math.floor(canvas.width / fontSize);
     let drops = Array(columns).fill(1);
@@ -291,30 +402,21 @@
         drops[i]++;
       }
     }
-
-    window.addEventListener('resize', () => {
-      columns = Math.floor(canvas.width / fontSize);
-      drops = Array(columns).fill(1);
-    });
-
     setInterval(drawMatrix, 33);
 
 
-    /* 2. TERMINAL TYPEWRITER EFFECT (unverändert, Cursor verschwindet am Ende) */
+    /* 2. TYPEWRITER EFFECT */
     const textToType = "[ alexander-beran.de ]";
     const typewriterElement = document.getElementById("typewriter");
     const fadeContainer = document.getElementById("fade-container");
-    
     let charIndex = 0;
 
     function typeWriter() {
       if (charIndex < textToType.length) {
         typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
         charIndex++;
-        const randomSpeed = Math.floor(Math.random() * 60) + 50;
-        setTimeout(typeWriter, randomSpeed);
+        setTimeout(typeWriter, Math.floor(Math.random() * 60) + 50);
       } else {
-        // Cursor am Ende entfernen
         typewriterElement.innerHTML = textToType; 
         fadeContainer.classList.add("visible");
       }
@@ -325,68 +427,132 @@
     });
 
 
-    /* 3. SMART HYBRID STEUERUNG (KORRIGIERT FÜR REALES LINKING) */
-    const menuItems = document.querySelectorAll('.menu-item');
-    const previewBox = document.getElementById('preview-box');
-    const defaultText = "SYSTEM: Fahr mit dem Cursor über ein Modul zur Systemanalyse...";
-    let activeTouchItem = null;
+    /* 3. WABERNDER MATRIX PORTAL CANVAS-EFFEKT */
+    const pCanvas = document.getElementById('portal-canvas');
+    const pCtx = pCanvas.getContext('2d');
+    let portalAnimId = null;
+    let time = 0;
 
-    function showPreview(item) {
-      const desc = item.getAttribute('data-desc');
-      const title = item.innerText;
-      previewBox.innerHTML = `> <span class="preview-text">${title}</span>: ${desc}`;
+    function resizePortalCanvas() {
+      const wrapper = document.getElementById('portal-wrapper');
+      pCanvas.width = wrapper.clientWidth;
+      pCanvas.height = 220;
     }
 
-    function resetPreview() {
+    function drawPortalBorder() {
+      pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+      time += 0.08;
+
+      const w = pCanvas.width;
+      const h = pCanvas.height;
+      const particleCount = 40;
+
+      pCtx.fillStyle = '#00ffcc';
+      pCtx.font = '10px "JetBrains Mono", monospace';
+
+      // Zeichne den wabernden Code-Rand um das Vorschau-Fenster
+      for (let i = 0; i < particleCount; i++) {
+        const char = chars.charAt(Math.floor(Math.random() * chars.length));
+        
+        // Wabernde Sinus-Offset Berechnung für den "verfranzten" Rand
+        const wave = Math.sin(time + i * 0.3) * 8;
+
+        // Oben & Unten
+        const xTop = (w / particleCount) * i + wave;
+        pCtx.fillText(char, xTop, 8 + Math.cos(time + i) * 3);
+        pCtx.fillText(char, xTop, h - 4 + Math.sin(time + i) * 3);
+
+        // Links & Rechts
+        const yLeft = (h / (particleCount / 2)) * (i % 20) + wave;
+        pCtx.fillText(char, 4 + Math.sin(time + i) * 3, yLeft);
+        pCtx.fillText(char, w - 12 + Math.cos(time + i) * 3, yLeft);
+      }
+
+      portalAnimId = requestAnimationFrame(drawPortalBorder);
+    }
+
+
+    /* 4. MOCKUP-DATEN FÜR DIE PORTAL-VORSCHAU */
+    const portalData = {
+      'uber-mich': `
+        <h2>Alexander Beran</h2>
+        <div class="sub">// Tech Explorer & Conceptual Mind</div>
+        <p>Willkommen in meiner digitalen Zentrale. Ich beschäftige mich mit der Schnittstelle von Technologie, Philosophie und künstlicher Intelligenz.</p>
+        <p style="margin-top:0.4rem; color:#00ffcc;">[ Klicke erneut zum Betreten des Moduls ]</p>
+      `,
+      'default': `
+        <h2>Modul in Vorbereitung</h2>
+        <div class="sub">// Status: System-Initialisierung</div>
+        <p>Ausrüstung und Schnittstellen werden für diese Kategorie aktuell konfiguriert.</p>
+      `
+    };
+
+
+    /* 5. INTERAKTIVE STEUERUNG (HOVER & DOUBLE-TAP) */
+    const menuItems = document.querySelectorAll('.menu-item');
+    const previewBox = document.getElementById('preview-box');
+    const portalWrapper = document.getElementById('portal-wrapper');
+    const portalBody = document.getElementById('portal-body');
+    const portalTitle = document.getElementById('portal-title');
+    const defaultText = "SYSTEM: Fahr mit dem Cursor über ein Modul für die Portal-Vorschau...";
+    let activeTouchItem = null;
+
+    function openPortal(item) {
+      const desc = item.getAttribute('data-desc');
+      const title = item.innerText;
+      const target = item.getAttribute('data-target');
+
+      previewBox.innerHTML = `> <span class="preview-text">${title}</span>: ${desc}`;
+      portalTitle.innerText = `PORTAL_PREVIEW // ${target}.html`;
+      portalBody.innerHTML = portalData[target] || portalData['default'];
+
+      resizePortalCanvas();
+      portalWrapper.classList.add('open');
+
+      if (!portalAnimId) {
+        drawPortalBorder();
+      }
+    }
+
+    function closePortal() {
       previewBox.innerHTML = defaultText;
+      portalWrapper.classList.remove('open');
       if (activeTouchItem) {
         activeTouchItem.classList.remove('active-touch');
         activeTouchItem = null;
       }
+      if (portalAnimId) {
+        cancelAnimationFrame(portalAnimId);
+        portalAnimId = null;
+      }
     }
 
     menuItems.forEach(item => {
-      // Desktop Mouse Hover (unverändert)
-      item.addEventListener('mouseenter', () => {
-        showPreview(item);
-      });
+      // Desktop Hover
+      item.addEventListener('mouseenter', () => openPortal(item));
+      item.addEventListener('mouseleave', () => closePortal());
 
-      item.addEventListener('mouseleave', () => {
-        resetPreview();
-      });
-
-      // Klick / Touch Steuerung (HIER LIEGT DIE KORREKTUR)
+      // Touch / Klick
       item.addEventListener('click', (e) => {
-        // Prüfen, ob es ein Touch-Event ist
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
         if (isTouchDevice) {
-          // Logik für Touch-Geräte
           if (activeTouchItem !== item) {
-            // ERSTER TAP: Blockiere den Link und zeige die Vorschau
-            e.preventDefault(); 
+            e.preventDefault();
             menuItems.forEach(i => i.classList.remove('active-touch'));
             item.classList.add('active-touch');
             activeTouchItem = item;
-            showPreview(item);
+            openPortal(item);
           } else {
-            // ZWEITER TAP: Erlaube dem Browser, dem href-Link zu folgen
-            // (Wir brauchen hier kein alert(...) oder window.location mehr)
-            // Die Standardaktion des Links wird ausgeführt.
-            return; 
+            return; // 2. Tap -> Folgt dem href Link
           }
-        } else {
-          // Logik für Desktop (Maus-Klick)
-          // Normaler Klick führt direkt zum href, kein alert mehr.
-          return; 
         }
       });
     });
 
-    // Klick irgendwo anders hin schließt die Vorschau auf Touch-Geräten
     document.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('menu-item')) {
-        resetPreview();
+      if (!e.target.classList.contains('menu-item') && !portalWrapper.contains(e.target)) {
+        closePortal();
       }
     });
   </script>
