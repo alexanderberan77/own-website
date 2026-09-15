@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Under Construction</title>
+  
+  <!-- Google Font: JetBrains Mono (Einbindung) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS RESET & GRUNDSTELLUNG */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #121212; /* Sehr dunkler, eleganter Hintergrund */
+      color: #e0e0e0;            /* Helles Off-White für gute Lesbarkeit */
+      font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem 10%;
+      line-height: 1.8;
+      font-size: 1.05rem;
+    }
+
+    /* TYPOGRAFIE */
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 2rem;
+      letter-spacing: -0.5px;
+      transition: all 0.3s ease;
+    }
+
+    p {
+      max-width: 720px;
+      margin-bottom: 1.5rem;
+      color: #a0a0a0;
+      transition: color 0.3s ease;
+    }
+
+    /* INTERAKTIVER HOVER-EFFEKT (Das Fundament für den futuristischen Look) */
+    
+    /* 1. Wenn man über Absätze fährt, fangen sie subtil an zu "glühen" */
+    p:hover {
+      color: #00ffcc; /* Neon-Cyan Glow */
+      text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+    }
+
+    /* 2. Titel-Effekt beim Drüberfahren */
+    h1:hover {
+      color: #00ffcc;
+      text-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
+      cursor: default;
+    }
+
+    /* NAVIGATIONS-PROTOTYP (Für deine späteren Sektionen vorbereitet) */
+    .menu-preview {
+      margin-top: 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 2rem;
+    }
+
+    .menu-item {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    /* Futuristischer Cyber-Hover für Navigationspunkte */
+    .menu-item:hover {
+      color: #00ffcc;
+      border-color: #00ffcc;
+      background: rgba(0, 255, 204, 0.05);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* BADGE STATUS */
+    .status-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: #ffb703;
+      border: 1px solid #ffb703;
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <main>
+    <div>
+      <span class="status-badge">[ Status: Under Construction ]</span>
+    </div>
+    
+    <h1>[ Dein Name / Projektname ]</h1>
+
+    <p>
+      Eine neue, interaktive Plattform ist im Aufbau. 
+      Hier entsteht ein System für Analysen, Publikationen, Prinzipien und KI-Experimente.
+    </p>
+
+    <p>
+      Ausrüstung und Schnittstellen werden aktuell konfiguriert. 
+      Der Zugriff wird in Kürze freigeschaltet.
+    </p>
+
+    <!-- Vorschau auf deine zukünftigen Sektionen (schlicht im Ruhezustand, futuristisch bei Hover) -->
+    <nav class="menu-preview">
+      <a href="#" class="menu-item">// Über mich</a>
+      <a href="#" class="menu-item">// Erfahrungen</a>
+      <a href="#" class="menu-item">// Prinzipien</a>
+      <a href="#" class="menu-item">// Projekte</a>
+      <a href="#" class="menu-item">// Texte & Veröffentlichungen</a>
+      <a href="#" class="menu-item">// Analysen</a>
+      <a href="#" class="menu-item">// Tools</a>
+      <a href="#" class="menu-item">// AI</a>
+    </nav>
+  </main>
+
+</body>
+</html>
