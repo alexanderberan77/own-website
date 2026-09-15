@@ -307,16 +307,21 @@
     
     let charIndex = 0;
 
-    function typeWriter() {
-      if (charIndex < textToType.length) {
-        typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
-        charIndex++;
-        const randomSpeed = Math.floor(Math.random() * 60) + 50;
-        setTimeout(typeWriter, randomSpeed);
-      } else {
-        fadeContainer.classList.add("visible");
-      }
-    }
+function typeWriter() {
+  if (charIndex < textToType.length) {
+    typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
+    charIndex++;
+    const randomSpeed = Math.floor(Math.random() * 60) + 50;
+    setTimeout(typeWriter, randomSpeed);
+  } else {
+    // 1. Cursor entfernen (Nur den reinen Text stehen lassen)
+    typewriterElement.innerHTML = textToType; 
+    
+    // 2. Inhalt drunter einblenden
+    fadeContainer.classList.add("visible");
+  }
+}
+
 
     window.addEventListener("DOMContentLoaded", () => {
       setTimeout(typeWriter, 300);
