@@ -211,7 +211,7 @@
     }
 
 
-    /* OVALES MATRIX PORTAL POPUP & DYNAMISCHE MASKIERUNG */
+    /* OVALES MATRIX PORTAL POPUP & OVERLAY */
     .direct-portal {
       position: fixed;
       z-index: 100;
@@ -220,15 +220,12 @@
       opacity: 0;
       transform: scale(0.2) translateY(10px);
       transform-origin: center center;
-      /* clip-path sorgt für die exakte ovale Formung, auch beim Wachsen */
-      clip-path: ellipse(48% 46% at 50% 50%);
       transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                   transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                  clip-path 0.8s cubic-bezier(0.25, 1, 0.3, 1),
-                  top 0.8s cubic-bezier(0.25, 1, 0.3, 1), 
-                  left 0.8s cubic-bezier(0.25, 1, 0.3, 1), 
-                  width 0.8s cubic-bezier(0.25, 1, 0.3, 1), 
-                  height 0.8s cubic-bezier(0.25, 1, 0.3, 1);
+                  top 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                  left 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                  width 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+                  height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
     }
 
@@ -237,7 +234,7 @@
       transform: scale(1) translateY(0);
     }
 
-    /* ORGANISCHES EXPANDIEREN (Wächst als stetiges Oval über den ganzen Schirm) */
+    /* EXPANSIONS-ZUSTAND: Nimmt den vollen Bildschirm ein, ohne zu pixeln */
     .direct-portal.expanding {
       position: fixed !important;
       top: 0 !important;
@@ -246,11 +243,9 @@
       height: 100vh !important;
       z-index: 9999 !important;
       transform: scale(1) translate(0, 0) !important;
-      /* Die Ellipse dehnt sich stufenlos aus, bis sie die Bildschirmränder überschreitet */
-      clip-path: ellipse(120% 120% at 50% 50%) !important;
     }
 
-    /* Wabernder Matrix-Portal Canvas */
+    /* Sharper Matrix Canvas im Portal */
     #portal-canvas {
       position: absolute;
       top: 0;
@@ -264,19 +259,20 @@
     /* Ovales Fenster für das Miniatur-Rendering */
     .portal-screen {
       position: absolute;
-      top: 12px;
-      left: 15px;
-      right: 15px;
-      bottom: 12px;
+      top: 15px;
+      left: 20px;
+      right: 20px;
+      bottom: 15px;
       background: #0a0a0c;
       border-radius: 50%;
       z-index: 2;
       overflow: hidden;
       box-shadow: 0 0 30px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(0, 255, 204, 0.4);
       border: 1px solid rgba(0, 255, 204, 0.4);
-      transition: all 0.8s cubic-bezier(0.25, 1, 0.3, 1);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* Wenn das Portal expandiert, wächst die Inhaltsscheibe sanft zur vollen Bildschirmgröße */
     .direct-portal.expanding .portal-screen {
       top: 0;
       left: 0;
@@ -296,10 +292,10 @@
       transform-origin: 0 0;
       pointer-events: none;
       background: #0a0a0c;
-      transition: transform 0.8s cubic-bezier(0.25, 1, 0.3, 1);
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), width 0.8s ease, height 0.8s ease;
     }
 
-    /* iFrame während der Expansion skaliert stufenlos auf Normalgröße */
+    /* iFrame während der Expansion skaliert stufenlos genau auf Bildschirmgröße */
     .direct-portal.expanding .portal-iframe {
       width: 100vw;
       height: 100vh;
@@ -439,12 +435,15 @@
     });
 
 
-    /* 3. ORGANISCHES MATRIX-PORTAL CANVAS (MIT INTENSIVIERTE DYNAMIC BEIM EXPANDIEREN) */
+    /* 3. SHARP & EXPANDING MATRIX PORTAL CANVAS */
     const pCanvas = document.getElementById('portal-canvas');
     const pCtx = pCanvas.getContext('2d');
     let portalAnimId = null;
     let time = 0;
-    let isWarping = false;
+    
+    // Steuerungsvariablen für die flüssige Expansion
+    let isExpanding = false;
+    let expansionProgress = 0; // Wert von 0.0 (Miniformat) bis 1.0 (Über-Bildschirmgröße)
 
     function resizePortalCanvas() {
       pCanvas.width = directPortal.offsetWidth || 340;
@@ -453,39 +452,55 @@
 
     function drawOvalPortalBorder() {
       pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-      time += isWarping ? 0.12 : 0.07;
+      time += isExpanding ? 0.12 : 0.07;
+
+      if (isExpanding && expansionProgress < 1) {
+        // Easing-Kurve für ultra-flüssige Portal-Entfaltung
+        expansionProgress += 0.035;
+        if (expansionProgress > 1) expansionProgress = 1;
+      }
 
       const centerX = pCanvas.width / 2;
       const centerY = pCanvas.height / 2;
-      const radiusX = pCanvas.width * 0.44;
-      const radiusY = pCanvas.height * 0.42;
 
-      pCtx.font = '10px "JetBrains Mono", monospace';
+      // Start-Radius & Ziel-Radius (Portal wächst WEIT über den Bildschirmrand hinaus!)
+      const startRadiusX = pCanvas.width * 0.44;
+      const startRadiusY = pCanvas.height * 0.42;
 
-      const totalPoints = isWarping ? 160 : 110;
+      const maxTargetRadiusX = window.innerWidth * 0.85; // Bricht deutlich über die Bildschirmecken aus
+      const maxTargetRadiusY = window.innerHeight * 0.85;
+
+      // Interpolierter Radius basierend auf dem Fortschritt
+      const currentRadiusX = startRadiusX + (maxTargetRadiusX - startRadiusX) * expansionProgress;
+      const currentRadiusY = startRadiusY + (maxTargetRadiusY - startRadiusY) * expansionProgress;
+
+      // Schriftgröße der Matrix-Zeichen BLEIBT EXAKT KONSTANT (Nie wieder pixelig!)
+      pCtx.font = '11px "JetBrains Mono", monospace';
+
+      // Anzahl der Strahlen erhöht sich dynamisch beim Wachsen für maximale Dichte
+      const totalPoints = isExpanding ? 240 : 110;
 
       for (let i = 0; i < totalPoints; i++) {
         const angle = (i / totalPoints) * Math.PI * 2;
         const noise = Math.sin(time * 2 + angle * 4) * Math.cos(time * 1.2 + angle * 2);
         
-        // Dynamische Randtiefe (2 bis 5 im Normalzustand, 5 bis 12 beim Expandieren)
-        const dynamicDepth = isWarping 
-          ? 5 + Math.floor(Math.random() * 7)
+        // Randtiefe (3 bis 6 Spalten normal, 6 bis 14 Spalten beim Aufblähen)
+        const dynamicDepth = isExpanding 
+          ? 6 + Math.floor(Math.random() * 8)
           : 2 + Math.floor((Math.sin(time + angle * 3) + 1) * 1.6);
 
         for (let layer = 0; layer < dynamicDepth; layer++) {
-          const offsetDist = (layer * (isWarping ? 9 : 7)) + (noise * 8) - 8;
+          const offsetDist = (layer * 8) + (noise * 8) - 8;
           
-          const currentRadiusX = radiusX + offsetDist;
-          const currentRadiusY = radiusY + offsetDist;
+          const rx = currentRadiusX + offsetDist;
+          const ry = currentRadiusY + offsetDist;
 
-          const x = centerX + Math.cos(angle) * currentRadiusX;
-          const y = centerY + Math.sin(angle) * currentRadiusY;
+          const x = centerX + Math.cos(angle) * rx;
+          const y = centerY + Math.sin(angle) * ry;
 
           const alpha = 1 - (layer * 0.12) - (Math.random() * 0.15);
           
-          // Farbe bleibt echtes Cyber-Cyan (#00ffcc), leuchtet beim Erweitern nur etwas intensiver
-          pCtx.fillStyle = isWarping 
+          pCtx.fillStyle = isExpanding 
             ? `rgba(0, 255, 204, ${Math.max(0.35, alpha)})` 
             : `rgba(0, 255, 204, ${Math.max(0.15, alpha)})`;
 
@@ -500,7 +515,7 @@
     }
 
 
-    /* 4. HOVER-, TOUCH- UND EXPANSIONS-STEUERUNG */
+    /* 4. HOVER-, TOUCH- UND PORTAL-EXPANSIONS STEUERUNG */
     const menuItems = document.querySelectorAll('.menu-item');
     const previewBox = document.getElementById('preview-box');
     const directPortal = document.getElementById('direct-portal');
@@ -510,7 +525,6 @@
     
     let activeItem = null;
     let closeTimeout = null;
-    let isExpanding = false;
 
     function openPortalAtButton(item) {
       if (isExpanding) return;
@@ -574,20 +588,23 @@
       }
     }
 
-    /* 5. ORGANISCHER EXPANSIONS-PROCESS */
+    /* 5. PORTAL WARP EFFECT (Über-Bildschirm-Portalöffnung) */
     function triggerPortalWarp(targetUrl) {
       if (!targetUrl || targetUrl.trim() === "" || isExpanding) return;
 
       isExpanding = true;
-      isWarping = true;
 
-      // Triggert die ovale CSS clip-path Expansion
+      // 1. Schalte das Portal-Container-Element auf Vollbild
       directPortal.classList.add('expanding');
+      
+      // 2. Erweitere das Canvas augenblicklich auf Vollbildauflösung
+      pCanvas.width = window.innerWidth;
+      pCanvas.height = window.innerHeight;
 
-      // Nach Abschluss der organischen Entfaltung wird die echte Seite geöffnet
+      // 3. Nach Ablauf der epischen Expansion zur Zielseite leiten
       setTimeout(() => {
         window.location.href = targetUrl;
-      }, 750);
+      }, 800);
     }
 
 
@@ -611,13 +628,13 @@
         e.preventDefault();
         const srcUrl = item.getAttribute('data-src');
 
-        // 1. Wenn das Portal für diesen Button noch NICHT offen ist -> Erst Portal öffnen!
+        // 1. Wenn das Portal noch nicht offen ist -> Öffne Miniaturportal am Button
         if (activeItem !== item || !directPortal.classList.contains('open')) {
           menuItems.forEach(i => i.classList.remove('active-touch'));
           item.classList.add('active-touch');
           openPortalAtButton(item);
         } 
-        // 2. Wenn das Portal für diesen Button BEREITS offen ist -> Warp auslösen!
+        // 2. Zweiter Touch/Klick -> Löst die Portal-Expansion aus!
         else {
           if (srcUrl && srcUrl.trim() !== "") {
             triggerPortalWarp(srcUrl);
@@ -630,7 +647,7 @@
     directPortal.addEventListener('mouseenter', () => clearTimeout(closeTimeout));
     directPortal.addEventListener('mouseleave', () => scheduleClosePortal());
 
-    // KLICK AUF DAS PORTAL SELBST
+    // KLICK AUF DAS PORTAL SELBST (Löst Expansion aus)
     directPortal.addEventListener('click', () => {
       if (activeItem) {
         const srcUrl = activeItem.getAttribute('data-src');
