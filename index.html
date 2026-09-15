@@ -211,7 +211,7 @@
     }
 
 
-    /* OVALES MATRIX PORTAL POPUP & ANIMATIONEN */
+    /* OVALES MATRIX PORTAL POPUP & DYNAMISCHE MASKIERUNG */
     .direct-portal {
       position: fixed;
       z-index: 100;
@@ -220,9 +220,15 @@
       opacity: 0;
       transform: scale(0.2) translateY(10px);
       transform-origin: center center;
+      /* clip-path sorgt für die exakte ovale Formung, auch beim Wachsen */
+      clip-path: ellipse(48% 46% at 50% 50%);
       transition: opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                   transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                  top 0.3s ease, left 0.3s ease, width 0.6s ease, height 0.6s ease, border-radius 0.6s ease;
+                  clip-path 0.8s cubic-bezier(0.25, 1, 0.3, 1),
+                  top 0.8s cubic-bezier(0.25, 1, 0.3, 1), 
+                  left 0.8s cubic-bezier(0.25, 1, 0.3, 1), 
+                  width 0.8s cubic-bezier(0.25, 1, 0.3, 1), 
+                  height 0.8s cubic-bezier(0.25, 1, 0.3, 1);
       cursor: pointer;
     }
 
@@ -231,7 +237,7 @@
       transform: scale(1) translateY(0);
     }
 
-    /* EXPANSION / WARP STATE (Portal wächst auf vollen Bildschirm) */
+    /* ORGANISCHES EXPANDIEREN (Wächst als stetiges Oval über den ganzen Schirm) */
     .direct-portal.expanding {
       position: fixed !important;
       top: 0 !important;
@@ -240,7 +246,8 @@
       height: 100vh !important;
       z-index: 9999 !important;
       transform: scale(1) translate(0, 0) !important;
-      transition: all 0.7s cubic-bezier(0.7, 0, 0.3, 1) !important;
+      /* Die Ellipse dehnt sich stufenlos aus, bis sie die Bildschirmränder überschreitet */
+      clip-path: ellipse(120% 120% at 50% 50%) !important;
     }
 
     /* Wabernder Matrix-Portal Canvas */
@@ -257,17 +264,17 @@
     /* Ovales Fenster für das Miniatur-Rendering */
     .portal-screen {
       position: absolute;
-      top: 18px;
-      left: 22px;
-      right: 22px;
-      bottom: 18px;
+      top: 12px;
+      left: 15px;
+      right: 15px;
+      bottom: 12px;
       background: #0a0a0c;
-      border-radius: 50%; /* Macht das Fenster OVAL */
+      border-radius: 50%;
       z-index: 2;
       overflow: hidden;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(0, 255, 204, 0.3);
-      border: 1px solid rgba(0, 255, 204, 0.3);
-      transition: all 0.6s ease;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(0, 255, 204, 0.4);
+      border: 1px solid rgba(0, 255, 204, 0.4);
+      transition: all 0.8s cubic-bezier(0.25, 1, 0.3, 1);
     }
 
     .direct-portal.expanding .portal-screen {
@@ -275,7 +282,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      border-radius: 0; /* Wird beim Wachsen eckig für Vollbild */
+      border-radius: 0;
       border: none;
       box-shadow: none;
     }
@@ -289,10 +296,10 @@
       transform-origin: 0 0;
       pointer-events: none;
       background: #0a0a0c;
-      transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.3, 1);
     }
 
-    /* iFrame während der Expansion skaliert auf Normalgröße */
+    /* iFrame während der Expansion skaliert stufenlos auf Normalgröße */
     .direct-portal.expanding .portal-iframe {
       width: 100vw;
       height: 100vh;
@@ -432,12 +439,12 @@
     });
 
 
-    /* 3. DYNAMISCHES MATRIX-PORTAL CANVAS (MIT WARP MODE) */
+    /* 3. ORGANISCHES MATRIX-PORTAL CANVAS (MIT INTENSIVIERTE DYNAMIC BEIM EXPANDIEREN) */
     const pCanvas = document.getElementById('portal-canvas');
     const pCtx = pCanvas.getContext('2d');
     let portalAnimId = null;
     let time = 0;
-    let isWarping = false; // Steuert den hochfrequenten Chaos-Modus beim Öffnen
+    let isWarping = false;
 
     function resizePortalCanvas() {
       pCanvas.width = directPortal.offsetWidth || 340;
@@ -446,29 +453,28 @@
 
     function drawOvalPortalBorder() {
       pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-      time += isWarping ? 0.25 : 0.07; // Zeit läuft im Warp-Mode viel schneller!
+      time += isWarping ? 0.12 : 0.07;
 
       const centerX = pCanvas.width / 2;
       const centerY = pCanvas.height / 2;
-      const radiusX = pCanvas.width * 0.42;
-      const radiusY = pCanvas.height * 0.40;
+      const radiusX = pCanvas.width * 0.44;
+      const radiusY = pCanvas.height * 0.42;
 
-      pCtx.font = (isWarping ? '14px' : '10px') + ' "JetBrains Mono", monospace';
+      pCtx.font = '10px "JetBrains Mono", monospace';
 
-      const totalPoints = isWarping ? 180 : 110;
+      const totalPoints = isWarping ? 160 : 110;
 
       for (let i = 0; i < totalPoints; i++) {
         const angle = (i / totalPoints) * Math.PI * 2;
-
         const noise = Math.sin(time * 2 + angle * 4) * Math.cos(time * 1.2 + angle * 2);
         
-        // Im Warp-Mode explodieren die Spalten auf 8 bis 15 Tiefe!
+        // Dynamische Randtiefe (2 bis 5 im Normalzustand, 5 bis 12 beim Expandieren)
         const dynamicDepth = isWarping 
-          ? 8 + Math.floor(Math.random() * 8)
+          ? 5 + Math.floor(Math.random() * 7)
           : 2 + Math.floor((Math.sin(time + angle * 3) + 1) * 1.6);
 
         for (let layer = 0; layer < dynamicDepth; layer++) {
-          const offsetDist = (layer * (isWarping ? 12 : 7)) + (noise * (isWarping ? 20 : 6)) - 8;
+          const offsetDist = (layer * (isWarping ? 9 : 7)) + (noise * 8) - 8;
           
           const currentRadiusX = radiusX + offsetDist;
           const currentRadiusY = radiusY + offsetDist;
@@ -476,9 +482,11 @@
           const x = centerX + Math.cos(angle) * currentRadiusX;
           const y = centerY + Math.sin(angle) * currentRadiusY;
 
-          const alpha = 1 - (layer * (isWarping ? 0.08 : 0.18)) - (Math.random() * 0.15);
+          const alpha = 1 - (layer * 0.12) - (Math.random() * 0.15);
+          
+          // Farbe bleibt echtes Cyber-Cyan (#00ffcc), leuchtet beim Erweitern nur etwas intensiver
           pCtx.fillStyle = isWarping 
-            ? `rgba(255, 255, 255, ${Math.max(0.3, alpha)})` 
+            ? `rgba(0, 255, 204, ${Math.max(0.35, alpha)})` 
             : `rgba(0, 255, 204, ${Math.max(0.15, alpha)})`;
 
           if (Math.random() > 0.08) {
@@ -492,7 +500,7 @@
     }
 
 
-    /* 4. HOVER-, DELAY- UND PORTAL-EXPANSIONS LOGIK */
+    /* 4. HOVER-, TOUCH- UND EXPANSIONS-STEUERUNG */
     const menuItems = document.querySelectorAll('.menu-item');
     const previewBox = document.getElementById('preview-box');
     const directPortal = document.getElementById('direct-portal');
@@ -505,7 +513,7 @@
     let isExpanding = false;
 
     function openPortalAtButton(item) {
-      if (isExpanding) return; // Nicht stören, wenn das Portal bereits expandiert!
+      if (isExpanding) return;
 
       clearTimeout(closeTimeout);
       activeItem = item;
@@ -550,66 +558,79 @@
 
     function scheduleClosePortal() {
       if (isExpanding) return;
-      // 250ms Buffer, damit der Nutzer problemlos mit der Maus ins Portal fahren kann
       closeTimeout = setTimeout(() => {
         closePortal();
-      }, 250);
+      }, 300);
     }
 
     function closePortal() {
       if (isExpanding) return;
       previewBox.innerHTML = defaultText;
       directPortal.classList.remove('open');
+      menuItems.forEach(i => i.classList.remove('active-touch'));
       if (portalAnimId) {
         cancelAnimationFrame(portalAnimId);
         portalAnimId = null;
       }
     }
 
-    /* 5. WARP EXPANSION TRAVERSAL (Das Waber-Wachstum beim Klick) */
+    /* 5. ORGANISCHER EXPANSIONS-PROCESS */
     function triggerPortalWarp(targetUrl) {
       if (!targetUrl || targetUrl.trim() === "" || isExpanding) return;
 
       isExpanding = true;
-      isWarping = true; // Aktiviere hochfrequenten Matrix-Modus
+      isWarping = true;
 
-      // Portal auf Vollbild upgraden
+      // Triggert die ovale CSS clip-path Expansion
       directPortal.classList.add('expanding');
 
-      // Nach Abschluss der Wachstums-Animation zur Zielseite weiterleiten
+      // Nach Abschluss der organischen Entfaltung wird die echte Seite geöffnet
       setTimeout(() => {
         window.location.href = targetUrl;
-      }, 650);
+      }, 750);
     }
 
 
-    /* EVENT-HANDLER */
+    /* EVENT HANDLER (TOUCH + DESKTOP SAFELY SEPARATED) */
     menuItems.forEach(item => {
-      // Hover Steuerung (mit Sanftem Übergang ins Portal)
-      item.addEventListener('mouseenter', () => openPortalAtButton(item));
-      item.addEventListener('mouseleave', () => scheduleClosePortal());
-
-      // Klick auf Button -> Aktiviert direkt das Portal-Warping
-      item.addEventListener('click', (e) => {
-        const srcUrl = item.getAttribute('data-src');
-        if (srcUrl && srcUrl.trim() !== "") {
-          e.preventDefault();
+      // DESKTOP: Hovering
+      item.addEventListener('mouseenter', () => {
+        if (!('ontouchstart' in window)) {
           openPortalAtButton(item);
-          triggerPortalWarp(srcUrl);
+        }
+      });
+
+      item.addEventListener('mouseleave', () => {
+        if (!('ontouchstart' in window)) {
+          scheduleClosePortal();
+        }
+      });
+
+      // CLICK / TOUCH LOGIK
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const srcUrl = item.getAttribute('data-src');
+
+        // 1. Wenn das Portal für diesen Button noch NICHT offen ist -> Erst Portal öffnen!
+        if (activeItem !== item || !directPortal.classList.contains('open')) {
+          menuItems.forEach(i => i.classList.remove('active-touch'));
+          item.classList.add('active-touch');
+          openPortalAtButton(item);
+        } 
+        // 2. Wenn das Portal für diesen Button BEREITS offen ist -> Warp auslösen!
+        else {
+          if (srcUrl && srcUrl.trim() !== "") {
+            triggerPortalWarp(srcUrl);
+          }
         }
       });
     });
 
-    // MOUSE-EVENTS FÜR DAS PORTAL SELBST (Damit man reinwandern kann)
-    directPortal.addEventListener('mouseenter', () => {
-      clearTimeout(closeTimeout); // Verhindert Schließen beim Reinfahren
-    });
+    // MOUSE-EVENTS FÜR DAS PORTAL SELBST
+    directPortal.addEventListener('mouseenter', () => clearTimeout(closeTimeout));
+    directPortal.addEventListener('mouseleave', () => scheduleClosePortal());
 
-    directPortal.addEventListener('mouseleave', () => {
-      scheduleClosePortal();
-    });
-
-    // KLICK AUF DAS PORTAL SELBST (Triggert die Vollbild-Expansion)
+    // KLICK AUF DAS PORTAL SELBST
     directPortal.addEventListener('click', () => {
       if (activeItem) {
         const srcUrl = activeItem.getAttribute('data-src');
@@ -619,7 +640,7 @@
       }
     });
 
-    // Portal schließen bei Klick irgendwo anders hin
+    // Portal schließen bei Klick ins Leere
     document.addEventListener('click', (e) => {
       if (!e.target.classList.contains('menu-item') && !directPortal.contains(e.target)) {
         closePortal();
