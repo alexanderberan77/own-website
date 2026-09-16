@@ -54,7 +54,7 @@
     .nav-bar {
       position: relative;
       z-index: 10;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .btn-back {
@@ -87,7 +87,7 @@
     .hud-header {
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .hud-title {
@@ -103,6 +103,32 @@
       color: var(--cyber-glow);
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    /* AVATAR CONTAINER & PORTAL HIDE */
+    .profile-avatar-container {
+      display: flex;
+      justify-content: center;
+      margin: 0.5rem 0 1.5rem 0;
+      position: relative;
+    }
+    
+    #profile-canvas {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    
+    #profile-canvas.active {
+      opacity: 1;
+    }
+    
+    /* VORSSCHAU-PORTAL: Das Bild samt Container wird komplett aus der HTML-Struktur entfernt */
+    body.portal-preview .profile-avatar-container,
+    .portal-hide {
+      display: none !important;
     }
 
     /* GRID SYSTEM */
@@ -135,7 +161,6 @@
       box-shadow: 0 0 20px rgba(0, 255, 204, 0.08);
     }
 
-    /* Corner accents */
     .hud-card::before {
       content: '';
       position: absolute;
@@ -258,7 +283,7 @@
       color: var(--text-muted);
     }
 
-    /* SYSTEM DIAGNOSTICS (Feedback & Quotes) */
+    /* SYSTEM DIAGNOSTICS */
     .quote-box {
       background: rgba(0, 255, 204, 0.03);
       border-left: 3px solid var(--cyber-glow);
@@ -301,32 +326,6 @@
       transition: width 1.2s cubic-bezier(0.1, 0.5, 0.1, 1);
       box-shadow: 0 0 8px var(--cyber-glow);
     }
-
-    .profile-avatar-container {
-      display: flex;
-      justify-content: center;
-      margin: 1rem 0 1.5rem 0;
-      position: relative;
-    }
-    
-    #profile-canvas {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-    }
-    
-    #profile-canvas.active {
-      opacity: 1;
-    }
-    
-    /* Versteckt das Bild im Portal-Vorschaufenster der Hauptseite */
-    body.portal-preview .profile-avatar-container,
-    .portal-node-preview .profile-avatar-container {
-      display: none !important;
-    }
-
   </style>
 </head>
 <body>
@@ -346,17 +345,11 @@
       <h1 class="hud-title">Alexander Beran <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">(Senior Financial & Risk Controller)</span></h1>
     </header>
 
-    <!-- AVATAR CANVAS -->
+    <!-- AVATAR CANVAS (NUR EINMAL VORHANDEN) -->
     <div class="profile-avatar-container">
-      <canvas id="profile-canvas" width="220" height="280"></canvas>
-      <img id="avatar-source" src="profilbild.png" alt="Alexander Beran" style="display: none;">
-    </div>
-
-    <div class="profile-avatar-container portal-hide">
       <canvas id="profile-canvas"></canvas>
       <img id="avatar-source" src="profilbild.png" alt="Alexander Beran" style="display: none;">
     </div>
-
     
     <!-- LIVE METRICS / KPIs -->
     <section class="metrics-grid">
@@ -587,149 +580,159 @@
       });
     });
 
-    /* CYBERPUNK HOLO-MATRIX AVATAR (COMPACT, SHARP & DYNAMIC EDGE) */
+    /* 3. CYBERPUNK HOLO-MATRIX AVATAR (OPTIMIZED EDGE FADE & SHARPNESS) */
     window.addEventListener('load', () => {
       const img = document.getElementById('avatar-source');
       const canvas = document.getElementById('profile-canvas');
       if (!img || !canvas) return;
-    
+
       const ctx = canvas.getContext('2d');
-    
-      // Skalierung halbiert: Kompakte 130x165 Pixel
-      const displayWidth = 130;
-      const displayHeight = 165;
+
+      // Kompakte Zielgröße
+      const displayWidth = 140;
+      const displayHeight = 175;
       const dpr = window.devicePixelRatio || 1;
-    
+
+      // Scharfe High-DPI Canvas Skalierung
       canvas.width = displayWidth * dpr;
       canvas.height = displayHeight * dpr;
       canvas.style.width = displayWidth + 'px';
       canvas.style.height = displayHeight + 'px';
       ctx.scale(dpr, dpr);
-    
+
       const memCanvas = document.createElement('canvas');
       memCanvas.width = displayWidth;
       memCanvas.height = displayHeight;
       const memCtx = memCanvas.getContext('2d');
       
-      // Bild mit hoher Qualität auf verkleinertes Maß zeichnen
       memCtx.imageSmoothingEnabled = true;
       memCtx.imageSmoothingQuality = 'high';
       memCtx.drawImage(img, 0, 0, displayWidth, displayHeight);
       const imgData = memCtx.getImageData(0, 0, displayWidth, displayHeight).data;
-    
+
       const step = 1;
       let pixels = [];
       let edgePixels = [];
       const chars = '01XYZ#$/*+<>@&%';
-    
+
+      // Randverlauf: Prüft 12 Pixel tiefe Zone für fließenden Kantenübergang
+      const edgeThreshold = 12;
+
       for (let y = 0; y < displayHeight; y += step) {
         for (let x = 0; x < displayWidth; x += step) {
           const i = (y * displayWidth + x) * 4;
           const alpha = imgData[i + 3];
-    
-          if (alpha > 40) {
-            // Konturen erkennen
-            const isEdge = 
-              x <= 2 || x >= displayWidth - 2 || y <= 2 || y >= displayHeight - 2 ||
-              imgData[((y * displayWidth + (x - 2)) * 4) + 3] <= 40 ||
-              imgData[((y * displayWidth + (x + 2)) * 4) + 3] <= 40 ||
-              imgData[(((y - 2) * displayWidth + x) * 4) + 3] <= 40 ||
-              imgData[(((y + 2) * displayWidth + x) * 4) + 3] <= 40;
-    
+
+          if (alpha > 30) {
+            // Abstand zur Kante berechnen
+            let distToEdge = edgeThreshold;
+            for (let d = 1; d <= edgeThreshold; d++) {
+              const leftA = x - d >= 0 ? imgData[((y * displayWidth + (x - d)) * 4) + 3] : 0;
+              const rightA = x + d < displayWidth ? imgData[((y * displayWidth + (x + d)) * 4) + 3] : 0;
+              const topA = y - d >= 0 ? imgData animate=(((y - d) * displayWidth + x) * 4) + 3 : 0;
+              const bottomA = y + d < displayHeight ? imgData[(((y + d) * displayWidth + x) * 4) + 3] : 0;
+
+              if (leftA <= 30 || rightA <= 30 || topA <= 30 || bottomA <= 30) {
+                distToEdge = d;
+                break;
+              }
+            }
+
+            const isEdgeZone = distToEdge < edgeThreshold;
+            // Sanfter Fading-Faktor von der Außenkante ins Bildinnere
+            const edgeFadeFactor = isEdgeZone ? Math.pow(distToEdge / edgeThreshold, 1.2) : 1;
+
             pixels.push({
               x: x,
               y: y,
               r: imgData[i],
               g: imgData[i + 1],
               b: imgData[i + 2],
-              baseAlpha: alpha / 255,
+              baseAlpha: (alpha / 255) * edgeFadeFactor,
               progress: 0,
-              delay: Math.random() * 60,
-              speed: 0.006 + Math.random() * 0.01,
+              delay: Math.random() * 50,
+              speed: 0.008 + Math.random() * 0.012,
               char: chars.charAt(Math.floor(Math.random() * chars.length)),
-              isEdge: isEdge
+              isEdgeZone: isEdgeZone
             });
-    
-            if (isEdge) {
+
+            if (distToEdge <= 3) {
               edgePixels.push({ x: x, y: y });
             }
           }
         }
       }
-    
+
       canvas.classList.add('active');
       let frameCount = 0;
-    
+
       function renderHoloAvatar() {
         frameCount++;
         ctx.clearRect(0, 0, displayWidth, displayHeight);
-    
-        // 1. RANDFLIMMERN & AURA (Startet von Frame 1 an!)
+
+        // 1. RAND-AURA & CODE-PARTIKEL
         edgePixels.forEach(p => {
-          if (Math.random() < 0.12) {
-            const offsetX = (Math.random() - 0.5) * 12;
-            const offsetY = (Math.random() - 0.5) * 12;
+          if (Math.random() < 0.15) {
+            const offsetX = (Math.random() - 0.5) * 14;
+            const offsetY = (Math.random() - 0.5) * 14;
             
-            if (Math.random() < 0.6) {
-              ctx.fillStyle = 'rgba(0, 255, 204, 0.8)';
+            if (Math.random() < 0.5) {
+              ctx.fillStyle = 'rgba(0, 255, 204, 0.7)';
               ctx.font = '7px "JetBrains Mono"';
-              const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
-              ctx.fillText(randomChar, p.x + offsetX, p.y + offsetY);
+              ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), p.x + offsetX, p.y + offsetY);
             } else {
-              ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+              ctx.fillStyle = 'rgba(0, 255, 204, 0.4)';
               ctx.fillRect(p.x + offsetX, p.y + offsetY, 1.5, 1.5);
             }
           }
         });
-    
-        // 2. PIXEL & BILD-AUFBAU
+
+        // 2. MATRIX -> AVATAR RENDERER
         pixels.forEach(p => {
           if (frameCount < p.delay) return;
-    
+
           if (p.progress < 1) {
             p.progress += p.speed;
           }
-    
-          // Ausgefranste, leicht zuckende Kante für die Randpixel des Kaskadenbildes
+
           let currentAlpha = p.baseAlpha;
-          if (p.isEdge && Math.random() < 0.2) {
-            currentAlpha *= (0.3 + Math.random() * 0.7); // Bricht harte Schnittkanten auf
+          if (p.isEdgeZone && Math.random() < 0.15) {
+            currentAlpha *= (0.4 + Math.random() * 0.6); // Dynamisches Zucken am Rand
           }
-    
-          if (p.progress < 0.75) {
-            // Phase 1: Matrix-Code
-            if (Math.random() < 0.08) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
-            ctx.fillStyle = `rgba(0, 255, 204, ${currentAlpha * 0.75})`;
+
+          if (p.progress < 0.7) {
+            // Phase 1: Matrix Code
+            if (Math.random() < 0.1) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillStyle = `rgba(0, 255, 204, ${currentAlpha * 0.8})`;
             ctx.font = '7px "JetBrains Mono"';
             if (p.x % 2 === 0 && p.y % 2 === 0) {
               ctx.fillText(p.char, p.x, p.y);
             }
           } else {
-            // Phase 2: Bildfarben
-            const factor = Math.min(1, (p.progress - 0.75) * 4);
+            // Phase 2: Echtes Bild mit weichem Farbübergang
+            const factor = Math.min(1, (p.progress - 0.7) * 3.33);
             const r = Math.round(0 + (p.r - 0) * factor);
             const g = Math.round(255 + (p.g - 255) * factor);
             const b = Math.round(204 + (p.b - 204) * factor);
-    
+
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${currentAlpha})`;
             ctx.fillRect(p.x, p.y, step, step);
           }
         });
-    
-        // Dezent glitschende Zeilen
-        if (Math.random() < 0.2) {
+
+        // Glitch-Line Effekte
+        if (Math.random() < 0.15) {
           const glitchY = Math.floor(Math.random() * displayHeight);
           const glitchX = Math.floor(Math.random() * (displayWidth - 20));
-          ctx.fillStyle = 'rgba(0, 255, 204, 0.4)';
-          ctx.fillRect(glitchX, glitchY, Math.random() * 15 + 5, 1);
+          ctx.fillStyle = 'rgba(0, 255, 204, 0.35)';
+          ctx.fillRect(glitchX, glitchY, Math.random() * 18 + 4, 1);
         }
-    
+
         requestAnimationFrame(renderHoloAvatar);
       }
-    
+
       renderHoloAvatar();
     });
-
   </script>
 </body>
 </html>
