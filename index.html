@@ -576,6 +576,15 @@
         if (!portalIframe.src.endsWith(srcUrl)) {
           portalIframe.src = srcUrl;
         }
+
+        // NEU: Signalisiert der Zielseite den Portal-Vorschau-Modus
+        portalIframe.onload = () => {
+          try {
+            portalIframe.contentWindow.document.body.classList.add('portal-preview');
+          } catch (e) {
+            // Cross-Origin Guard
+          }
+        };
       } else {
         portalIframe.style.display = 'none';
         portalPlaceholder.style.display = 'flex';
