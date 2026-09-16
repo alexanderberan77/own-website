@@ -310,9 +310,17 @@
     }
     
     #profile-canvas {
-      border: 1px solid var(--cyber-glow);
-      background: rgba(10, 10, 12, 0.6);
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+      /* Keinerlei Rahmen oder Hintergrund - komplett transparent */
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      /* Unsichtbar für Pre-Rendering / Portal */
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+    }
+    
+    #profile-canvas.active {
+      opacity: 1; /* Wacht erst auf, wenn das Skript läuft */
     }
 
   </style>
@@ -569,88 +577,122 @@
       });
     });
 
-    /* CYBERPUNK AVATAR MATRIX & GLITCH EFFECT */
+    /* CYBERPUNK HOLO-MATRIX AVATAR */
     window.addEventListener('load', () => {
       const img = document.getElementById('avatar-source');
       const canvas = document.getElementById('profile-canvas');
       if (!img || !canvas) return;
-      
+    
       const ctx = canvas.getContext('2d');
       const width = canvas.width;
       const height = canvas.height;
     
+      // Hilfscanvas zum Auslesen der Bilddaten
       const memCanvas = document.createElement('canvas');
       memCanvas.width = width;
       memCanvas.height = height;
       const memCtx = memCanvas.getContext('2d');
-      
       memCtx.drawImage(img, 0, 0, width, height);
       const imgData = memCtx.getImageData(0, 0, width, height).data;
     
-      let particles = [];
-      const step = 4;
+      const step = 4; // Pixel-Rastergröße
+      let pixels = [];
+      let edgePixels = [];
     
+      const chars = '01XYZ#$/*+<>';
+    
+      // Pixel verarbeiten & Außenkanten identifizieren
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           const i = (y * width + x) * 4;
           const alpha = imgData[i + 3];
     
           if (alpha > 50) {
-            particles.push({
-              targetX: x,
-              targetY: y,
-              currentX: Math.random() * width,
-              currentY: Math.random() * height - height,
-              color: `rgba(${imgData[i]}, ${imgData[i+1]}, ${imgData[i+2]}, ${alpha / 255})`,
-              speed: 0.05 + Math.random() * 0.05
-            });
+            const isEdge = 
+              x <= step || x >= width - step || y <= step || y >= height - step ||
+              imgData[((y * width + (x - step)) * 4) + 3] <= 50 ||
+              imgData[((y * width + (x + step)) * 4) + 3] <= 50 ||
+              imgData[(((y - step) * width + x) * 4) + 3] <= 50 ||
+              imgData[(((y + step) * width + x) * 4) + 3] <= 50;
+    
+            const pData = {
+              x: x,
+              y: y,
+              targetR: imgData[i],
+              targetG: imgData[i + 1],
+              targetB: imgData[i + 2],
+              alpha: alpha / 255,
+              // Startzustand: Matrix-Transformation
+              progress: 0, 
+              char: chars.charAt(Math.floor(Math.random() * chars.length)),
+              isEdge: isEdge
+            };
+    
+            pixels.push(pData);
+            if (isEdge) edgePixels.push(pData);
           }
         }
       }
     
-      let assembled = false;
+      // Aktivieren (beendet Pre-Render-Unsichtbarkeit)
+      canvas.classList.add('active');
     
-      function animateProfile() {
+      function renderHoloAvatar() {
         ctx.clearRect(0, 0, width, height);
     
-        if (!assembled) {
-          let settledCount = 0;
-          particles.forEach(p => {
-            p.currentX += (p.targetX - p.currentX) * p.speed;
-            p.currentY += (p.targetY - p.currentY) * p.speed;
+        let allResolved = true;
     
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.currentX, p.currentY, step, step);
+        pixels.forEach(p => {
+          // Schrittweise Transformation von Matrix-Code zu Original-Pixel
+          if (p.progress < 1) {
+            p.progress += 0.015 + Math.random() * 0.02;
+            allResolved = false;
+          }
     
-            if (Math.abs(p.targetX - p.currentX) < 1 && Math.abs(p.targetY - p.currentY) < 1) {
-              settledCount++;
+          if (p.progress < 0.8) {
+            // PHASE 1: Grüner Matrix-Buchstabe flackert an Ort und Stelle
+            if (Math.random() < 0.2) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillStyle = `rgba(0, 255, 204, ${p.alpha * 0.9})`;
+            ctx.font = '9px "JetBrains Mono"';
+            ctx.fillText(p.char, p.x, p.y + step);
+          } else {
+            // PHASE 2: Morphing in die echten Bildfarben
+            const factor = Math.min(1, (p.progress - 0.8) * 5); // Sanfter Übergang
+            const r = Math.round(0 + (p.targetR - 0) * factor);
+            const g = Math.round(255 + (p.targetG - 255) * factor);
+            const b = Math.round(204 + (p.targetB - 204) * factor);
+    
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha})`;
+            ctx.fillRect(p.x, p.y, step, step);
+          }
+        });
+    
+        // DAUERHAFTER ZUSTAND: Fransige Matrix-Aura an den Rändern & vereinzelte Glitches
+        if (allResolved) {
+          // 1. Organischer, fransiger Rand (Aura)
+          edgePixels.forEach(p => {
+            if (Math.random() < 0.15) { // Erzeugt das zuckende/franzige Flimmern der Kante
+              ctx.fillStyle = 'rgba(0, 255, 204, 0.7)';
+              ctx.font = '8px "JetBrains Mono"';
+              const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+              const offsetX = (Math.random() - 0.5) * 6;
+              const offsetY = (Math.random() - 0.5) * 6;
+              ctx.fillText(randomChar, p.x + offsetX, p.y + offsetY + step);
             }
           });
     
-          if (settledCount > particles.length * 0.95) {
-            assembled = true;
-          }
-        } else {
-          ctx.drawImage(memCanvas, 0, 0);
-    
-          if (Math.random() < 0.35) {
-            const glitchX = Math.floor(Math.random() * (width - 20));
-            const glitchY = Math.floor(Math.random() * (height - 10));
-            
-            ctx.fillStyle = 'rgba(0, 255, 204, 0.8)';
-            ctx.fillRect(glitchX, glitchY, Math.random() * 15 + 5, step);
-            
-            ctx.fillStyle = '#00ffcc';
-            ctx.font = '10px "JetBrains Mono"';
-            const chars = '01XYZ#/<>*';
-            ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), glitchX, glitchY);
+          // 2. Dezent innere Matrix-Glitches
+          if (Math.random() < 0.3) {
+            const target = pixels[Math.floor(Math.random() * pixels.length)];
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.9)';
+            ctx.fillRect(target.x, target.y, step * 2, step);
           }
         }
     
-        requestAnimationFrame(animateProfile);
+        requestAnimationFrame(renderHoloAvatar);
       }
     
-      animateProfile();
+      renderHoloAvatar();
     });
 
   </script>
