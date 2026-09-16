@@ -110,6 +110,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
+      align-items: start;
     }
 
     @media (max-width: 850px) {
@@ -126,6 +127,7 @@
       position: relative;
       backdrop-filter: blur(5px);
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
     }
 
     .hud-card:hover {
@@ -275,13 +277,13 @@
 
     /* SKILL PROGRESS BARS */
     .skill-box {
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.55rem;
     }
 
     .skill-info {
       display: flex;
       justify-content: space-between;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       margin-bottom: 0.2rem;
     }
 
@@ -379,7 +381,7 @@
 
         <div class="skill-box">
           <div class="skill-info">
-            <span>Risikomodelle (historical VaR, Monte Carlo, many more) </span>
+            <span>Risikomodelle (historical VaR, Monte Carlo, many more)</span>
             <span>90%</span>
           </div>
           <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="90%"></div></div>
@@ -424,14 +426,14 @@
           </div>
           <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="90%"></div></div>
         </div>
-      </div>
 
-      <div class="skill-box">
-        <div class="skill-info">
-          <span>Gesamtunternehmerisches Verständnis</span>
-          <span>90%</span>
+        <div class="skill-box">
+          <div class="skill-info">
+            <span>Gesamtunternehmerisches Verständnis</span>
+            <span>90%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="90%"></div></div>
         </div>
-        <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="90%"></div></div>
       </div>
 
       <!-- MODUL 3: TIMELINE / LOGS -->
