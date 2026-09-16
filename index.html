@@ -418,21 +418,39 @@
     const typewriterElement = document.getElementById("typewriter");
     const fadeContainer = document.getElementById("fade-container");
     let charIndex = 0;
-
+    
+    // Prüfen, ob das Intro in dieser Session schon lief
+    const introPlayed = sessionStorage.getItem("introPlayed");
+    
     function typeWriter() {
-      if (charIndex < textToType.length) {
-        typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">&nbsp;</span>';
-        charIndex++;
-        setTimeout(typeWriter, Math.floor(Math.random() * 60) + 50);
-      } else {
-        typewriterElement.innerHTML = textToType; 
+      if (introPlayed) {
+        // FALL 1: Bereits auf der Seite gewesen -> Sofort alles anzeigen
+        typewriterElement.innerHTML = textToType;
         fadeContainer.classList.add("visible");
+      } else {
+        // FALL 2: Erstes Mal auf der Seite -> Deinen gewohnten Effekt abspielen
+        if (charIndex < textToType.length) {
+          typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">_</span>';
+          charIndex++;
+          setTimeout(typeWriter, Math.floor(Math.random() * 60) + 50);
+        } else {
+          typewriterElement.innerHTML = textToType;
+          fadeContainer.classList.add("visible");
+          // Flag setzen, dass der Effekt gelaufen ist
+          sessionStorage.setItem("introPlayed", "true");
+        }
       }
     }
-
+    
     window.addEventListener("DOMContentLoaded", () => {
-      setTimeout(typeWriter, 300);
+      // Wenn schon gelaufen, ohne Verzögerung anzeigen, sonst mit deinen 300ms Start-Delay
+      if (introPlayed) {
+        typeWriter();
+      } else {
+        setTimeout(typeWriter, 300);
+      }
     });
+
 
 
     /* 3. SHARP & EXPANDING MATRIX PORTAL CANVAS */
