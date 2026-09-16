@@ -301,6 +301,20 @@
       transition: width 1.2s cubic-bezier(0.1, 0.5, 0.1, 1);
       box-shadow: 0 0 8px var(--cyber-glow);
     }
+
+    .profile-avatar-container {
+      display: flex;
+      justify-content: center;
+      margin: 1.5rem 0 2rem 0;
+      position: relative;
+    }
+    
+    #profile-canvas {
+      border: 1px solid var(--cyber-glow);
+      background: rgba(10, 10, 12, 0.6);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+    }
+
   </style>
 </head>
 <body>
@@ -320,6 +334,12 @@
       <h1 class="hud-title">Alexander Beran <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">(Senior Financial & Risk Controller)</span></h1>
     </header>
 
+    <!-- AVATAR CANVAS -->
+    <div class="profile-avatar-container">
+      <canvas id="profile-canvas" width="220" height="280"></canvas>
+      <img id="avatar-source" src="profilbild.png" alt="Alexander Beran" style="display: none;">
+    </div>
+    
     <!-- LIVE METRICS / KPIs -->
     <section class="metrics-grid">
       <div class="metric-box">
@@ -548,6 +568,91 @@
         updateCount();
       });
     });
+
+    /* CYBERPUNK AVATAR MATRIX & GLITCH EFFECT */
+    window.addEventListener('load', () => {
+      const img = document.getElementById('avatar-source');
+      const canvas = document.getElementById('profile-canvas');
+      if (!img || !canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+    
+      const memCanvas = document.createElement('canvas');
+      memCanvas.width = width;
+      memCanvas.height = height;
+      const memCtx = memCanvas.getContext('2d');
+      
+      memCtx.drawImage(img, 0, 0, width, height);
+      const imgData = memCtx.getImageData(0, 0, width, height).data;
+    
+      let particles = [];
+      const step = 4;
+    
+      for (let y = 0; y < height; y += step) {
+        for (let x = 0; x < width; x += step) {
+          const i = (y * width + x) * 4;
+          const alpha = imgData[i + 3];
+    
+          if (alpha > 50) {
+            particles.push({
+              targetX: x,
+              targetY: y,
+              currentX: Math.random() * width,
+              currentY: Math.random() * height - height,
+              color: `rgba(${imgData[i]}, ${imgData[i+1]}, ${imgData[i+2]}, ${alpha / 255})`,
+              speed: 0.05 + Math.random() * 0.05
+            });
+          }
+        }
+      }
+    
+      let assembled = false;
+    
+      function animateProfile() {
+        ctx.clearRect(0, 0, width, height);
+    
+        if (!assembled) {
+          let settledCount = 0;
+          particles.forEach(p => {
+            p.currentX += (p.targetX - p.currentX) * p.speed;
+            p.currentY += (p.targetY - p.currentY) * p.speed;
+    
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.currentX, p.currentY, step, step);
+    
+            if (Math.abs(p.targetX - p.currentX) < 1 && Math.abs(p.targetY - p.currentY) < 1) {
+              settledCount++;
+            }
+          });
+    
+          if (settledCount > particles.length * 0.95) {
+            assembled = true;
+          }
+        } else {
+          ctx.drawImage(memCanvas, 0, 0);
+    
+          if (Math.random() < 0.35) {
+            const glitchX = Math.floor(Math.random() * (width - 20));
+            const glitchY = Math.floor(Math.random() * (height - 10));
+            
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.8)';
+            ctx.fillRect(glitchX, glitchY, Math.random() * 15 + 5, step);
+            
+            ctx.fillStyle = '#00ffcc';
+            ctx.font = '10px "JetBrains Mono"';
+            const chars = '01XYZ#/<>*';
+            ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), glitchX, glitchY);
+          }
+        }
+    
+        requestAnimationFrame(animateProfile);
+      }
+    
+      animateProfile();
+    });
+
   </script>
 </body>
 </html>
