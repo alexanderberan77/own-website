@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tactical Command Grid: Projects | Alexander Beran</title>
+  
+  <!-- Google Font: JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #0a0a0c;
+      --card-bg: rgba(15, 15, 20, 0.85);
+      --text-main: #e0e0e0;
+      --text-muted: #888888;
+      --cyber-glow: #00ffcc;
+      --cyber-alert: #ffb703;
+      --cyber-purple: #b5179e;
+      --font-mono: 'JetBrains Mono', monospace;
+      --border-color: #2a2a30;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      padding: 2rem 8%;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    /* BACKGROUND CANVAS */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    /* NAVIGATION BACK BUTTON */
+    .nav-bar {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 2rem;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--cyber-glow);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      background: rgba(0, 255, 204, 0.05);
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(0, 255, 204, 0.15);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+      transform: translateX(-3px);
+    }
+
+    /* MAIN HUD CONTAINER */
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hud-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hud-title {
+      font-size: 1.8rem;
+      color: #fff;
+    }
+
+    .hud-status {
+      font-size: 0.75rem;
+      color: var(--cyber-glow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* FILTER TAGS */
+    .filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.4rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      color: var(--cyber-glow);
+      border-color: var(--cyber-glow);
+      background: rgba(0, 255, 204, 0.08);
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+    }
+
+    /* PROJECT GRID */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* CARD DESIGN WITH SCANNER EFFECT */
+    .project-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      position: relative;
+      backdrop-filter: blur(5px);
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--cyber-glow);
+      box-shadow: 0 0 25px rgba(0, 255, 204, 0.15);
+    }
+
+    /* Corner Accent */
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      border-top: 2px solid var(--cyber-glow);
+      border-left: 2px solid var(--cyber-glow);
+    }
+
+    /* SCANNER BEAM EFFECT */
+    .project-card::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(0, 255, 204, 0.15), transparent);
+      transition: none;
+      pointer-events: none;
+    }
+
+    .project-card:hover::after {
+      animation: scanBeam 1.5s infinite linear;
+    }
+
+    @keyframes scanBeam {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    /* CARD HEADER & BADGES */
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .status-badge {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.live {
+      color: var(--cyber-glow);
+      border-color: var(--cyber-glow);
+      background: rgba(0, 255, 204, 0.1);
+    }
+
+    .status-badge.dev {
+      color: var(--cyber-alert);
+      border-color: var(--cyber-alert);
+      background: rgba(255, 183, 3, 0.1);
+    }
+
+    .status-badge.lab {
+      color: var(--cyber-purple);
+      border-color: var(--cyber-purple);
+      background: rgba(181, 23, 158, 0.1);
+    }
+
+    .project-title {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .project-desc {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .tech-stack {
+      font-size: 0.75rem;
+      color: var(--cyber-glow);
+      opacity: 0.8;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      padding-top: 0.6rem;
+    }
+
+    /* TERMINAL INSPECTOR (MODAL OVERLAY) */
+    .inspector-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 5, 8, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .inspector-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .inspector-modal {
+      background: #0d0d12;
+      border: 1px solid var(--cyber-glow);
+      width: 90%;
+      max-width: 650px;
+      padding: 2rem;
+      position: relative;
+      box-shadow: 0 0 30px rgba(0, 255, 204, 0.2);
+    }
+
+    .btn-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+      font-family: var(--font-mono);
+    }
+
+    .btn-close:hover {
+      color: #fff;
+      border-color: #fff;
+    }
+
+    .inspector-title {
+      color: var(--cyber-glow);
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .inspector-section {
+      margin-top: 1rem;
+    }
+
+    .inspector-section h4 {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .inspector-section p {
+      font-size: 0.9rem;
+      color: #ddd;
+    }
+
+    .action-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(0, 255, 204, 0.1);
+      border: 1px solid var(--cyber-glow);
+      color: var(--cyber-glow);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--cyber-glow);
+      color: #000;
+      box-shadow: 0 0 15px var(--cyber-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Canvas -->
+  <canvas id="matrix-canvas"></canvas>
+
+  <main>
+    <!-- Back Button -->
+    <div class="nav-bar">
+      <a href="index.html" class="btn-back">&lt; // RETURN_TO_CORE</a>
+    </div>
+
+    <!-- HUD Header -->
+    <header class="hud-header">
+      <div class="hud-status">[ TACTICAL COMMAND GRID // SYSTEM PROJECTS ]</div>
+      <h1 class="hud-title">Projekt-Portfolio & Showcases</h1>
+    </header>
+
+    <!-- Filter Tags -->
+    <div class="filter-container">
+      <button class="filter-btn active" data-filter="all">[ ALL ]</button>
+      <button class="filter-btn" data-filter="finance">[ FINANCE & RISK ]</button>
+      <button class="filter-btn" data-filter="ai">[ AI & TECH ]</button>
+      <button class="filter-btn" data-filter="writing">[ ESSAYS & WRITING ]</button>
+      <button class="filter-btn" data-filter="web">[ WEB DEV ]</button>
+    </div>
+
+    <!-- Grid System -->
+    <div class="project-grid" id="grid">
+
+      <!-- PROJEKT 1: MARKTBLASEN DASHBOARD -->
+      <article class="project-card" data-category="finance" 
+               data-title="Marktblasen-Dashboard & Risk Early-Warning" 
+               data-problem="Frühzeitige Erkennung von Spekulationsblasen und systemischen Risiken an den Finanzmärkten."
+               data-solution="Ein interaktives Dashboard zur Modellierung von Volatilitäts-Stresstests, Stimmungs-Indikatoren und Extremwert-Analysen auf Basis von historischen Marktdaten."
+               data-link="#">
+        <div>
+          <div class="card-top">
+            <span class="status-badge live">[ LIVE DEMO ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">01</span>
+          </div>
+          <h3 class="project-title">Marktblasen-Dashboard</h3>
+          <p class="project-desc">Frühwarnsystem für Markt-Anomalien, Stresstests & spekulative Blasenbildung.</p>
+        </div>
+        <div class="tech-stack">&gt; Python • SQL • Quant Risk Models • Streamlit</div>
+      </article>
+
+      <!-- PROJEKT 2: DIESE WEBSITE -->
+      <article class="project-card" data-category="web" 
+               data-title="Cyberpunk Terminal Web-App" 
+               data-problem="Klassische Standard-Portfolio-Websites sind austauschbar und langweilig."
+               data-solution="Entwicklung eines hochdynamischen, Matrix-inspirierten Sci-Fi UI-Frameworks mit HTML5 Canvas und interaktiven HUD-Elementen."
+               data-link="index.html">
+        <div>
+          <div class="card-top">
+            <span class="status-badge live">[ LIVE ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">02</span>
+          </div>
+          <h3 class="project-title">alexander-beran.de Core</h3>
+          <p class="project-desc">Diese persönliche Sci-Fi-Website als Showcase für modernes Canvas- UI-Engineering.</p>
+        </div>
+        <div class="tech-stack">&gt; HTML5 Canvas • CSS Grid • Vanilla JavaScript</div>
+      </article>
+
+      <!-- PROJEKT 3: SUBSTACK & ESSAYS -->
+      <article class="project-card" data-category="writing" 
+               data-title="Substack: Essays & Reflexionen" 
+               data-problem="Verbindung von tiefgründigen Gedanken zu KI, Gesellschaft, Finanzen und Philosophie."
+               data-solution="Ein regelmäßiges Veröffentlichungs-Format für freies Schreiben und sozioökonomische Analysen."
+               data-link="YOUR_SUBSTACK_LINK_HERE">
+        <div>
+          <div class="card-top">
+            <span class="status-badge dev">[ PUBLISHING ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">03</span>
+          </div>
+          <h3 class="project-title">Schriftstücke & Aufsätze</h3>
+          <p class="project-desc">Gedankenwelten über Technologie, Ambiguität, Systeme und die Zukunft.</p>
+        </div>
+        <div class="tech-stack">&gt; Substack • Publishing • Analytical Writing</div>
+      </article>
+
+      <!-- PROJEKT 4: DATA AUTOMATION PIPELINES -->
+      <article class="project-card" data-category="ai" 
+               data-title="Automated Data & Process Pipelines" 
+               data-problem="Manuelle Controlling-Reportings kosten extrem viel Zeit und bergen Fehlerrisiken."
+               data-solution="Skripte und Bots zur automatisierten Datenkonsolidierung, ETL-Prozessen und Aufbereitung für Gremien."
+               data-link="#">
+        <div>
+          <div class="card-top">
+            <span class="status-badge lab">[ LAB / ARCHIVED ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">04</span>
+          </div>
+          <h3 class="project-title">Data Pipeline Automation</h3>
+          <p class="project-desc">Vollautomatisierte ETL- & Reporting-Strecken zur Verarbeitungs-Optimierung.</p>
+        </div>
+        <div class="tech-stack">&gt; VBA • SQL • Python • Process Mining</div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- TERMINAL INSPECTOR MODAL -->
+  <div class="inspector-overlay" id="inspector">
+    <div class="inspector-modal">
+      <button class="btn-close" id="btnClose">[ ESC / CLOSE ]</button>
+      <div class="hud-status">[ TERMINAL INSPECTOR // DETAIL VIEW ]</div>
+      <h2 class="inspector-title" id="modalTitle">Projekt Name</h2>
+      
+      <div class="inspector-section">
+        <h4>// Problemstellung</h4>
+        <p id="modalProblem">...</p>
+      </div>
+
+      <div class="inspector-section">
+        <h4>// System-Lösung</h4>
+        <p id="modalSolution">...</p>
+      </div>
+
+      <a href="#" class="action-btn" id="modalLink" target="_blank">[ LAUNCH PROJECT / ACTION ]</a>
+    </div>
+  </div>
+
+  <script>
+    /* 1. MATRIX CANVAS EFFECT */
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789<>{}[]/*+=~#$_';
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(10, 10, 12, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ffcc';
+      ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 33);
+
+    /* 2. FILTER SYSTEM */
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-filter');
+
+        projectCards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    /* 3. TERMINAL INSPECTOR (MODAL) */
+    const inspector = document.getElementById('inspector');
+    const btnClose = document.getElementById('btnClose');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalProblem = document.getElementById('modalProblem');
+    const modalSolution = document.getElementById('modalSolution');
+    const modalLink = document.getElementById('modalLink');
+
+    projectCards.forEach(card => {
+      card.addEventListener('click', () => {
+        modalTitle.innerText = card.getAttribute('data-title');
+        modalProblem.innerText = card.getAttribute('data-problem');
+        modalSolution.innerText = card.getAttribute('data-solution');
+        
+        const link = card.getAttribute('data-link');
+        modalLink.href = link;
+        
+        if (link === '#') {
+          modalLink.innerText = '[ STATUS: IN DEVELOPMENT ]';
+        } else {
+          modalLink.innerText = '[ OPEN / LAUNCH LINK ]';
+        }
+
+        inspector.classList.add('active');
+      });
+    });
+
+    btnClose.addEventListener('click', () => {
+      inspector.classList.remove('active');
+    });
+
+    inspector.addEventListener('click', (e) => {
+      if (e.target === inspector) {
+        inspector.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>
