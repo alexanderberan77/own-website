@@ -554,7 +554,7 @@
     setInterval(drawMatrix, 33);
 
     /* 2. ANIMATED SKILL BARS & COUNTERS ON LOAD */
-    window.addEventListener('DOMContentLoaded', () => {
+    function initAnimations() {
       setTimeout(() => {
         document.querySelectorAll('.skill-bar-fill').forEach(bar => {
           const progress = bar.getAttribute('data-progress');
@@ -565,7 +565,7 @@
       document.querySelectorAll('.metric-number').forEach(counter => {
         const target = +counter.getAttribute('data-target');
         let count = 0;
-        const speed = target / 30;
+        const speed = Math.max(1, target / 30);
 
         const updateCount = () => {
           count += speed;
@@ -578,22 +578,30 @@
         };
         updateCount();
       });
-    });
+    }
 
-    /* 3. CYBERPUNK HOLO-MATRIX AVATAR (OPTIMIZED EDGE FADE & SHARPNESS) */
-    window.addEventListener('load', () => {
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initAnimations);
+    } else {
+      initAnimations();
+    }
+
+    /* 3. CYBERPUNK HOLO-MATRIX AVATAR */
+    function initAvatar() {
       const img = document.getElementById('avatar-source');
       const canvas = document.getElementById('profile-canvas');
       if (!img || !canvas) return;
 
-      const ctx = canvas.getContext('2d');
+      if (!img.complete || img.naturalWidth === 0) {
+        img.onload = initAvatar;
+        return;
+      }
 
-      // Kompakte Zielgröße
+      const ctx = canvas.getContext('2d');
       const displayWidth = 140;
       const displayHeight = 175;
       const dpr = window.devicePixelRatio || 1;
 
-      // Scharfe High-DPI Canvas Skalierung
       canvas.width = displayWidth * dpr;
       canvas.height = displayHeight * dpr;
       canvas.style.width = displayWidth + 'px';
@@ -614,8 +622,6 @@
       let pixels = [];
       let edgePixels = [];
       const chars = '01XYZ#$/*+<>@&%';
-
-      // Randverlauf: Prüft 12 Pixel tiefe Zone für fließenden Kantenübergang
       const edgeThreshold = 12;
 
       for (let y = 0; y < displayHeight; y += step) {
@@ -624,12 +630,11 @@
           const alpha = imgData[i + 3];
 
           if (alpha > 30) {
-            // Abstand zur Kante berechnen
             let distToEdge = edgeThreshold;
             for (let d = 1; d <= edgeThreshold; d++) {
               const leftA = x - d >= 0 ? imgData[((y * displayWidth + (x - d)) * 4) + 3] : 0;
               const rightA = x + d < displayWidth ? imgData[((y * displayWidth + (x + d)) * 4) + 3] : 0;
-              const topA = y - d >= 0 ? imgData animate=(((y - d) * displayWidth + x) * 4) + 3 : 0;
+              const topA = y - d >= 0 ? imgData[(((y - d) * displayWidth + x) * 4) + 3] : 0;
               const bottomA = y + d < displayHeight ? imgData[(((y + d) * displayWidth + x) * 4) + 3] : 0;
 
               if (leftA <= 30 || rightA <= 30 || topA <= 30 || bottomA <= 30) {
@@ -639,7 +644,6 @@
             }
 
             const isEdgeZone = distToEdge < edgeThreshold;
-            // Sanfter Fading-Faktor von der Außenkante ins Bildinnere
             const edgeFadeFactor = isEdgeZone ? Math.pow(distToEdge / edgeThreshold, 1.2) : 1;
 
             pixels.push({
@@ -670,7 +674,6 @@
         frameCount++;
         ctx.clearRect(0, 0, displayWidth, displayHeight);
 
-        // 1. RAND-AURA & CODE-PARTIKEL
         edgePixels.forEach(p => {
           if (Math.random() < 0.15) {
             const offsetX = (Math.random() - 0.5) * 14;
@@ -687,7 +690,6 @@
           }
         });
 
-        // 2. MATRIX -> AVATAR RENDERER
         pixels.forEach(p => {
           if (frameCount < p.delay) return;
 
@@ -697,11 +699,10 @@
 
           let currentAlpha = p.baseAlpha;
           if (p.isEdgeZone && Math.random() < 0.15) {
-            currentAlpha *= (0.4 + Math.random() * 0.6); // Dynamisches Zucken am Rand
+            currentAlpha *= (0.4 + Math.random() * 0.6);
           }
 
           if (p.progress < 0.7) {
-            // Phase 1: Matrix Code
             if (Math.random() < 0.1) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
             ctx.fillStyle = `rgba(0, 255, 204, ${currentAlpha * 0.8})`;
             ctx.font = '7px "JetBrains Mono"';
@@ -709,7 +710,6 @@
               ctx.fillText(p.char, p.x, p.y);
             }
           } else {
-            // Phase 2: Echtes Bild mit weichem Farbübergang
             const factor = Math.min(1, (p.progress - 0.7) * 3.33);
             const r = Math.round(0 + (p.r - 0) * factor);
             const g = Math.round(255 + (p.g - 255) * factor);
@@ -720,7 +720,6 @@
           }
         });
 
-        // Glitch-Line Effekte
         if (Math.random() < 0.15) {
           const glitchY = Math.floor(Math.random() * displayHeight);
           const glitchX = Math.floor(Math.random() * (displayWidth - 20));
@@ -732,7 +731,13 @@
       }
 
       renderHoloAvatar();
-    });
+    }
+
+    if (document.readyState === 'complete') {
+      initAvatar();
+    } else {
+      window.addEventListener('load', initAvatar);
+    }
   </script>
 </body>
 </html>
