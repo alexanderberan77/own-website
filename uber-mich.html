@@ -586,7 +586,7 @@
       initAnimations();
     }
 
-    /* 3. CYBERPUNK HOLO-MATRIX AVATAR */
+    /* 3. CYBERPUNK HOLO-MATRIX AVATAR (MIT CYBER-NOISE & GLITCH-FEATURES) */
     function initAvatar() {
       const img = document.getElementById('avatar-source');
       const canvas = document.getElementById('profile-canvas');
@@ -674,6 +674,7 @@
         frameCount++;
         ctx.clearRect(0, 0, displayWidth, displayHeight);
 
+        // 1. RAND-AURA & CODE-PARTIKEL
         edgePixels.forEach(p => {
           if (Math.random() < 0.15) {
             const offsetX = (Math.random() - 0.5) * 14;
@@ -690,6 +691,7 @@
           }
         });
 
+        // 2. HAUPTRENDERING (PIXEL & CODE)
         pixels.forEach(p => {
           if (frameCount < p.delay) return;
 
@@ -698,6 +700,10 @@
           }
 
           let currentAlpha = p.baseAlpha;
+          
+          // NEU: Zufälliges Pixel-Rauschen im gesamten Bild (macht Skalierungsartefakte stylish)
+          const isNoisePixel = Math.random() < 0.015;
+
           if (p.isEdgeZone && Math.random() < 0.15) {
             currentAlpha *= (0.4 + Math.random() * 0.6);
           }
@@ -711,20 +717,40 @@
             }
           } else {
             const factor = Math.min(1, (p.progress - 0.7) * 3.33);
-            const r = Math.round(0 + (p.r - 0) * factor);
-            const g = Math.round(255 + (p.g - 255) * factor);
-            const b = Math.round(204 + (p.b - 204) * factor);
+            let r = Math.round(0 + (p.r - 0) * factor);
+            let g = Math.round(255 + (p.g - 255) * factor);
+            let b = Math.round(204 + (p.b - 204) * factor);
+
+            // Rausch-Effekt: Einzelne Pixel leuchten kurz neongrün oder spinnen farblich
+            if (isNoisePixel) {
+              r = 0;
+              g = 255;
+              b = 204;
+              currentAlpha = Math.min(1, currentAlpha * 1.5);
+            }
 
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${currentAlpha})`;
             ctx.fillRect(p.x, p.y, step, step);
           }
         });
 
-        if (Math.random() < 0.15) {
+        // 3. NEU: GELEGENTLICHES AUFBLITZEN VON MATRIX-BLOCKS IN DER BILDMITTE
+        if (Math.random() < 0.08) {
+          const blockX = Math.floor(Math.random() * (displayWidth - 20));
+          const blockY = Math.floor(Math.random() * (displayHeight - 20));
+          ctx.fillStyle = 'rgba(0, 255, 204, 0.85)';
+          ctx.font = '8px "JetBrains Mono"';
+          ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), blockX, blockY);
+          ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), blockX + 6, blockY + 6);
+        }
+
+        // 4. SCANLINE- & HORIZONTALE GLITCHES
+        if (Math.random() < 0.2) {
           const glitchY = Math.floor(Math.random() * displayHeight);
-          const glitchX = Math.floor(Math.random() * (displayWidth - 20));
-          ctx.fillStyle = 'rgba(0, 255, 204, 0.35)';
-          ctx.fillRect(glitchX, glitchY, Math.random() * 18 + 4, 1);
+          const glitchX = Math.floor(Math.random() * (displayWidth - 30));
+          const glitchWidth = Math.random() * 25 + 5;
+          ctx.fillStyle = Math.random() < 0.5 ? 'rgba(0, 255, 204, 0.4)' : 'rgba(255, 183, 3, 0.4)';
+          ctx.fillRect(glitchX, glitchY, glitchWidth, Math.random() < 0.3 ? 2 : 1);
         }
 
         requestAnimationFrame(renderHoloAvatar);
@@ -732,6 +758,7 @@
 
       renderHoloAvatar();
     }
+
 
     if (document.readyState === 'complete') {
       initAvatar();
