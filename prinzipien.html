@@ -198,24 +198,58 @@
       margin-bottom: 1.5rem;
     }
 
+    /* BUTTON GROUP STYLES */
+    .button-group {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
     .btn-explore {
-      display: inline-block;
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background: rgba(0, 255, 204, 0.1);
       color: var(--cyber-glow);
       border: 1px solid var(--cyber-glow);
-      padding: 0.6rem 1.2rem;
+      padding: 0.6rem 1rem;
       font-size: 0.8rem;
       font-family: var(--font-mono);
       cursor: pointer;
       transition: all 0.3s ease;
       text-transform: uppercase;
       letter-spacing: 1px;
+      text-decoration: none;
+      text-align: center;
     }
 
-    .btn-explore:hover {
+    .btn-explore:hover:not(.disabled) {
       background: var(--cyber-glow);
       color: #000;
       box-shadow: 0 0 15px var(--cyber-glow);
+    }
+
+    /* DISCOVER BUTTON ACTIVE & DISABLED STATES */
+    .btn-discover {
+      background: rgba(255, 183, 3, 0.08);
+      color: var(--cyber-alert);
+      border-color: rgba(255, 183, 3, 0.5);
+    }
+
+    .btn-discover:hover:not(.disabled) {
+      background: var(--cyber-alert);
+      color: #000;
+      box-shadow: 0 0 15px var(--cyber-alert);
+    }
+
+    .btn-discover.disabled {
+      opacity: 0.35;
+      border-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      background: transparent;
+      box-shadow: none;
     }
 
     /* FULL MANIFESTO DISPLAY */
@@ -326,7 +360,12 @@
           <p class="node-desc" id="node-desc">
             Radikale Gleichwertigkeit, Respekt auf Augenhöhe ohne hierarchischen Opportunismus und Verantwortung für eine solidarische Zukunft.
           </p>
-          <button class="btn-explore" id="btn-explore" onclick="toggleManifesto()">[ EXPLORE MODULE ]</button>
+          
+          <!-- DUAL BUTTON ACTION GROUP -->
+          <div class="button-group">
+            <button class="btn-explore" id="btn-details" onclick="toggleManifesto()">[ DETAILS ]</button>
+            <a href="#" class="btn-explore btn-discover disabled" id="btn-discover">[ DISCOVER &rarr; ]</a>
+          </div>
         </div>
 
         <!-- FULL MANIFESTO CONTENT -->
@@ -343,12 +382,13 @@
   </main>
 
   <script>
-    // DATA MATRIX FOR THE 4 QUADRANTS
+    // DATA MATRIX FOR THE 4 QUADRANTS WITH DISCOVER URL MAPPING
     const moduleData = {
       ethik: {
         tag: '[ MODULE 01 // MIND & ETHICS ]',
         title: 'Ethik & Werte',
         desc: 'Radikale Gleichwertigkeit, Respekt auf Augenhöhe ohne hierarchischen Opportunismus und Verantwortung für eine solidarische Zukunft.',
+        discoverUrl: null,
         details: [
           '<strong>Radikale Gleichwertigkeit:</strong> Respekt und Wertschätzung unabhängig von Alter, Herkunft, Religion oder Status. Kein opportunistisches Handeln nach Hierarchien.',
           '<strong>Menschlichkeit zuerst:</strong> Jeden Menschen primär als Individuum behandeln – niemals als Mittel zum Zweck.',
@@ -360,6 +400,7 @@
         tag: '[ MODULE 02 // CORE & LEADERSHIP ]',
         title: 'Führung & People Synergy',
         desc: 'Befähigen statt Verwalten: Vertrauen schenken, Fehlerkultur vorleben und Erfolge gemeinsam feiern.',
+        discoverUrl: null,
         details: [
           '<strong>Befähigung & Vertrauen:</strong> Anderen das passende Werkzeug an die Hand geben und Freiräume zur Entfaltung bieten.',
           '<strong>Echte Fehlerkultur:</strong> Fehler sind Lernchancen. Schutz und Rückendeckung für das Team nach außen.',
@@ -371,6 +412,7 @@
         tag: '[ MODULE 03 // LEFT WING // EXPLORATION ]',
         title: 'Arbeitsweise & Exploration',
         desc: 'Iteratives Annähern, Bewusstes Abzweigen zur Horizonterweiterung und tiefe Agency bei neuen Themen.',
+        discoverUrl: 'process-pipeline.html',
         details: [
           '<strong>Top-Down & Zoom-In:</strong> Vom großen Ganzen schrittweise ins Detail durcharbeiten.',
           '<strong>Explorative Abzweigungen:</strong> Bewusstes Links-und-Rechts-Schauen, um Querverbindungen und Synergien zu entdecken.',
@@ -382,6 +424,7 @@
         tag: '[ MODULE 04 // RIGHT WING // DIAGNOSTICS ]',
         title: 'Problemlösung & Systemdenken',
         desc: 'Systemdiagnose nach Komplexität, messerscharfe Status-Quo-Analyse und zielgerichtetes Handeln unter realen Nebenbedingungen.',
+        discoverUrl: null,
         details: [
           '<strong>System-Klassifikation:</strong> Unterscheidung zwischen einfachen, komplexen und chaotischen Systemen als Handlungsbasis.',
           '<strong>Messerscharfe Status-Quo-Analyse:</strong> Exakte Bestandsaufnahme: Wo stehen wir? Wo wollen wir hin?',
@@ -401,10 +444,20 @@
       document.querySelectorAll('.mesh-zone').forEach(el => el.classList.remove('active'));
       document.getElementById(`zone-${key}`).classList.add('active');
 
-      // Update Preview Card
+      // Update Preview Card Text
       document.getElementById('node-tag').innerText = data.tag;
       document.getElementById('node-title').innerText = data.title;
       document.getElementById('node-desc').innerText = data.desc;
+
+      // Update Discover Button State & Link
+      const discoverBtn = document.getElementById('btn-discover');
+      if (data.discoverUrl) {
+        discoverBtn.href = data.discoverUrl;
+        discoverBtn.classList.remove('disabled');
+      } else {
+        discoverBtn.href = 'javascript:void(0)';
+        discoverBtn.classList.add('disabled');
+      }
 
       // Render Manifesto List
       const listEl = document.getElementById('manifesto-list');
