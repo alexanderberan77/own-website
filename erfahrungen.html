@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Diagnostic: Alexander Beran | erfahrungen</title>
+  
+  <!-- Google Font: JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #0a0a0c;
+      --card-bg: rgba(15, 15, 20, 0.75);
+      --text-main: #e0e0e0;
+      --text-muted: #888888;
+      --cyber-glow: #00ffcc;
+      --cyber-alert: #ffb703;
+      --font-mono: 'JetBrains Mono', monospace;
+      --border-color: #2a2a30;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      padding: 2rem 8%;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .nav-bar {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 2rem;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--cyber-glow);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      background: rgba(0, 255, 204, 0.05);
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(0, 255, 204, 0.15);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+      transform: translateX(-3px);
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .hud-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hud-status {
+      font-size: 0.75rem;
+      color: var(--cyber-glow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hud-title {
+      font-size: 1.8rem;
+      color: #fff;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      color: var(--cyber-glow);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 2.5rem 0 1.2rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    /* HUD CARD SYSTEM */
+    .hud-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      position: relative;
+      backdrop-filter: blur(5px);
+      margin-bottom: 1.2rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hud-card:hover {
+      border-color: rgba(0, 255, 204, 0.4);
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.08);
+    }
+
+    .hud-card::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--cyber-glow);
+      border-left: 2px solid var(--cyber-glow);
+    }
+
+    /* INTERACTIVE TIMELINE ITEMS */
+    .exp-item {
+      cursor: pointer;
+    }
+
+    .exp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .exp-role {
+      font-size: 1.05rem;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .exp-company {
+      font-size: 0.85rem;
+      color: var(--cyber-glow);
+    }
+
+    .exp-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 0.1rem 0.5rem;
+    }
+
+    .exp-summary {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+    }
+
+    .exp-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, margin-top 0.4s ease;
+    }
+
+    .exp-item.open .exp-details {
+      max-height: 800px;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    .toggle-hint {
+      font-size: 0.75rem;
+      color: var(--cyber-alert);
+      margin-top: 0.8rem;
+      display: inline-block;
+    }
+
+    /* GRID FOR SKILLS & PIVOT */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+
+    @media (max-width: 850px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+    }
+
+    .cyber-tag {
+      font-size: 0.72rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 0.2rem 0.5rem;
+      color: #ccc;
+    }
+
+    .cyber-tag.highlight {
+      border-color: var(--cyber-glow);
+      color: var(--cyber-glow);
+    }
+
+    ul.custom-list {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    ul.custom-list li {
+      position: relative;
+      padding-left: 1.2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    ul.custom-list li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: var(--cyber-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="matrix-canvas"></canvas>
+
+  <main>
+    <div class="nav-bar">
+      <a href="index.html" class="btn-back">&lt; // RETURN_TO_CORE</a>
+    </div>
+
+    <header class="hud-header">
+      <div class="hud-status">[ SYSTEM DIAGNOSTIC // EXPERIENCE_LOGS ]</div>
+      <h1 class="hud-title">Erfahrungen &amp; Kompetenzprofil</h1>
+    </header>
+
+    <!-- SEKTOR 1: HARD CORE CONTROLLING -->
+    <div class="section-title">LOG_01 // CORE_EXPERIENCE (Financial &amp; Risk Controlling)</div>
+
+    <!-- STATION 1 -->
+    <div class="hud-card exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Referent Stresstests &amp; Gesamthaus-Risikosteuerung</div>
+          <div class="exp-company">Bausparkasse Schwäbisch Hall AG</div>
+        </div>
+        <div class="exp-date">ca. 3–4 Jahre</div>
+      </div>
+      <div class="exp-summary">
+        Zentrale Aggregationsstelle aller wesentlichen Risikoarten &amp; Entwicklung von Stresstest-Szenarien nach EBA-Richtlinien[span_13](start_span)[span_13](end_span)[span_14](start_span)[span_14](end_span).
+      </div>
+      <span class="toggle-hint">[ + KLICKEN FÜR DETAILS ]</span>
+
+      <div class="exp-details">
+        <ul class="custom-list">
+          <li><strong>Multi-Risikoarten-Aggregation:</strong> Zusammenführung von Zinsänderungs-, Kredit-, Beteiligungs-, opRisk-, Modell-, Geschäfts- und Reputationsrisiko[span_15](start_span)[span_15](end_span)[span_16](start_span)[span_16](end_span).</li>
+          <li><strong>Methodik-Evolution:</strong> Weiterentwicklung von der ökonomischen Sichtweise (Cashflow- &amp; Verhaltenssimulationen) hin zur normativen, periodischen GuV-/Eigenkapital-Perspektive[span_17](start_span)[span_17](end_span)[span_18](start_span)[span_18](end_span).</li>
+          <li><strong>Szenario-Entwicklung:</strong> Vierteljährliche Makro-Diskussionsrunden &amp; jährliche Angemessenheitsworkshops zur Kalibrierung externer Schock-Szenarien[span_19](start_span)[span_19](end_span).</li>
+          <li><strong>Laterale Führung:</strong> Diplomatische Abstimmung &amp; Sicherstellung der Szenario-Kohärenz mit dezentralen Risikoarten-Verantwortlichen[span_20](start_span)[span_20](end_span)[span_21](start_span)[span_21](end_span).</li>
+        </ul>
+        <div class="tag-container">
+          <span class="cyber-tag highlight">EBA-Stresstests</span>
+          <span class="cyber-tag highlight">COSO / ISO-Analogie</span>
+          <span class="cyber-tag">Makroökonomie</span>
+          <span class="cyber-tag">Laterale Führung</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATION 2 -->
+    <div class="hud-card exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Referent Bewertung, IFRS 9 &amp; Eigenanlagen</div>
+          <div class="exp-company">Bausparkasse Schwäbisch Hall AG</div>
+        </div>
+        <div class="exp-date">Mehrere Jahre</div>
+      </div>
+      <div class="exp-summary">
+        Bewertung komplexer Finanzinstrumente, IFRS 9 Hedge Accounting &amp; Ad-hoc-Analysen für die Vorstandsebene[span_22](start_span)[span_22](end_span).
+      </div>
+      <span class="toggle-hint">[ + KLICKEN FÜR DETAILS ]</span>
+
+      <div class="exp-details">
+        <ul class="custom-list">
+          <li><strong>IFRS 9 &amp; HGB:</strong> FVOCI-Rücklagen, Prudent Valuation sowie verlustfreie Bewertung nach HGB (§ 340e) &amp; Stille-Lasten-Checks[span_23](start_span)[span_23](end_span)[span_24](start_span)[span_24](end_span).</li>
+          <li><strong>Finanzmathematik:</strong> Bewertung von Anleihen, Fonds und Derivaten inklusive Hedge Accounting[span_25](start_span)[span_25](end_span).</li>
+          <li><strong>Executive Reporting:</strong> Erstellung entscheidungsrelevanter Vorstandsvorlagen und Argumentationslinien für externe Prüfer[span_26](start_span)[span_26](end_span)[span_27](start_span)[span_27](end_span).</li>
+        </ul>
+        <div class="tag-container">
+          <span class="cyber-tag highlight">IFRS 9</span>
+          <span class="cyber-tag highlight">HGB §340e</span>
+          <span class="cyber-tag">Derivate &amp; Fonds</span>
+          <span class="cyber-tag">Vorstandsvorlagen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATION 3 -->
+    <div class="hud-card exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Referent Barwertiges Marktpreisrisiko</div>
+          <div class="exp-company">Bausparkasse Schwäbisch Hall AG</div>
+        </div>
+        <div class="exp-date">Direkt nach dualem Studium</div>
+      </div>
+      <div class="exp-summary">
+        Eigenverantwortliches "1-Mann-Projekt" für den barwertigen Value-at-Risk auf Gesamtinstitutsebene[span_28](start_span)[span_28](end_span)[span_29](start_span)[span_29](end_span).
+      </div>
+      <span class="toggle-hint">[ + KLICKEN FÜR DETAILS ]</span>
+
+      <div class="exp-details">
+        <ul class="custom-list">
+          <li><strong>Systemweiter Überblick:</strong> Frühe und tiefgreifende Erfassung aller Wirkungszusammenhänge der Gesamtbanksteuerung[span_30](start_span)[span_30](end_span)[span_31](start_span)[span_31](end_span).</li>
+          <li><strong>Prozessautomatisierung:</strong> Reduzierung manueller Schritte durch Automatisierung repetitiver Datenflüsse via SQL und VBA[span_32](start_span)[span_32](end_span).</li>
+        </ul>
+        <div class="tag-container">
+          <span class="cyber-tag highlight">Value-at-Risk</span>
+          <span class="cyber-tag">VBA / SQL</span>
+          <span class="cyber-tag">Aktiv-Passiv-Steuerung</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- SEKTOR 2: HUMAN & LEADERSHIP MODULES -->
+    <div class="section-title">LOG_02 // HUMAN_&amp;_LEADERSHIP_MODULES</div>
+
+    <div class="grid-2">
+      <div class="hud-card">
+        <div class="exp-role" style="color: var(--cyber-glow);">Didaktik &amp; Mentoring</div>
+        <div style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">
+          Betreuung von Werkstudenten, Praktikanten und Bachelorarbeiten[span_33](start_span)[span_33](end_span).
+        </div>
+        <ul class="custom-list" style="margin-top: 0.8rem;">
+          <li>Fokus auf das <strong>"Warum"</strong> statt nur das "Was[span_34](start_span)"[span_34](end_span).</li>
+          <li>Einsatz von didaktischen Prinzipien wie <em>Spaced Repetition</em> zur nachhaltigen Befähigung[span_35](start_span)[span_35](end_span)[span_36](start_span)[span_36](end_span).</li>
+        </ul>
+      </div>
+
+      <div class="hud-card">
+        <div class="exp-role" style="color: var(--cyber-glow);">Diplomatie &amp; Transparenz</div>
+        <div style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">
+          Laterale Führung &amp; verständliche Translation[span_37](start_span)[span_37](end_span)[span_38](start_span)[span_38](end_span).
+        </div>
+        <ul class="custom-list" style="margin-top: 0.8rem;">
+          <li>Verbindung unterschiedlicher Fachperspektiven ohne Weisungsbefugnis[span_39](start_span)[span_39](end_span)[span_40](start_span)[span_40](end_span).</li>
+          <li>Souveräne Übersetzung hochkomplexer Daten in entscheidungstaugliche Storylines[span_41](start_span)[span_41](end_span)[span_42](start_span)[span_42](end_span).</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- SEKTOR 3: PIVOT & RESILIENCE -->
+    <div class="section-title">LOG_03 // PIVOT_&amp;_RESILIENCE_LOGS</div>
+
+    <div class="grid-2">
+      <div class="hud-card">
+        <div class="exp-role" style="color: #fff;">Physikstudium (FAU Erlangen)</div>
+        <div style="font-size: 0.82rem; color: var(--cyber-alert); margin-top: 0.2rem;">Intellektuelle Grenzerfahrung</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.6rem;">
+          Umgang mit absoluter Überforderung gelernt[span_43](start_span)[span_43](end_span)[span_44](start_span)[span_44](end_span). Wichtigstes Learning: <strong>"Mut zur Lücke"</strong> – komplexe Systeme steuern, ohne jedes Mikrodetail kontrollieren zu müssen[span_45](start_span)[span_45](end_span)[span_46](start_span)[span_46](end_span).
+        </p>
+      </div>
+
+      <div class="hud-card">
+        <div class="exp-role" style="color: #fff;">Ausbildung SHK-Anlagenmechaniker</div>
+        <div style="font-size: 0.82rem; color: var(--cyber-alert); margin-top: 0.2rem;">Praktische Erdung &amp; Resilienz</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.6rem;">
+          Harte körperliche Arbeit und Kundendienst von der Luxusvilla bis zur Mietwohnung[span_47](start_span)[span_47](end_span)[span_48](start_span)[span_48](end_span). Baut unerschütterliche Menschenkenntnis und Anpassungsfähigkeit auf[span_49](start_span)[span_49](end_span)[span_50](start_span)[span_50](end_span).
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    /* Matrix Background Effect */
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789<>{}[]/*+=~#$_';
+    const fontSize = 14;
+    let drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(10, 10, 12, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ffcc';
+      ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 33);
+
+    /* Toggle details for timeline cards */
+    function toggleExp(card) {
+      card.classList.toggle('open');
+      const hint = card.querySelector('.toggle-hint');
+      if (card.classList.contains('open')) {
+        hint.textContent = '[ - EINKLAPPEN ]';
+      } else {
+        hint.textContent = '[ + KLICKEN FÜR DETAILS ]';
+      }
+    }
+  </script>
+</body>
+</html>
