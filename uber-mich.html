@@ -577,115 +577,144 @@
       });
     });
 
-    /* CYBERPUNK HOLO-MATRIX AVATAR */
+    /* CYBERPUNK HOLO-MATRIX AVATAR (HIGH-RES & EXTENDED EDGE) */
     window.addEventListener('load', () => {
       const img = document.getElementById('avatar-source');
       const canvas = document.getElementById('profile-canvas');
       if (!img || !canvas) return;
     
       const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
     
-      // Hilfscanvas zum Auslesen der Bilddaten
+      // Retina / HiDPI Display-Schärfe Korrektur
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = 260;
+      const displayHeight = 330;
+    
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
+      canvas.style.width = displayWidth + 'px';
+      canvas.style.height = displayHeight + 'px';
+      ctx.scale(dpr, dpr);
+    
+      // Hilfscanvas in nativer Bildgröße
       const memCanvas = document.createElement('canvas');
-      memCanvas.width = width;
-      memCanvas.height = height;
+      memCanvas.width = displayWidth;
+      memCanvas.height = displayHeight;
       const memCtx = memCanvas.getContext('2d');
-      memCtx.drawImage(img, 0, 0, width, height);
-      const imgData = memCtx.getImageData(0, 0, width, height).data;
+      memCtx.drawImage(img, 0, 0, displayWidth, displayHeight);
+      const imgData = memCtx.getImageData(0, 0, displayWidth, displayHeight).data;
     
-      const step = 4; // Pixel-Rastergröße
+      // step = 1 für maximale Bildschärfe
+      const step = 1; 
       let pixels = [];
       let edgePixels = [];
+      const chars = '01XYZ#$/*+<>@&%';
     
-      const chars = '01XYZ#$/*+<>';
-    
-      // Pixel verarbeiten & Außenkanten identifizieren
-      for (let y = 0; y < height; y += step) {
-        for (let x = 0; x < width; x += step) {
-          const i = (y * width + x) * 4;
+      for (let y = 0; y < displayHeight; y += step) {
+        for (let x = 0; x < displayWidth; x += step) {
+          const i = (y * displayWidth + x) * 4;
           const alpha = imgData[i + 3];
     
-          if (alpha > 50) {
+          if (alpha > 30) {
+            // Prüfung auf Außenkanten für den ausgefransten Rand
             const isEdge = 
-              x <= step || x >= width - step || y <= step || y >= height - step ||
-              imgData[((y * width + (x - step)) * 4) + 3] <= 50 ||
-              imgData[((y * width + (x + step)) * 4) + 3] <= 50 ||
-              imgData[(((y - step) * width + x) * 4) + 3] <= 50 ||
-              imgData[(((y + step) * width + x) * 4) + 3] <= 50;
+              x <= 3 || x >= displayWidth - 3 || y <= 3 || y >= displayHeight - 3 ||
+              imgData[((y * displayWidth + (x - 3)) * 4) + 3] <= 30 ||
+              imgData[((y * displayWidth + (x + 3)) * 4) + 3] <= 30 ||
+              imgData[(((y - 3) * displayWidth + x) * 4) + 3] <= 30 ||
+              imgData[(((y + 3) * displayWidth + x) * 4) + 3] <= 30;
     
-            const pData = {
+            pixels.push({
               x: x,
               y: y,
-              targetR: imgData[i],
-              targetG: imgData[i + 1],
-              targetB: imgData[i + 2],
+              r: imgData[i],
+              g: imgData[i + 1],
+              b: imgData[i + 2],
               alpha: alpha / 255,
-              // Startzustand: Matrix-Transformation
-              progress: 0, 
+              progress: 0,
+              // Zufälliger Start-Verzögerungswert für chaotischen Aufbau
+              delay: Math.random() * 80, 
+              speed: 0.008 + Math.random() * 0.012, // Langsamer
               char: chars.charAt(Math.floor(Math.random() * chars.length)),
               isEdge: isEdge
-            };
+            });
     
-            pixels.push(pData);
-            if (isEdge) edgePixels.push(pData);
+            if (isEdge && Math.random() < 0.3) {
+              edgePixels.push({ x: x, y: y });
+            }
           }
         }
       }
     
-      // Aktivieren (beendet Pre-Render-Unsichtbarkeit)
       canvas.classList.add('active');
+      let frameCount = 0;
     
       function renderHoloAvatar() {
-        ctx.clearRect(0, 0, width, height);
+        frameCount++;
+        ctx.clearRect(0, 0, displayWidth, displayHeight);
     
         let allResolved = true;
     
         pixels.forEach(p => {
-          // Schrittweise Transformation von Matrix-Code zu Original-Pixel
+          // Warten bis individueller Delay abgelaufen ist
+          if (frameCount < p.delay) {
+            allResolved = false;
+            return;
+          }
+    
           if (p.progress < 1) {
-            p.progress += 0.015 + Math.random() * 0.02;
+            p.progress += p.speed;
             allResolved = false;
           }
     
-          if (p.progress < 0.8) {
-            // PHASE 1: Grüner Matrix-Buchstabe flackert an Ort und Stelle
-            if (Math.random() < 0.2) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
-            ctx.fillStyle = `rgba(0, 255, 204, ${p.alpha * 0.9})`;
-            ctx.font = '9px "JetBrains Mono"';
-            ctx.fillText(p.char, p.x, p.y + step);
+          if (p.progress < 0.7) {
+            // PHASE 1: Chaotischer Matrix-Buchstabe
+            if (Math.random() < 0.1) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillStyle = `rgba(0, 255, 204, ${p.alpha * 0.8})`;
+            ctx.font = '8px "JetBrains Mono"';
+            // Zeichne Zeichen nur selektiv für Performance
+            if (p.x % 3 === 0 && p.y % 3 === 0) {
+              ctx.fillText(p.char, p.x, p.y);
+            }
           } else {
-            // PHASE 2: Morphing in die echten Bildfarben
-            const factor = Math.min(1, (p.progress - 0.8) * 5); // Sanfter Übergang
-            const r = Math.round(0 + (p.targetR - 0) * factor);
-            const g = Math.round(255 + (p.targetG - 255) * factor);
-            const b = Math.round(204 + (p.targetB - 204) * factor);
+            // PHASE 2: Sanftes Einschmelzen in die echte Bildfarbe
+            const factor = Math.min(1, (p.progress - 0.7) * 3.33);
+            const r = Math.round(0 + (p.r - 0) * factor);
+            const g = Math.round(255 + (p.g - 255) * factor);
+            const b = Math.round(204 + (p.b - 204) * factor);
     
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha})`;
             ctx.fillRect(p.x, p.y, step, step);
           }
         });
     
-        // DAUERHAFTER ZUSTAND: Fransige Matrix-Aura an den Rändern & vereinzelte Glitches
+        // DAUERHAFTER ZUSTAND: Breiter, ausgefranster Rand & Matrix-Aura
         if (allResolved) {
-          // 1. Organischer, fransiger Rand (Aura)
           edgePixels.forEach(p => {
-            if (Math.random() < 0.15) { // Erzeugt das zuckende/franzige Flimmern der Kante
-              ctx.fillStyle = 'rgba(0, 255, 204, 0.7)';
-              ctx.font = '8px "JetBrains Mono"';
-              const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
-              const offsetX = (Math.random() - 0.5) * 6;
-              const offsetY = (Math.random() - 0.5) * 6;
-              ctx.fillText(randomChar, p.x + offsetX, p.y + offsetY + step);
+            if (Math.random() < 0.08) {
+              const offsetX = (Math.random() - 0.5) * 20; // 20px Streuung nach außen
+              const offsetY = (Math.random() - 0.5) * 20;
+              
+              if (Math.random() < 0.5) {
+                // Matrix-Glyphe am Rand
+                ctx.fillStyle = 'rgba(0, 255, 204, 0.85)';
+                ctx.font = '9px "JetBrains Mono"';
+                const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(randomChar, p.x + offsetX, p.y + offsetY);
+              } else {
+                // Einzelner leuchtender Pixel-Spark
+                ctx.fillStyle = 'rgba(0, 255, 204, 0.6)';
+                ctx.fillRect(p.x + offsetX, p.y + offsetY, 2, 2);
+              }
             }
           });
     
-          // 2. Dezent innere Matrix-Glitches
-          if (Math.random() < 0.3) {
-            const target = pixels[Math.floor(Math.random() * pixels.length)];
-            ctx.fillStyle = 'rgba(0, 255, 204, 0.9)';
-            ctx.fillRect(target.x, target.y, step * 2, step);
+          // Feine, dezent flackernde Glitch-Linien quer über das Bild
+          if (Math.random() < 0.25) {
+            const glitchY = Math.floor(Math.random() * displayHeight);
+            const glitchX = Math.floor(Math.random() * (displayWidth - 30));
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+            ctx.fillRect(glitchX, glitchY, Math.random() * 25 + 10, 1);
           }
         }
     
