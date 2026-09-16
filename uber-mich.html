@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Über mich | alexander-beran.de</title>
+  <title>System Diagnostic: Alexander Beran | uber-mich</title>
   
   <!-- Google Font: JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,11 +13,13 @@
   <style>
     :root {
       --bg-color: #0a0a0c;
+      --card-bg: rgba(15, 15, 20, 0.75);
       --text-main: #e0e0e0;
       --text-muted: #888888;
       --cyber-glow: #00ffcc;
       --cyber-alert: #ffb703;
       --font-mono: 'JetBrains Mono', monospace;
+      --border-color: #2a2a30;
     }
 
     * {
@@ -31,15 +33,12 @@
       color: var(--text-main);
       font-family: var(--font-mono);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
+      padding: 2rem 8%;
+      line-height: 1.6;
       position: relative;
-      overflow-x: hidden;
     }
 
+    /* BACKGROUND CANVAS */
     #matrix-canvas {
       position: fixed;
       top: 0;
@@ -47,170 +46,424 @@
       width: 100vw;
       height: 100vh;
       z-index: 1;
-      opacity: 0.15;
+      opacity: 0.12;
       pointer-events: none;
     }
 
-    main {
+    /* NAVIGATION BACK BUTTON */
+    .nav-bar {
       position: relative;
-      z-index: 2;
-      width: 100%;
-      max-width: 680px;
+      z-index: 10;
+      margin-bottom: 2rem;
     }
 
-    /* ZURÜCK-BUTTON */
-    .nav-back {
-      display: inline-block;
-      color: var(--text-muted);
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--cyber-glow);
       text-decoration: none;
       font-size: 0.85rem;
-      margin-bottom: 2rem;
+      padding: 0.4rem 1rem;
+      background: rgba(0, 255, 204, 0.05);
+      border: 1px solid rgba(0, 255, 204, 0.3);
       transition: all 0.3s ease;
     }
 
-    .nav-back:hover {
-      color: var(--cyber-glow);
-      transform: translateX(-4px);
+    .btn-back:hover {
+      background: rgba(0, 255, 204, 0.15);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+      transform: translateX(-3px);
     }
 
-    /* DIE CYBER / TERMINAL KARTE */
-    .profile-card {
+    /* MAIN HUD CONTAINER */
+    main {
       position: relative;
-      background: rgba(15, 15, 20, 0.75);
-      border: 1px solid #2a2a35;
-      border-radius: 6px;
-      padding: 2.5rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(5px);
-      transition: all 0.4s ease;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto;
     }
 
-    /* Holografischer Glow beim Hovern der Karte */
-    .profile-card:hover {
-      border-color: rgba(0, 255, 204, 0.4);
-      box-shadow: 0 0 25px rgba(0, 255, 204, 0.15), inset 0 0 15px rgba(0, 255, 204, 0.05);
-    }
-
-    /* KARTEN HEADER (HUD-BAR) */
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #222;
+    .hud-header {
+      border-bottom: 1px solid var(--border-color);
       padding-bottom: 1rem;
-      margin-bottom: 1.5rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background-color: var(--cyber-glow);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--cyber-glow);
-      margin-right: 6px;
-    }
-
-    /* PROFIL DETAILS */
-    .card-title {
-      font-size: 1.8rem;
-      color: #fff;
-      margin-bottom: 0.3rem;
-    }
-
-    .card-subtitle {
-      color: var(--cyber-glow);
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .card-body {
-      line-height: 1.7;
-      color: #ccc;
-      font-size: 0.95rem;
       margin-bottom: 2rem;
     }
 
-    /* SKILL / INTEREST TAGS */
-    .tag-container {
+    .hud-title {
+      font-size: 1.8rem;
+      color: #fff;
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
+      align-items: center;
+      gap: 0.8rem;
     }
 
-    .tag {
+    .hud-status {
       font-size: 0.75rem;
-      padding: 0.3rem 0.7rem;
-      background: rgba(0, 255, 204, 0.05);
-      border: 1px solid rgba(0, 255, 204, 0.2);
       color: var(--cyber-glow);
-      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    /* CYBER-ECKEN FÜR DIE KARTE */
-    .profile-card::before, .profile-card::after {
+    /* GRID SYSTEM */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 850px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* HUD CYBER CARDS */
+    .hud-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      position: relative;
+      backdrop-filter: blur(5px);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hud-card:hover {
+      border-color: rgba(0, 255, 204, 0.4);
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.08);
+    }
+
+    /* Corner accents */
+    .hud-card::before {
       content: '';
       position: absolute;
-      width: 12px;
-      height: 12px;
-      border-color: var(--cyber-glow);
-    }
-
-    .profile-card::before {
       top: -1px;
       left: -1px;
+      width: 8px;
+      height: 8px;
       border-top: 2px solid var(--cyber-glow);
       border-left: 2px solid var(--cyber-glow);
     }
 
-    .profile-card::after {
-      bottom: -1px;
-      right: -1px;
-      border-bottom: 2px solid var(--cyber-glow);
-      border-right: 2px solid var(--cyber-glow);
+    .hud-card-title {
+      font-size: 0.9rem;
+      color: var(--cyber-glow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    /* STATS & METRICS (KPIs) */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 600px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .metric-box {
+      background: rgba(5, 5, 8, 0.8);
+      border: 1px solid #1a1a22;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .metric-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--cyber-glow);
+      font-family: var(--font-mono);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* PROFILE OVERVIEW */
+    .profile-bio {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 1rem;
+    }
+
+    .profile-bio strong {
+      color: #fff;
+    }
+
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .cyber-tag {
+      font-size: 0.75rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 0.2rem 0.6rem;
+      color: #ccc;
+    }
+
+    .cyber-tag.highlight {
+      border-color: var(--cyber-alert);
+      color: var(--cyber-alert);
+    }
+
+    /* TIMELINE */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 1.2rem;
+      border-left: 2px solid #222;
+    }
+
+    .timeline-item.active {
+      border-left-color: var(--cyber-glow);
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--cyber-glow);
+    }
+
+    .timeline-role {
+      font-size: 0.9rem;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .timeline-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* SYSTEM DIAGNOSTICS (Feedback & Quotes) */
+    .quote-box {
+      background: rgba(0, 255, 204, 0.03);
+      border-left: 3px solid var(--cyber-glow);
+      padding: 0.8rem;
+      margin-bottom: 0.8rem;
+      font-size: 0.82rem;
+      color: #ddd;
+    }
+
+    .quote-source {
+      font-size: 0.7rem;
+      color: var(--cyber-glow);
+      text-align: right;
+      margin-top: 0.3rem;
+    }
+
+    /* SKILL PROGRESS BARS */
+    .skill-box {
+      margin-bottom: 0.8rem;
+    }
+
+    .skill-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .skill-bar-bg {
+      height: 6px;
+      background: #15151c;
+      overflow: hidden;
+      border: 1px solid #252530;
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      background: var(--cyber-glow);
+      width: 0%; /* Animiert per JS */
+      transition: width 1.2s cubic-bezier(0.1, 0.5, 0.1, 1);
+      box-shadow: 0 0 8px var(--cyber-glow);
     }
   </style>
 </head>
 <body>
 
+  <!-- Matrix Background Canvas -->
   <canvas id="matrix-canvas"></canvas>
 
   <main>
-    <a href="index.html" class="nav-back">&lt;-- [ Zurück zur Übersicht ]</a>
+    <!-- Navigation Back Button -->
+    <div class="nav-bar">
+      <a href="index.html" class="btn-back">&lt; // RETURN_TO_CORE</a>
+    </div>
 
-    <div class="profile-card">
-      <div class="card-header">
-        <span><span class="status-dot"></span>ENTITY_ID: #00827</span>
-        <span>SYS_STATUS: ONLINE</span>
+    <!-- HUD Main Header -->
+    <header class="hud-header">
+      <div class="hud-status">[ SYSTEM DIAGNOSTIC // OPERATOR FILE ]</div>
+      <h1 class="hud-title">Alexander Beran <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">(Senior Financial & Risk Controller)</span></h1>
+    </header>
+
+    <!-- LIVE METRICS / KPIs -->
+    <section class="metrics-grid">
+      <div class="metric-box">
+        <div class="metric-number" data-target="11">0</div>
+        <div class="metric-label">Jahre Risk Management[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span)</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-number" data-target="50">0</div>
+        <div class="metric-label">+ Vorstandsvorlagen[span_4](start_span)[span_4](end_span)</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-number" data-target="15">0</div>
+        <div class="metric-label">+ Automatisierte Prozesse[span_5](start_span)[span_5](end_span)</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-number" data-target="40">0</div>
+        <div class="metric-label">+ Geleitete Workshops[span_6](start_span)[span_6](end_span)</div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD GRID -->
+    <div class="dashboard-grid">
+
+      <!-- MODUL 1: OPERATOR PROFILE -->
+      <div class="hud-card">
+        <div class="hud-card-title">
+          <span>[ 01 // PROFILE_DNA ]</span>
+          <span>STATUS: ACTIVE</span>
+        </div>
+        <div class="profile-bio">
+          Financial & Risk Controller mit starkem analytical Mindset, hoher Menschenkenntnis und 11+ Jahren Praxis in Stresstests, Szenarioanalysen und Datenmodellierung[span_7](start_span)[span_7](end_span)[span_8](start_span)[span_8](end_span). 
+        </div>
+        <div class="profile-bio">
+          <strong>Der Pivot:</strong> Nach über einer Dekade im Corporate Risk Management bewusst in neue Erfahrungsfelder eingetaucht (Physikstudium, Werkstudium Siemens Mobility, SHK-Handwerksausbildung) – für stetige Horizonterweiterung, absolute Ambiguitätstoleranz und echte Hands-on Resilienz[span_9](start_span)[span_9](end_span)[span_10](start_span)[span_10](end_span).
+        </div>
+        <div class="tag-container">
+          <span class="cyber-tag highlight">Kompetent</span>
+          <span class="cyber-tag highlight">Innovativ</span>
+          <span class="cyber-tag highlight">Menschlich</span>
+          <span class="cyber-tag">Holistisches Denken[span_11](start_span)[span_11](end_span)</span>
+          <span class="cyber-tag">Hands-on[span_12](start_span)[span_12](end_span)</span>
+        </div>
       </div>
 
-      <h1 class="card-title">Alexander Beran</h1>
-      <div class="card-subtitle">// Tech Explorer & Conceptual Mind</div>
+      <!-- MODUL 2: SKILL MATRIX & SPECS -->
+      <div class="hud-card">
+        <div class="hud-card-title">
+          <span>[ 02 // HARDWARE_&_SKILLS ]</span>
+          <span>STRENGTHS</span>
+        </div>
 
-      <div class="card-body">
-        <p>
-          Willkommen in meiner digitalen Zentrale. Ich beschäftige mich mit der Schnittstelle von Technologie, Philosophie und künstlicher Intelligenz.
-        </p>
-        <br>
-        <p>
-          Diese Plattform dient als Verzeichnis für meine aktuellen Vorhaben, Analysen, geschriebenen Texte und Experimente. Mein Ziel ist es, komplexe Systeme zu verstehen und verständlich zu vermitteln.
-        </p>
+        <div class="skill-box">
+          <div class="skill-info">
+            <span>Stresstests & Szenarioanalysen[span_13](start_span)[span_13](end_span)[span_14](start_span)[span_14](end_span)</span>
+            <span>98%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="98%"></div></div>
+        </div>
+
+        <div class="skill-box">
+          <div class="skill-info">
+            <span>Prozessautomatisierung (VBA, SQL, Python)[span_15](start_span)[span_15](end_span)</span>
+            <span>90%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="90%"></div></div>
+        </div>
+
+        <div class="skill-box">
+          <div class="skill-info">
+            <span>Risikomodelle & Regulatory Compliance (IFRS 9, BCBS 239)[span_16](start_span)[span_16](end_span)[span_17](start_span)[span_17](end_span)</span>
+            <span>92%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="92%"></div></div>
+        </div>
+
+        <div class="skill-box">
+          <div class="skill-info">
+            <span>KI-Integration & Prompt Engineering[span_18](start_span)[span_18](end_span)</span>
+            <span>85%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="85%"></div></div>
+        </div>
+
+        <div class="skill-box">
+          <div class="skill-info">
+            <span>Resilienz & Praktische Umsetzungsstärke (SHK)[span_19](start_span)[span_19](end_span)[span_20](start_span)[span_20](end_span)</span>
+            <span>95%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" data-progress="95%"></div></div>
+        </div>
       </div>
 
-      <div class="tag-container">
-        <span class="tag">#AI_Engineering</span>
-        <span class="tag">#Web_Development</span>
-        <span class="tag">#Philosophy</span>
-        <span class="tag">#Data_Analysis</span>
-        <span class="tag">#Automation</span>
+      <!-- MODUL 3: TIMELINE / LOGS -->
+      <div class="hud-card">
+        <div class="hud-card-title">
+          <span>[ 03 // TIMELINE_LOGS ]</span>
+          <span>CHRONOLOGY</span>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item active">
+            <div class="timeline-date">09/2023 – 03/2026[span_21](start_span)[span_21](end_span)</div>
+            <div class="timeline-role">Konsolidierung & Rekalibrierung (Erlangen)[span_22](start_span)[span_22](end_span)[span_23](start_span)[span_23](end_span)</div>
+            <div class="timeline-desc">Physikstudium (FAU), Werkstudium Siemens Mobility & Ausbildung SHK-Anlagenmechaniker. Gezielter Aufbau neuer Perspektiven[span_24](start_span)[span_24](end_span)[span_25](start_span)[span_25](end_span).</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">10/2012 – 08/2023[span_26](start_span)[span_26](end_span)[span_27](start_span)[span_27](end_span)</div>
+            <div class="timeline-role">Referent Marktpreisrisikocontrolling[span_28](start_span)[span_28](end_span)</div>
+            <div class="timeline-desc">Bausparkasse Schwäbisch Hall. Gesamtbankstresstests, IFRS 9, Prozessautomatisierung, 20+ Themenkomplexe[span_29](start_span)[span_29](end_span)[span_30](start_span)[span_30](end_span).</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">10/2009 – 09/2012[span_31](start_span)[span_31](end_span)[span_32](start_span)[span_32](end_span)</div>
+            <div class="timeline-role">Duales Studium BWL (B.A.)[span_33](start_span)[span_33](end_span)[span_34](start_span)[span_34](end_span)</div>
+            <div class="timeline-desc">DHBW Villingen-Schwenningen & Bausparkasse Schwäbisch Hall[span_35](start_span)[span_35](end_span)[span_36](start_span)[span_36](end_span).</div>
+          </div>
+        </div>
       </div>
+
+      <!-- MODUL 4: DIAGNOSTICS & INTERESTS -->
+      <div class="hud-card">
+        <div class="hud-card-title">
+          <span>[ 04 // USER_FEEDBACK_&_OFFLINE ]</span>
+          <span>EXTERNAL EVALUATION</span>
+        </div>
+
+        <div class="quote-box">
+          "Absolut authentisch, lösungsorientiert und veränderungsmotiviert. Einfühlsam, beruhigend – jemand zum Pferde stehlen.[span_37](start_span)"[span_37](end_span)
+          <div class="quote-source">// Feedback aus Workshop-Reihe[span_38](start_span)[span_38](end_span)</div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+          <span style="font-size: 0.8rem; color: #fff; display: block; margin-bottom: 0.4rem;">Offline-Protokolle & Leidenschaften:[span_39](start_span)[span_39](end_span)[span_40](start_span)[span_40](end_span)</span>
+          <div class="tag-container">
+            <span class="cyber-tag">🏈 American Football[span_41](start_span)[span_41](end_span)[span_42](start_span)[span_42](end_span)</span>
+            <span class="cyber-tag">🥾 Wandern & Natur[span_43](start_span)[span_43](end_span)[span_44](start_span)[span_44](end_span)</span>
+            <span class="cyber-tag">✍️ Freies Schreiben[span_45](start_span)[span_45](end_span)[span_46](start_span)[span_46](end_span)</span>
+            <span class="cyber-tag">🤖 KI-Experimente[span_47](start_span)[span_47](end_span)[span_48](start_span)[span_48](end_span)</span>
+            <span class="cyber-tag">🌍 Andere Kulturen[span_49](start_span)[span_49](end_span)</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
   <script>
-    /* Matrix Background */
+    /* 1. MATRIX RAIN EFFECT */
     const canvas = document.getElementById('matrix-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -227,7 +480,7 @@
     let drops = Array(columns).fill(1);
 
     function drawMatrix() {
-      ctx.fillStyle = 'rgba(10, 10, 12, 0.08)';
+      ctx.fillStyle = 'rgba(10, 10, 12, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#00ffcc';
       ctx.font = fontSize + 'px "JetBrains Mono", monospace';
@@ -235,7 +488,6 @@
       for (let i = 0; i < drops.length; i++) {
         const text = chars.charAt(Math.floor(Math.random() * chars.length));
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
         if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
           drops[i] = 0;
         }
@@ -243,6 +495,35 @@
       }
     }
     setInterval(drawMatrix, 33);
+
+    /* 2. ANIMATED SKILL BARS & COUNTERS ON LOAD */
+    window.addEventListener('DOMContentLoaded', () => {
+      // Skill Bars animieren
+      setTimeout(() => {
+        document.querySelectorAll('.skill-bar-fill').forEach(bar => {
+          const progress = bar.getAttribute('data-progress');
+          bar.style.width = progress;
+        });
+      }, 200);
+
+      // KPI Zähler animieren
+      document.querySelectorAll('.metric-number').forEach(counter => {
+        const target = +counter.getAttribute('data-target');
+        let count = 0;
+        const speed = target / 30;
+
+        const updateCount = () => {
+          count += speed;
+          if (count < target) {
+            counter.innerText = Math.ceil(count);
+            setTimeout(updateCount, 30);
+          } else {
+            counter.innerText = target;
+          }
+        };
+        updateCount();
+      });
+    });
   </script>
 </body>
 </html>
