@@ -305,22 +305,26 @@
     .profile-avatar-container {
       display: flex;
       justify-content: center;
-      margin: 1.5rem 0 2rem 0;
+      margin: 1rem 0 1.5rem 0;
       position: relative;
     }
     
     #profile-canvas {
-      /* Keinerlei Rahmen oder Hintergrund - komplett transparent */
       background: transparent;
       border: none;
       box-shadow: none;
-      /* Unsichtbar für Pre-Rendering / Portal */
       opacity: 0;
-      transition: opacity 0.8s ease-in-out;
+      transition: opacity 0.5s ease-in-out;
     }
     
     #profile-canvas.active {
-      opacity: 1; /* Wacht erst auf, wenn das Skript läuft */
+      opacity: 1;
+    }
+    
+    /* Versteckt das Bild im Portal-Vorschaufenster der Hauptseite */
+    body.portal-preview .profile-avatar-container,
+    .portal-node-preview .profile-avatar-container {
+      display: none !important;
     }
 
   </style>
@@ -347,6 +351,12 @@
       <canvas id="profile-canvas" width="220" height="280"></canvas>
       <img id="avatar-source" src="profilbild.png" alt="Alexander Beran" style="display: none;">
     </div>
+
+    <div class="profile-avatar-container portal-hide">
+      <canvas id="profile-canvas"></canvas>
+      <img id="avatar-source" src="profilbild.png" alt="Alexander Beran" style="display: none;">
+    </div>
+
     
     <!-- LIVE METRICS / KPIs -->
     <section class="metrics-grid">
@@ -577,7 +587,7 @@
       });
     });
 
-    /* CYBERPUNK HOLO-MATRIX AVATAR (HIGH-RES & EXTENDED EDGE) */
+    /* CYBERPUNK HOLO-MATRIX AVATAR (COMPACT, SHARP & DYNAMIC EDGE) */
     window.addEventListener('load', () => {
       const img = document.getElementById('avatar-source');
       const canvas = document.getElementById('profile-canvas');
@@ -585,10 +595,10 @@
     
       const ctx = canvas.getContext('2d');
     
-      // Retina / HiDPI Display-Schärfe Korrektur
+      // Skalierung halbiert: Kompakte 130x165 Pixel
+      const displayWidth = 130;
+      const displayHeight = 165;
       const dpr = window.devicePixelRatio || 1;
-      const displayWidth = 260;
-      const displayHeight = 330;
     
       canvas.width = displayWidth * dpr;
       canvas.height = displayHeight * dpr;
@@ -596,16 +606,18 @@
       canvas.style.height = displayHeight + 'px';
       ctx.scale(dpr, dpr);
     
-      // Hilfscanvas in nativer Bildgröße
       const memCanvas = document.createElement('canvas');
       memCanvas.width = displayWidth;
       memCanvas.height = displayHeight;
       const memCtx = memCanvas.getContext('2d');
+      
+      // Bild mit hoher Qualität auf verkleinertes Maß zeichnen
+      memCtx.imageSmoothingEnabled = true;
+      memCtx.imageSmoothingQuality = 'high';
       memCtx.drawImage(img, 0, 0, displayWidth, displayHeight);
       const imgData = memCtx.getImageData(0, 0, displayWidth, displayHeight).data;
     
-      // step = 1 für maximale Bildschärfe
-      const step = 1; 
+      const step = 1;
       let pixels = [];
       let edgePixels = [];
       const chars = '01XYZ#$/*+<>@&%';
@@ -615,14 +627,14 @@
           const i = (y * displayWidth + x) * 4;
           const alpha = imgData[i + 3];
     
-          if (alpha > 30) {
-            // Prüfung auf Außenkanten für den ausgefransten Rand
+          if (alpha > 40) {
+            // Konturen erkennen
             const isEdge = 
-              x <= 3 || x >= displayWidth - 3 || y <= 3 || y >= displayHeight - 3 ||
-              imgData[((y * displayWidth + (x - 3)) * 4) + 3] <= 30 ||
-              imgData[((y * displayWidth + (x + 3)) * 4) + 3] <= 30 ||
-              imgData[(((y - 3) * displayWidth + x) * 4) + 3] <= 30 ||
-              imgData[(((y + 3) * displayWidth + x) * 4) + 3] <= 30;
+              x <= 2 || x >= displayWidth - 2 || y <= 2 || y >= displayHeight - 2 ||
+              imgData[((y * displayWidth + (x - 2)) * 4) + 3] <= 40 ||
+              imgData[((y * displayWidth + (x + 2)) * 4) + 3] <= 40 ||
+              imgData[(((y - 2) * displayWidth + x) * 4) + 3] <= 40 ||
+              imgData[(((y + 2) * displayWidth + x) * 4) + 3] <= 40;
     
             pixels.push({
               x: x,
@@ -630,16 +642,15 @@
               r: imgData[i],
               g: imgData[i + 1],
               b: imgData[i + 2],
-              alpha: alpha / 255,
+              baseAlpha: alpha / 255,
               progress: 0,
-              // Zufälliger Start-Verzögerungswert für chaotischen Aufbau
-              delay: Math.random() * 80, 
-              speed: 0.08 + Math.random() * 0.12, // Langsamer
+              delay: Math.random() * 60,
+              speed: 0.006 + Math.random() * 0.01,
               char: chars.charAt(Math.floor(Math.random() * chars.length)),
               isEdge: isEdge
             });
     
-            if (isEdge && Math.random() < 0.3) {
+            if (isEdge) {
               edgePixels.push({ x: x, y: y });
             }
           }
@@ -653,69 +664,64 @@
         frameCount++;
         ctx.clearRect(0, 0, displayWidth, displayHeight);
     
-        let allResolved = true;
-    
-        pixels.forEach(p => {
-          // Warten bis individueller Delay abgelaufen ist
-          if (frameCount < p.delay) {
-            allResolved = false;
-            return;
+        // 1. RANDFLIMMERN & AURA (Startet von Frame 1 an!)
+        edgePixels.forEach(p => {
+          if (Math.random() < 0.12) {
+            const offsetX = (Math.random() - 0.5) * 12;
+            const offsetY = (Math.random() - 0.5) * 12;
+            
+            if (Math.random() < 0.6) {
+              ctx.fillStyle = 'rgba(0, 255, 204, 0.8)';
+              ctx.font = '7px "JetBrains Mono"';
+              const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+              ctx.fillText(randomChar, p.x + offsetX, p.y + offsetY);
+            } else {
+              ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+              ctx.fillRect(p.x + offsetX, p.y + offsetY, 1.5, 1.5);
+            }
           }
+        });
+    
+        // 2. PIXEL & BILD-AUFBAU
+        pixels.forEach(p => {
+          if (frameCount < p.delay) return;
     
           if (p.progress < 1) {
             p.progress += p.speed;
-            allResolved = false;
           }
     
-          if (p.progress < 0.7) {
-            // PHASE 1: Chaotischer Matrix-Buchstabe
-            if (Math.random() < 0.1) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
-            ctx.fillStyle = `rgba(0, 255, 204, ${p.alpha * 0.8})`;
-            ctx.font = '8px "JetBrains Mono"';
-            // Zeichne Zeichen nur selektiv für Performance
-            if (p.x % 3 === 0 && p.y % 3 === 0) {
+          // Ausgefranste, leicht zuckende Kante für die Randpixel des Kaskadenbildes
+          let currentAlpha = p.baseAlpha;
+          if (p.isEdge && Math.random() < 0.2) {
+            currentAlpha *= (0.3 + Math.random() * 0.7); // Bricht harte Schnittkanten auf
+          }
+    
+          if (p.progress < 0.75) {
+            // Phase 1: Matrix-Code
+            if (Math.random() < 0.08) p.char = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillStyle = `rgba(0, 255, 204, ${currentAlpha * 0.75})`;
+            ctx.font = '7px "JetBrains Mono"';
+            if (p.x % 2 === 0 && p.y % 2 === 0) {
               ctx.fillText(p.char, p.x, p.y);
             }
           } else {
-            // PHASE 2: Sanftes Einschmelzen in die echte Bildfarbe
-            const factor = Math.min(1, (p.progress - 0.7) * 3.33);
+            // Phase 2: Bildfarben
+            const factor = Math.min(1, (p.progress - 0.75) * 4);
             const r = Math.round(0 + (p.r - 0) * factor);
             const g = Math.round(255 + (p.g - 255) * factor);
             const b = Math.round(204 + (p.b - 204) * factor);
     
-            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha})`;
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${currentAlpha})`;
             ctx.fillRect(p.x, p.y, step, step);
           }
         });
     
-        // DAUERHAFTER ZUSTAND: Breiter, ausgefranster Rand & Matrix-Aura
-        if (allResolved) {
-          edgePixels.forEach(p => {
-            if (Math.random() < 0.08) {
-              const offsetX = (Math.random() - 0.5) * 20; // 20px Streuung nach außen
-              const offsetY = (Math.random() - 0.5) * 20;
-              
-              if (Math.random() < 0.5) {
-                // Matrix-Glyphe am Rand
-                ctx.fillStyle = 'rgba(0, 255, 204, 0.85)';
-                ctx.font = '9px "JetBrains Mono"';
-                const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
-                ctx.fillText(randomChar, p.x + offsetX, p.y + offsetY);
-              } else {
-                // Einzelner leuchtender Pixel-Spark
-                ctx.fillStyle = 'rgba(0, 255, 204, 0.6)';
-                ctx.fillRect(p.x + offsetX, p.y + offsetY, 2, 2);
-              }
-            }
-          });
-    
-          // Feine, dezent flackernde Glitch-Linien quer über das Bild
-          if (Math.random() < 0.25) {
-            const glitchY = Math.floor(Math.random() * displayHeight);
-            const glitchX = Math.floor(Math.random() * (displayWidth - 30));
-            ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
-            ctx.fillRect(glitchX, glitchY, Math.random() * 25 + 10, 1);
-          }
+        // Dezent glitschende Zeilen
+        if (Math.random() < 0.2) {
+          const glitchY = Math.floor(Math.random() * displayHeight);
+          const glitchX = Math.floor(Math.random() * (displayWidth - 20));
+          ctx.fillStyle = 'rgba(0, 255, 204, 0.4)';
+          ctx.fillRect(glitchX, glitchY, Math.random() * 15 + 5, 1);
         }
     
         requestAnimationFrame(renderHoloAvatar);
