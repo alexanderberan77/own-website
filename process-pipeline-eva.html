@@ -1,0 +1,69 @@
+<!-- CONNECTOR SVG PATHS & ANIMATED PULSES -->
+<svg class="connections-svg">
+  <!-- Input to Process Connection -->
+  <path id="path-input-process" class="pipe-line active-green" d="M 360,330 L 560,330" />
+  
+  <!-- Process to Output Connection -->
+  <path id="path-process-output" class="pipe-line active-green" d="M 840,330 L 1040,330" />
+
+  <!-- Animated Pulses -->
+  <circle class="pulse-particle" fill="var(--cyber-glow)">
+    <animateMotion dur="2s" repeatCount="indefinite" path="M 360,330 L 560,330" />
+  </circle>
+  
+  <circle class="pulse-particle" fill="var(--cyber-glow)">
+    <animateMotion dur="2s" repeatCount="indefinite" path="M 840,330 L 1040,330" />
+  </circle>
+</svg>
+
+<!-- LEVEL 1 NODES: INPUT - PROCESS - OUTPUT -->
+
+<!-- 1. INPUT KNOTEN -->
+<div class="node-box" style="top: 250px; left: 120px; width: 240px; border-color: rgba(0, 255, 204, 0.6);" onclick="openNodeModal('input')">
+  <div class="node-header" style="color: var(--cyber-glow);">[ STUFE 01 // EINGABE ]</div>
+  <div class="node-title">1. INPUT (Eingabe)</div>
+  <div class="node-tech">Erfassung analoger oder digitaler Signale &amp; Datenimpulse.</div>
+</div>
+
+<!-- 2. PROCESS KNOTEN -->
+<div class="node-box" style="top: 230px; left: 560px; width: 280px; border-color: var(--cyber-alert); padding: 1.2rem;" onclick="openNodeModal('process')">
+  <div class="node-header" style="color: var(--cyber-alert);">[ STUFE 02 // VERARBEITUNG ]</div>
+  <div class="node-title" style="font-size: 1.1rem; color: var(--cyber-alert);">2. PROCESS (Verarbeitung)</div>
+  <div class="node-tech" style="font-size: 0.75rem;">Transformation, Logik, Algorithmen &amp; Regelkreise.</div>
+</div>
+
+<!-- 3. OUTPUT KNOTEN -->
+<div class="node-box" style="top: 250px; left: 1040px; width: 240px; border-color: rgba(0, 255, 204, 0.6);" onclick="openNodeModal('output')">
+  <div class="node-header" style="color: var(--cyber-glow);">[ STUFE 03 // AUSGABE ]</div>
+  <div class="node-title">3. OUTPUT (Ausgabe)</div>
+  <div class="node-tech">Wirkung, Reaktion, Zustandsspeicherung oder Anzeige.</div>
+</div>
+
+<script>
+  window.nodeSpecs = {
+    input: {
+      tag: '[ EVA-MODELL // EINGABE-SCHICHT ]',
+      title: 'Input Layer (Erfassung & Schnittstellen)',
+      desc: 'Der Eingangsspeicher oder Sensorik-Knoten. Hier werden externe Reize, Parameter oder Rohdaten aufgenommen und für das System aufbereitet.',
+      specs: 'Sensoren, APIs, Usereingaben, Tastendruck, Lenkwinkel, Mikrofonsignale.',
+      principles: 'Entkopplung von Außenwelt und Kernsystem. Validierung der Rohsignale direkt am Eingang.',
+      code: `// Praxis-Beispiele für Input:\n- Auto: Fahrer dreht Lenkrad um +15° nach rechts\n- ANC Headphone: Mikrofon misst Umwelt-Lärm (85dB)\n- Trading-Bot: REST-Call empfängt Aktienkurs ($224.50)`
+    },
+    process: {
+      tag: '[ EVA-MODELL // VERARBEITUNGS-SCHICHT ]',
+      title: 'Processing Layer (Kern-Logik)',
+      desc: 'Das Herzstück jedes technischen Systems. Die Eingabedaten werden nach definierten Regeln, mathematischen Funktionen oder Algorithmen bewertet und verarbeitet.',
+      specs: 'CPU/ECU Steuergeräte, DSP-Audio-Chips, ETL-Pipelines, Neuronale Netze.',
+      principles: 'Deterministisches Verhalten: Gleicher Input führt unter gleichen Bedingungen zu identischem Processing.',
+      code: `// Praxis-Beispiele für Processing:\n- Auto: ECU berechnet benötigten Servomotor-Druck & Kurvenradius\n- ANC Headphone: DSP invertiert die Schallwelle um 180° (Antischall)\n- Trading-Bot: Algorithmus berechnet Moving Average & Signal-Triggers`
+    },
+    output: {
+      tag: '[ EVA-MODELL // AUSGABE-SCHICHT ]',
+      title: 'Output Layer (Wirkung & Reaktion)',
+      desc: 'Das Ergebnis der Verarbeitung wird an die Außenwelt abgegeben, ausgeführt oder als Zustand im System dauerhaft gespeichert.',
+      specs: 'Aktoren, Display-HUDs, Hydraulik, Datenbank-Commits, Lautsprecher.',
+      principles: 'Sichtbare/messbare Wirkung. Feedback-Schleifen (Optional) melden den Erfolg zurück an den Input.',
+      code: `// Praxis-Beispiele für Output:\n- Auto: Spurstange verstellt Räder, Auto fährt spürbar in die Kurve\n- ANC Headphone: Lautsprecher gibt Antischall aus -> Lärm wird gelöscht\n- Trading-Bot: Kauf-Order wird an die Börse übermittelt`
+    }
+  };
+</script>
