@@ -180,6 +180,10 @@
       border-left: 2px solid var(--cyber-glow);
     }
 
+    .wheels-panel {
+      touch-action: none; /* Blockiert Standard-Touch-Gesten wie Pull-to-Refresh auf dem Container */
+    }
+
     .wheel-column {
       flex: 1;
       height: 100%;
@@ -648,11 +652,12 @@
       }
     }
 
-    /* SCROLL EVENT HANDLERS */
+    /* ENHANCED WHEEL & TOUCH EVENT HANDLERS */
     function setupWheelEvents() {
       const letterCol = document.getElementById('letterWheelCol');
       const termCol = document.getElementById('termWheelCol');
-
+    
+      // --- 1. MAUSRAD (DESKTOP) ---
       letterCol.addEventListener('wheel', (e) => {
         e.preventDefault();
         if (e.deltaY > 0 && currentLetterIdx < availableLetters.length - 1) {
@@ -663,7 +668,7 @@
           spinLetterWheel();
         }
       }, { passive: false });
-
+    
       termCol.addEventListener('wheel', (e) => {
         e.preventDefault();
         if (e.deltaY > 0 && currentTermIdx < filteredTerms.length - 1) {
@@ -674,11 +679,64 @@
           spinTermWheel();
         }
       }, { passive: false });
-
+    
+    
+      // --- 2. TOUCH / SWIPE (TABLET & MOBILE) ---
+      function attachTouchControls(element, getIndex, setIndex, getMax, spinFunc) {
+        let startY = 0;
+        let distY = 0;
+        const threshold = 30; // Min. Pixel-Distanz für einen Auslöseschritt
+    
+        element.addEventListener('touchstart', (e) => {
+          startY = e.touches[0].clientY;
+          distY = 0;
+        }, { passive: true });
+    
+        element.addEventListener('touchmove', (e) => {
+          // Verhindert das Reinvliegen der Seite / Pull-to-Refresh!
+          if (e.cancelable) e.preventDefault();
+    
+          distY = startY - e.touches[0].clientY;
+    
+          if (Math.abs(distY) > threshold) {
+            const current = getIndex();
+            if (distY > 0 && current < getMax() - 1) { // Nach oben wischen = Liste geht runter
+              setIndex(current + 1);
+              spinFunc();
+              startY = e.touches[0].clientY; // Reset Anchor für flüssiges Weiterwischen
+            } else if (distY < 0 && current > 0) {    // Nach unten wischen = Liste geht hoch
+              setIndex(current - 1);
+              spinFunc();
+              startY = e.touches[0].clientY;
+            }
+          }
+        }, { passive: false });
+      }
+    
+      // Touch-Controls an Buchstaben-Spalte binden
+      attachTouchControls(
+        letterCol,
+        () => currentLetterIdx,
+        (val) => { currentLetterIdx = val; },
+        () => availableLetters.length,
+        spinLetterWheel
+      );
+    
+      // Touch-Controls an Begriffe-Spalte binden
+      attachTouchControls(
+        termCol,
+        () => currentTermIdx,
+        (val) => { currentTermIdx = val; },
+        () => filteredTerms.length,
+        spinTermWheel
+      );
+    
+    
+      // --- 3. SEARCH & RESIZE LISTENERS ---
       searchInput.addEventListener('input', (e) => {
         applyFilters(e.target.value);
       });
-
+    
       window.addEventListener('resize', () => {
         if (availableLetters.length > 0) {
           spinLetterWheel();
@@ -687,7 +745,6 @@
       });
     }
 
-    window.onload = initGlossaryEngine;
   </script>
 </body>
 </html>
