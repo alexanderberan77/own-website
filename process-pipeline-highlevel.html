@@ -1,0 +1,161 @@
+<!-- CONNECTOR SVG PATHS & ANIMATED PULSES -->
+<svg class="connections-svg">
+  <!-- Input Stream Paths to Ingestion Node -->
+  <path id="path-yahoo" class="pipe-line line-yahoo" d="M 210,140 C 310,140 310,330 410,330" />
+  <path id="path-fred" class="pipe-line line-fred" d="M 210,330 L 410,330" />
+  <path id="path-internal" class="pipe-line line-internal" d="M 210,520 C 310,520 310,330 410,330" />
+
+  <!-- Normalized Paths (Green) -->
+  <path id="path-etl" class="pipe-line active-green" d="M 610,330 L 710,330" />
+  <path id="path-db" class="pipe-line active-green" d="M 910,330 L 1010,330" />
+
+  <!-- Fork Paths from DB to Compute & Dashboard -->
+  <path id="path-compute" class="pipe-line active-green" d="M 1210,330 C 1260,330 1260,200 1300,200" />
+  <path id="path-dashboard" class="pipe-line active-green" d="M 1210,330 C 1260,330 1260,460 1300,460" />
+
+  <!-- Animated Data Pulses -->
+  <circle class="pulse-particle" fill="var(--color-yahoo)">
+    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 210,140 C 310,140 310,330 410,330" />
+  </circle>
+  
+  <circle class="pulse-particle" fill="var(--color-fred)">
+    <animateMotion dur="2s" repeatCount="indefinite" path="M 210,330 L 410,330" />
+  </circle>
+
+  <circle class="pulse-particle" fill="var(--color-internal)">
+    <animateMotion dur="3s" repeatCount="indefinite" path="M 210,520 C 310,520 310,330 410,330" />
+  </circle>
+
+  <circle class="pulse-particle" fill="var(--cyber-glow)">
+    <animateMotion dur="1.8s" repeatCount="indefinite" path="M 610,330 L 710,330" />
+  </circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)">
+    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 910,330 L 1010,330" />
+  </circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)">
+    <animateMotion dur="2.2s" repeatCount="indefinite" path="M 1210,330 C 1260,330 1260,200 1300,200" />
+  </circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)">
+    <animateMotion dur="2s" repeatCount="indefinite" path="M 1210,330 C 1260,330 1260,460 1300,460" />
+  </circle>
+</svg>
+
+<!-- DATA SOURCES (LEFT COLUMN) -->
+<div class="node-box node-source src-yahoo" style="top: 90px; left: 40px;" onclick="openNodeModal('yahoo')">
+  <div class="node-header">[ SOURCE 01 ]</div>
+  <div class="node-title">Yahoo Finance API</div>
+  <div class="node-tech">Equities, FX &amp; Commodities Feeds</div>
+</div>
+
+<div class="node-box node-source src-fred" style="top: 280px; left: 40px;" onclick="openNodeModal('fred')">
+  <div class="node-header">[ SOURCE 02 ]</div>
+  <div class="node-title">FRED Federal Reserve</div>
+  <div class="node-tech">Macroeconomic Time-Series</div>
+</div>
+
+<div class="node-box node-source src-internal" style="top: 470px; left: 40px;" onclick="openNodeModal('internal')">
+  <div class="node-header">[ SOURCE 03 ]</div>
+  <div class="node-title">Internal DB / Portfolio</div>
+  <div class="node-tech">Positioning &amp; Risk Targets</div>
+</div>
+
+<!-- PROCESSING PIPELINE NODES -->
+<div class="node-box" style="top: 280px; left: 410px;" onclick="openNodeModal('ingestion')">
+  <div class="node-header">[ NODE 01 // INGESTION ]</div>
+  <div class="node-title">Data Ingestion &amp; Normalization</div>
+  <div class="node-tech">Rate Limiting, Schema Mapping, Unification</div>
+</div>
+
+<div class="node-box" style="top: 280px; left: 710px;" onclick="openNodeModal('etl')">
+  <div class="node-header">[ NODE 02 // TRANSFORM ]</div>
+  <div class="node-title">ETL &amp; Validation Core</div>
+  <div class="node-tech">Data Cleansing, Outlier Checks, Deduplication</div>
+</div>
+
+<div class="node-box" style="top: 280px; left: 1010px;" onclick="openNodeModal('storage')">
+  <div class="node-header">[ NODE 03 // STORAGE ]</div>
+  <div class="node-title">Structured Persistence</div>
+  <div class="node-tech">Time-Series DB / Caching Layer</div>
+</div>
+
+<!-- OUTPUT NODES (RIGHT COLUMN) -->
+<div class="node-box" style="top: 150px; left: 1250px; border-color: var(--cyber-alert);" onclick="openNodeModal('compute')">
+  <div class="node-header" style="color: var(--cyber-alert);">[ NODE 04 // ANALYTICS ]</div>
+  <div class="node-title">KPI &amp; Risk Compute Engine</div>
+  <div class="node-tech">Volatility, Correlation, Drawdown Metrics</div>
+</div>
+
+<div class="node-box" style="top: 410px; left: 1250px; border-color: var(--cyber-glow);" onclick="openNodeModal('ui')">
+  <div class="node-header" style="color: var(--cyber-glow);">[ NODE 05 // INTERFACE ]</div>
+  <div class="node-title">Interactive Dashboard / HUD</div>
+  <div class="node-tech">Real-time Visuals &amp; Decision Support</div>
+</div>
+
+<script>
+  window.nodeSpecs = {
+    yahoo: {
+      tag: '[ EXTERNAL SOURCE // PURPLE STREAM ]',
+      title: 'Yahoo Finance API Interface',
+      desc: 'Liefert unstrukturierte Marktpreise, Devisenkurse und Rohstoff-Futures über REST & Polling.',
+      specs: 'Format: JSON / CSV. Intervall: 1 Min Tick-Intervall.',
+      principles: 'Ausfallsicherheit gegen API-Changes & Rate-Limits durch Caching und Circuit-Breaker-Muster.',
+      code: `{\n  "symbol": "AAPL",\n  "price": 224.50,\n  "currency": "USD",\n  "timestamp": 1773700000\n}`
+    },
+    fred: {
+      tag: '[ EXTERNAL SOURCE // YELLOW STREAM ]',
+      title: 'FRED Macroeconomic Data',
+      desc: 'Erfasst zins- und geldpolitische Fundamentaldaten der Federal Reserve (z. B. 10Y Yields, US Inflation).',
+      specs: 'Format: REST API / XML & JSON. Update: Täglich / Monatlich.',
+      principles: 'Historische Datenintegrität gewährleisten. Automatisiertes Handhaben von Revisionsdaten.',
+      code: `{\n  "series_id": "DGS10",\n  "value": "4.12",\n  "unit": "Percent",\n  "date": "2026-09-15"\n}`
+    },
+    internal: {
+      tag: '[ INTERNAL SOURCE // MAGENTA STREAM ]',
+      title: 'Internal Portfolio DB',
+      desc: 'Liefert interne Positionsgrößen, Risikogrenzen und historische Transaktionsdaten.',
+      specs: 'Format: PostgreSQL / Internal SQL Schema.',
+      principles: 'Strikte Trennung von Kundendaten und Marktanalytik. Hohe Konsistency (ACID).',
+      code: `SELECT portfolio_id, asset, position_qty \nFROM internal_positions \nWHERE status = 'ACTIVE';`
+    },
+    ingestion: {
+      tag: '[ PIPELINE CORE // NODE 01 ]',
+      title: 'Data Ingestion & Normalization',
+      desc: 'Zentraler Eingangsknoten. Nimmt heterogene Quell-Formate (Lila, Gelb, Magenta) auf und konvertiert sie in ein einheitliches internes Datenmodell (Neon-Grün).',
+      specs: 'In-Memory Stream Processing / Schema Validation.',
+      principles: 'Single Source of Truth schaffen: "Garbage In, Garbage Out" verhindern durch strikte Schema-Normalisierung am Eingang.',
+      code: `// Unified Internal Schema\n{\n  "asset_id": "US_10Y_BOND",\n  "category": "MACRO",\n  "normalized_val": 0.0412,\n  "stream_status": "VALIDATED"\n}`
+    },
+    etl: {
+      tag: '[ PIPELINE CORE // NODE 02 ]',
+      title: 'ETL & Validation Engine',
+      desc: 'Bereinigt Daten von statistischen Ausreißern, schließt Datenlücken (Forward-Fill) und entfernt Duplikate.',
+      specs: 'Python / Pandas / Polars Data Processing Engine.',
+      principles: 'Transparente Datenqualitäts-Checks. Jeder Datenpunkt erhält einen Quality-Score vor der Speicherung.',
+      code: `df.clean_outliers(std_dev=3)\n  .forward_fill()\n  .validate_schema()`
+    },
+    storage: {
+      tag: '[ PERSISTENCE // NODE 03 ]',
+      title: 'Structured Time-Series Storage',
+      desc: 'Speichert die normalisierten Zeitreihen für blitzschnelle historische Analysen und Re-Computations.',
+      specs: 'TimescaleDB / Caching via Redis.',
+      principles: 'Effiziente Indizierung nach Zeitstempel und Asset-Klasse für optimierte Query-Zeiten unter 10ms.',
+      code: `CREATE TABLE market_ticks (\n  time TIMESTAMPTZ NOT NULL,\n  asset_id VARCHAR(32),\n  val DOUBLE PRECISION\n);`
+    },
+    compute: {
+      tag: '[ ANALYTICS // NODE 04 ]',
+      title: 'KPI & Risk Compute Engine',
+      desc: 'Berechnet in Echtzeit finanzmathematische Kennzahlen (z. B. Value-at-Risk, Korrelationen, Sharpe Ratio).',
+      specs: 'NumPy / C++ Execution Module.',
+      principles: 'Ergebnisse fließen zurück in die Pipeline oder triggern automatisierte Alarme bei Schwellenwert-Überschreitungen.',
+      code: `def calc_var(returns, confidence=0.95):\n    return np.percentile(returns, (1 - confidence) * 100)`
+    },
+    ui: {
+      tag: '[ HUMAN INTERFACE // NODE 05 ]',
+      title: 'Interactive Dashboard HUD',
+      desc: 'Das finale Frontend für den Anwender: Wandelt abstrakte Berechnungen in klare visualisierte Handlungsempfehlungen um.',
+      specs: 'HTML5 / SVG Charting / WebSocket Subscriptions.',
+      principles: 'UX auf den Punkt: Keine überflüssigen Kennzahlen, fokussiert auf maximale Information Dichte und Entscheidungsunterstützung.',
+      code: `// Render Realtime Visual Update\nrenderHUDChart(kpiStreamData);`
+    }
+  };
+</script>
