@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tactical Command Grid: Cyber-Glossar | Alexander Beran</title>
   
-  <!-- Google Font: JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
@@ -18,9 +17,9 @@
       --text-muted: #666677;
       --cyber-glow: #00ffcc;
       --cyber-alert: #ffb703;
-      --cyber-purple: #b5179e;
       --font-mono: 'JetBrains Mono', monospace;
       --border-color: #2a2a30;
+      --item-height: 42px;
     }
 
     * {
@@ -41,7 +40,6 @@
       overflow-x: hidden;
     }
 
-    /* BACKGROUND CANVAS */
     #matrix-canvas {
       position: fixed;
       top: 0;
@@ -53,7 +51,6 @@
       pointer-events: none;
     }
 
-    /* MAIN CONTAINER & BACK LINK */
     .wrapper {
       position: relative;
       z-index: 2;
@@ -89,7 +86,6 @@
       box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
     }
 
-    /* SEARCH BAR */
     .search-box {
       display: flex;
       align-items: center;
@@ -108,11 +104,8 @@
       width: 180px;
     }
 
-    .search-box input::placeholder {
-      color: var(--text-muted);
-    }
+    .search-box input::placeholder { color: var(--text-muted); }
 
-    /* TOP BAR FILTER (CATEGORIES & QUICK A-Z) */
     .top-filter-bar {
       display: flex;
       flex-direction: column;
@@ -152,33 +145,30 @@
       border-color: transparent;
     }
 
-    /* MAIN CYBER GLOSSARY LAYOUT */
     .glossary-grid {
       display: grid;
       grid-template-columns: 340px 1fr;
       gap: 1.5rem;
       flex-grow: 1;
-      min-height: 0; /* Important for flex/grid overflow childs */
+      min-height: 0;
     }
 
     @media (max-width: 900px) {
-      .glossary-grid {
-        grid-template-columns: 1fr;
-        height: auto;
-      }
+      .glossary-grid { grid-template-columns: 1fr; height: auto; }
       .wrapper { height: auto; }
     }
 
-    /* LEFT PANEL: DUAL-WHEEL INTERFACE */
+    /* WHEELS PANEL FIXES */
     .wheels-panel {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       position: relative;
-      padding: 1rem;
+      padding: 0 0.5rem;
       display: flex;
       gap: 0.5rem;
       overflow: hidden;
       backdrop-filter: blur(5px);
+      height: 100%;
     }
 
     .wheels-panel::before {
@@ -190,26 +180,23 @@
       border-left: 2px solid var(--cyber-glow);
     }
 
-    /* WHEEL CONTAINER & CENTER HIGHLIGHTER */
     .wheel-column {
       flex: 1;
       height: 100%;
       position: relative;
       overflow: hidden;
-      perspective: 1000px;
     }
 
     .wheel-column.letters { flex: 0.35; border-right: 1px dashed var(--border-color); }
     .wheel-column.terms { flex: 0.65; }
 
-    /* Center selection beam frame */
+    /* PERFECT CENTER BEAM ALIGNMENT */
     .wheel-beam {
       position: absolute;
-      top: 50%;
+      top: calc(50% - (var(--item-height) / 2));
       left: 0;
       width: 100%;
-      height: 42px;
-      transform: translateY(-50%);
+      height: var(--item-height);
       background: rgba(0, 255, 204, 0.08);
       border-top: 1px solid var(--cyber-glow);
       border-bottom: 1px solid var(--cyber-glow);
@@ -221,14 +208,14 @@
     .wheel-track {
       position: absolute;
       width: 100%;
-      top: 50%;
+      top: 0;
+      left: 0;
       transition: transform 0.2s cubic-bezier(0.1, 0.8, 0.2, 1);
-      transform-style: preserve-3d;
     }
 
     .wheel-item {
-      height: 42px;
-      line-height: 42px;
+      height: var(--item-height);
+      line-height: var(--item-height);
       text-align: center;
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -238,7 +225,6 @@
       text-overflow: ellipsis;
       padding: 0 0.5rem;
       transition: all 0.15s ease;
-      transform-origin: center center;
     }
 
     .wheel-item.selected {
@@ -247,7 +233,7 @@
       text-shadow: 0 0 8px var(--cyber-glow);
     }
 
-    /* RIGHT PANEL: TERMINAL HUD DISPLAY */
+    /* HUD DISPLAY */
     .hud-panel {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -302,7 +288,6 @@
       border-left: 3px solid var(--cyber-alert);
       padding: 1rem;
       margin-top: 1rem;
-      position: relative;
     }
 
     .example-box-title {
@@ -313,10 +298,7 @@
       font-weight: bold;
     }
 
-    .example-box-content {
-      font-size: 0.85rem;
-      color: #d0d0d0;
-    }
+    .example-box-content { font-size: 0.85rem; color: #d0d0d0; }
 
     .hud-footer {
       border-top: 1px dashed var(--border-color);
@@ -327,25 +309,9 @@
       gap: 0.8rem;
     }
 
-    .meta-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .meta-label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .tag-badge {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      padding: 0.15rem 0.5rem;
-    }
+    .meta-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .meta-label { font-size: 0.7rem; color: var(--text-muted); }
+    .tag-badge { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.7rem; padding: 0.15rem 0.5rem; }
 
     .cross-ref-btn {
       background: rgba(0, 255, 204, 0.08);
@@ -358,20 +324,14 @@
       transition: all 0.2s ease;
     }
 
-    .cross-ref-btn:hover {
-      background: var(--cyber-glow);
-      color: #000;
-      box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-    }
+    .cross-ref-btn:hover { background: var(--cyber-glow); color: #000; box-shadow: 0 0 10px rgba(0, 255, 204, 0.3); }
   </style>
 </head>
 <body>
 
-  <!-- Background Matrix Canvas -->
   <canvas id="matrix-canvas"></canvas>
 
   <div class="wrapper">
-    <!-- Navigation & Search Bar -->
     <div class="nav-bar">
       <a href="lernecke.html" class="btn-back">&lt; // RETURN_TO_LEARNHUB</a>
       
@@ -381,31 +341,24 @@
       </div>
     </div>
 
-    <!-- Top Filter Navigation (Categories & Quick A-Z) -->
     <div class="top-filter-bar">
       <div class="category-pills" id="categoryPills"></div>
       <div class="quick-az-bar" id="quickAzBar"></div>
     </div>
 
-    <!-- Main Content Grid -->
     <div class="glossary-grid">
-      
-      <!-- LEFT: DUAL CYBER WHEELS -->
       <aside class="wheels-panel">
         <div class="wheel-beam"></div>
 
-        <!-- Wheel 1: Letters -->
         <div class="wheel-column letters" id="letterWheelCol">
           <div class="wheel-track" id="letterTrack"></div>
         </div>
 
-        <!-- Wheel 2: Terms -->
         <div class="wheel-column terms" id="termWheelCol">
           <div class="wheel-track" id="termTrack"></div>
         </div>
       </aside>
 
-      <!-- RIGHT: HUD DETAIL DISPLAY -->
       <main class="hud-panel" id="hudPanel">
         <div>
           <div class="hud-header">
@@ -414,7 +367,7 @@
           </div>
 
           <div class="hud-body" id="hudDefinition">
-            Verwende die Cyber-Räder auf der linken Seite oder die Filterleiste oben, um Begriffe der Datenbank zu durchsuchen.
+            Verwende die Cyber-Räder auf der linken Seite oder die Filterleiste oben.
           </div>
 
           <div class="example-box" id="hudExampleBox" style="display: none;">
@@ -435,15 +388,13 @@
           </div>
         </div>
       </main>
-
     </div>
   </div>
 
-  <!-- Import Glossary JSON / JS Data -->
   <script src="data/glossar-data.js"></script>
 
   <script>
-    /* 1. BACKGROUND MATRIX CANVAS */
+    /* MATRIX CANVAS */
     const canvas = document.getElementById('matrix-canvas');
     const ctx = canvas.getContext('2d');
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -468,7 +419,7 @@
     }
     setInterval(drawMatrix, 33);
 
-    /* 2. GLOSSARY SYSTEM STATE & ENGINE */
+    /* GLOSSARY ENGINE */
     const itemHeight = 42;
     const alphabet = ["#", ... "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")];
 
@@ -478,7 +429,6 @@
     let filteredTerms = [];
     let currentTermIdx = 0;
 
-    // DOM Elements
     const letterTrack = document.getElementById('letterTrack');
     const termTrack = document.getElementById('termTrack');
     const categoryPills = document.getElementById('categoryPills');
@@ -496,25 +446,24 @@
       setupWheelEvents();
     }
 
-    /* 3. FILTERS & CATEGORIES */
     function buildCategoryFilter() {
       const categories = new Set();
       glossaryData.forEach(item => {
         item.categories.forEach(cat => categories.add(cat.split('/')[0].trim()));
       });
 
-      categoryPills.innerHTML = `<button class="pill-btn active" onclick="setCategory('ALL')">[ ALL ]</button>`;
+      categoryPills.innerHTML = `<button class="pill-btn active" data-cat="ALL" onclick="setCategory('ALL')">[ ALL ]</button>`;
       categories.forEach(cat => {
-        categoryPills.innerHTML += `<button class="pill-btn" onclick="setCategory('${cat}')">[ ${cat.toUpperCase()} ]</button>`;
+        categoryPills.innerHTML += `<button class="pill-btn" data-cat="${cat}" onclick="setCategory('${cat}')">[ ${cat.toUpperCase()} ]</button>`;
       });
     }
 
     function setCategory(cat) {
       currentCategory = cat;
       document.querySelectorAll('.pill-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText.includes(cat) || (cat === 'ALL' && btn.innerText.includes('ALL')));
+        btn.classList.toggle('active', btn.getAttribute('data-cat') === cat);
       });
-      applyFilters();
+      applyFilters(searchInput.value);
     }
 
     function applyFilters(searchTerm = '') {
@@ -533,7 +482,6 @@
         );
       }
 
-      // Calculate available letters
       availableLetters = alphabet.filter(l => data.some(item => item.letter === l));
 
       renderQuickAZ();
@@ -566,7 +514,13 @@
       });
     }
 
-    /* 4. WHEEL RENDERING & 3D CYBER TRANSFORMATIONS */
+    /* CENTER OFFSET CALCULATION FIX */
+    function getCenterOffset(idx, totalItems, containerEl) {
+      const containerHeight = containerEl.clientHeight || 400;
+      const centerBox = containerHeight / 2;
+      return centerBox - (idx * itemHeight) - (itemHeight / 2);
+    }
+
     function renderLetterWheel() {
       letterTrack.innerHTML = '';
       availableLetters.forEach((l, idx) => {
@@ -580,24 +534,22 @@
     }
 
     function spinLetterWheel() {
-      const offset = -currentLetterIdx * itemHeight;
+      const col = document.getElementById('letterWheelCol');
+      const offset = getCenterOffset(currentLetterIdx, availableLetters.length, col);
       letterTrack.style.transform = `translateY(${offset}px)`;
 
-      // Apply 3D scale and opacity to letter items
       const items = letterTrack.querySelectorAll('.wheel-item');
       items.forEach((item, idx) => {
         const dist = Math.abs(idx - currentLetterIdx);
         item.classList.toggle('selected', idx === currentLetterIdx);
         item.style.opacity = Math.max(0.1, 1 - dist * 0.35);
-        item.style.transform = `rotateX(${(idx - currentLetterIdx) * -25}deg) scale(${1 - dist * 0.15})`;
+        item.style.transform = `scale(${1 - dist * 0.12})`;
       });
 
-      // Update Quick AZ bar visual state
       document.querySelectorAll('.az-btn').forEach(btn => {
         btn.classList.toggle('active', btn.innerText === availableLetters[currentLetterIdx]);
       });
 
-      // Update terms wheel
       let data = glossaryData;
       if (currentCategory !== 'ALL') {
         data = data.filter(item => item.categories.some(c => c.startsWith(currentCategory)));
@@ -623,7 +575,8 @@
     }
 
     function spinTermWheel() {
-      const offset = -currentTermIdx * itemHeight;
+      const col = document.getElementById('termWheelCol');
+      const offset = getCenterOffset(currentTermIdx, filteredTerms.length, col);
       termTrack.style.transform = `translateY(${offset}px)`;
 
       const items = termTrack.querySelectorAll('.wheel-item');
@@ -631,13 +584,12 @@
         const dist = Math.abs(idx - currentTermIdx);
         item.classList.toggle('selected', idx === currentTermIdx);
         item.style.opacity = Math.max(0.1, 1 - dist * 0.35);
-        item.style.transform = `rotateX(${(idx - currentTermIdx) * -20}deg) scale(${1 - dist * 0.1})`;
+        item.style.transform = `scale(${1 - dist * 0.1})`;
       });
 
       renderHUD(filteredTerms[currentTermIdx]);
     }
 
-    /* 5. HUD DISPLAY RENDERING */
     function renderHUD(item) {
       if (!item) {
         document.getElementById('hudCategory').innerText = 'N/A';
@@ -653,7 +605,6 @@
       document.getElementById('hudTitle').innerText = item.term;
       document.getElementById('hudDefinition').innerText = item.definition;
 
-      // Example Box
       const exampleBox = document.getElementById('hudExampleBox');
       if (item.example) {
         document.getElementById('hudExample').innerText = item.example;
@@ -662,10 +613,8 @@
         exampleBox.style.display = 'none';
       }
 
-      // Tags
       document.getElementById('hudTags').innerHTML = item.tags.map(t => `<span class="tag-badge">#${t}</span>`).join(' ');
 
-      // Cross References
       const crossContainer = document.getElementById('hudCrossRefs');
       crossContainer.innerHTML = '';
 
@@ -673,7 +622,7 @@
         item.cross_references.forEach(refTerm => {
           const btn = document.createElement('button');
           btn.className = 'cross-ref-btn';
-          btn.innerText = `&gt; ${refTerm}`;
+          btn.innerText = `> ${refTerm}`;
           btn.onclick = () => jumpToTerm(refTerm);
           crossContainer.appendChild(btn);
         });
@@ -682,12 +631,10 @@
       }
     }
 
-    /* 6. JUMP TO CROSS REFERENCE */
     function jumpToTerm(termName) {
       const target = glossaryData.find(g => g.term.toLowerCase() === termName.toLowerCase() || g.term.toLowerCase().includes(termName.toLowerCase()));
       if (!target) return;
 
-      setCategory('ALL');
       const letterIdx = availableLetters.indexOf(target.letter);
       if (letterIdx !== -1) {
         currentLetterIdx = letterIdx;
@@ -701,32 +648,45 @@
       }
     }
 
-    /* 7. MOUSE WHEEL & TOUCH INTERACTION ON WHEELS */
+    /* SCROLL EVENT HANDLERS */
     function setupWheelEvents() {
       const letterCol = document.getElementById('letterWheelCol');
       const termCol = document.getElementById('termWheelCol');
 
       letterCol.addEventListener('wheel', (e) => {
         e.preventDefault();
-        if (e.deltaY > 0 && currentLetterIdx < availableLetters.length - 1) currentLetterIdx++;
-        else if (e.deltaY < 0 && currentLetterIdx > 0) currentLetterIdx--;
-        spinLetterWheel();
-      });
+        if (e.deltaY > 0 && currentLetterIdx < availableLetters.length - 1) {
+          currentLetterIdx++;
+          spinLetterWheel();
+        } else if (e.deltaY < 0 && currentLetterIdx > 0) {
+          currentLetterIdx--;
+          spinLetterWheel();
+        }
+      }, { passive: false });
 
       termCol.addEventListener('wheel', (e) => {
         e.preventDefault();
-        if (e.deltaY > 0 && currentTermIdx < filteredTerms.length - 1) currentTermIdx++;
-        else if (e.deltaY < 0 && currentTermIdx > 0) currentTermIdx--;
-        spinTermWheel();
-      });
+        if (e.deltaY > 0 && currentTermIdx < filteredTerms.length - 1) {
+          currentTermIdx++;
+          spinTermWheel();
+        } else if (e.deltaY < 0 && currentTermIdx > 0) {
+          currentTermIdx--;
+          spinTermWheel();
+        }
+      }, { passive: false });
 
-      // Search input handler
       searchInput.addEventListener('input', (e) => {
         applyFilters(e.target.value);
       });
+
+      window.addEventListener('resize', () => {
+        if (availableLetters.length > 0) {
+          spinLetterWheel();
+          spinTermWheel();
+        }
+      });
     }
 
-    // Start App on load
     window.onload = initGlossaryEngine;
   </script>
 </body>
