@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lernecke | Systemic Diagnostic Hub</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --border-color: #1f293d;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-amber: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            letter-spacing: -0.05em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .hub-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2);
+        }
+
+        .card-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            width: fit-content;
+            margin-bottom: 1rem;
+        }
+
+        .badge-glossar { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+        .badge-tutorials { background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-interactive { background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        .hub-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .hub-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .card-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .hub-card:hover .card-button {
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: var(--accent-cyan);
+        }
+
+        .nav-back {
+            max-width: 1200px;
+            margin: 0 auto 2rem auto;
+            width: 100%;
+        }
+
+        .nav-back a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-back a:hover {
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-back">
+        <a href="index.html">&larr; Zurück zur Hauptseite</a>
+    </div>
+
+    <header>
+        <h1>Lernecke & Wissens-Hub</h1>
+        <p>Erkunde abstrakte Systemkonzepte, KI-Sicherheitsforschung und interaktive Modelle.</p>
+    </header>
+
+    <main>
+        <!-- Karte 1: Glossar -->
+        <div class="hub-card">
+            <div>
+                <span class="card-badge badge-glossar">Nachschlagewerk</span>
+                <h2>Interaktives Glossar</h2>
+                <p>Ein strukturierter Katalog mit Konzepten aus KI-Sicherheit, Physik, Ethik und Ökonomie. Inklusive Querverweisen, Tags und Praxisbeispielen.</p>
+            </div>
+            <a href="glossar.html" class="card-button">
+                Glossar öffnen &rarr;
+            </a>
+        </div>
+
+        <!-- Karte 2: Tutorials (Vorbereitet für später) -->
+        <div class="hub-card">
+            <div>
+                <span class="card-badge badge-tutorials">Leitfäden</span>
+                <h2>Tutorials & Guides</h2>
+                <p>Schritt-für-Schritt-Anleitungen zu komplexen Themenfeldern wie Prompt-Engineering, Systemdynamik und Algorithmen-Verständnis.</p>
+            </div>
+            <a href="#" class="card-button" style="opacity: 0.5; cursor: not-allowed;" onclick="event.preventDefault();">
+                Demnächst verfügbar
+            </a>
+        </div>
+
+        <!-- Karte 3: Interaktives Lernen (Vorbereitet für später) -->
+        <div class="hub-card">
+            <div>
+                <span class="card-badge badge-interactive">Simulationen</span>
+                <h2>Interaktives Lernen</h2>
+                <p>Visuelle Experimente und Parameter-Simulatoren zum Ausprobieren von Systemverhalten, Chaos und Regelkreisen.</p>
+            </div>
+            <a href="#" class="card-button" style="opacity: 0.5; cursor: not-allowed;" onclick="event.preventDefault();">
+                Demnächst verfügbar
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>
