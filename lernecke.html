@@ -1,203 +1,370 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lernecke | Systemic Diagnostic Hub</title>
-    <style>
-        :root {
-            --bg-color: #0b0f19;
-            --card-bg: #111827;
-            --border-color: #1f293d;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --accent-cyan: #06b6d4;
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
-            --accent-amber: #f59e0b;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tactical Command Grid: Lernecke | Alexander Beran</title>
+  
+  <!-- Google Font: JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        }
+  <style>
+    :root {
+      --bg-color: #0a0a0c;
+      --card-bg: rgba(15, 15, 20, 0.85);
+      --text-main: #e0e0e0;
+      --text-muted: #888888;
+      --cyber-glow: #00ffcc;
+      --cyber-alert: #ffb703;
+      --cyber-purple: #b5179e;
+      --font-mono: 'JetBrains Mono', monospace;
+      --border-color: #2a2a30;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        header {
-            max-width: 1200px;
-            margin: 0 auto 3rem auto;
-            text-align: center;
-        }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      padding: 2rem 8%;
+      line-height: 1.6;
+      position: relative;
+    }
 
-        header h1 {
-            font-size: 2.5rem;
-            letter-spacing: -0.05em;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, var(--accent-cyan), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    /* BACKGROUND CANVAS */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      opacity: 0.12;
+      pointer-events: none;
+    }
 
-        header p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    /* NAVIGATION BACK BUTTON */
+    .nav-bar {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 2rem;
+    }
 
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--cyber-glow);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      background: rgba(0, 255, 204, 0.05);
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      transition: all 0.3s ease;
+    }
 
-        .hub-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
+    .btn-back:hover {
+      background: rgba(0, 255, 204, 0.15);
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+      transform: translateX(-3px);
+    }
 
-        .hub-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent-cyan);
-            box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2);
-        }
+    /* MAIN HUD CONTAINER */
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-        .card-badge {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 700;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            width: fit-content;
-            margin-bottom: 1rem;
-        }
+    .hud-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
 
-        .badge-glossar { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
-        .badge-tutorials { background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
-        .badge-interactive { background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .hud-title {
+      font-size: 1.8rem;
+      color: #fff;
+    }
 
-        .hub-card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
+    .hud-status {
+      font-size: 0.75rem;
+      color: var(--cyber-glow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-        .hub-card p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
+    /* FILTER TAGS */
+    .filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
 
-        .card-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.4rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-        .hub-card:hover .card-button {
-            background: var(--accent-cyan);
-            color: #000;
-            border-color: var(--accent-cyan);
-        }
+    .filter-btn:hover, .filter-btn.active {
+      color: var(--cyber-glow);
+      border-color: var(--cyber-glow);
+      background: rgba(0, 255, 204, 0.08);
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+    }
 
-        .nav-back {
-            max-width: 1200px;
-            margin: 0 auto 2rem auto;
-            width: 100%;
-        }
+    /* GRID SYSTEM */
+    .learn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
 
-        .nav-back a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
+    /* CARD DESIGN WITH SCANNER EFFECT */
+    .learn-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      position: relative;
+      backdrop-filter: blur(5px);
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        .nav-back a:hover {
-            color: var(--accent-cyan);
-        }
-    </style>
+    .learn-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--cyber-glow);
+      box-shadow: 0 0 25px rgba(0, 255, 204, 0.15);
+    }
+
+    /* Corner Accent */
+    .learn-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      border-top: 2px solid var(--cyber-glow);
+      border-left: 2px solid var(--cyber-glow);
+    }
+
+    /* SCANNER BEAM EFFECT */
+    .learn-card::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(0, 255, 204, 0.15), transparent);
+      transition: none;
+      pointer-events: none;
+    }
+
+    .learn-card:hover::after {
+      animation: scanBeam 1.5s infinite linear;
+    }
+
+    @keyframes scanBeam {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    /* CARD HEADER & BADGES */
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .status-badge {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.live {
+      color: var(--cyber-glow);
+      border-color: var(--cyber-glow);
+      background: rgba(0, 255, 204, 0.1);
+    }
+
+    .status-badge.dev {
+      color: var(--cyber-alert);
+      border-color: var(--cyber-alert);
+      background: rgba(255, 183, 3, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .tech-stack {
+      font-size: 0.75rem;
+      color: var(--cyber-glow);
+      opacity: 0.8;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      padding-top: 0.6rem;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="nav-back">
-        <a href="index.html">&larr; Zurück zur Hauptseite</a>
+  <!-- Background Canvas -->
+  <canvas id="matrix-canvas"></canvas>
+
+  <main>
+    <!-- Back Button -->
+    <div class="nav-bar">
+      <a href="index.html" class="btn-back">&lt; // RETURN_TO_CORE</a>
     </div>
 
-    <header>
-        <h1>Lernecke & Wissens-Hub</h1>
-        <p>Erkunde abstrakte Systemkonzepte, KI-Sicherheitsforschung und interaktive Modelle.</p>
+    <!-- HUD Header -->
+    <header class="hud-header">
+      <div class="hud-status">[ KNOWLEDGE ARCHIVE // LEARNING HUB ]</div>
+      <h1 class="hud-title">Lernecke & Wissensdatenbank</h1>
     </header>
 
-    <main>
-        <!-- Karte 1: Glossar -->
-        <div class="hub-card">
-            <div>
-                <span class="card-badge badge-glossar">Nachschlagewerk</span>
-                <h2>Interaktives Glossar</h2>
-                <p>Ein strukturierter Katalog mit Konzepten aus KI-Sicherheit, Physik, Ethik und Ökonomie. Inklusive Querverweisen, Tags und Praxisbeispielen.</p>
-            </div>
-            <a href="glossar.html" class="card-button">
-                Glossar öffnen &rarr;
-            </a>
-        </div>
+    <!-- Filter Tags -->
+    <div class="filter-container">
+      <button class="filter-btn active" data-filter="all">[ ALL ]</button>
+      <button class="filter-btn" data-filter="glossary">[ GLOSSAR & CONCEPTS ]</button>
+      <button class="filter-btn" data-filter="tutorials">[ TUTORIALS & GUIDES ]</button>
+      <button class="filter-btn" data-filter="interactive">[ INTERACTIVE LABS ]</button>
+    </div>
 
-        <!-- Karte 2: Tutorials (Vorbereitet für später) -->
-        <div class="hub-card">
-            <div>
-                <span class="card-badge badge-tutorials">Leitfäden</span>
-                <h2>Tutorials & Guides</h2>
-                <p>Schritt-für-Schritt-Anleitungen zu komplexen Themenfeldern wie Prompt-Engineering, Systemdynamik und Algorithmen-Verständnis.</p>
-            </div>
-            <a href="#" class="card-button" style="opacity: 0.5; cursor: not-allowed;" onclick="event.preventDefault();">
-                Demnächst verfügbar
-            </a>
-        </div>
+    <!-- Grid System -->
+    <div class="learn-grid" id="grid">
 
-        <!-- Karte 3: Interaktives Lernen (Vorbereitet für später) -->
-        <div class="hub-card">
-            <div>
-                <span class="card-badge badge-interactive">Simulationen</span>
-                <h2>Interaktives Lernen</h2>
-                <p>Visuelle Experimente und Parameter-Simulatoren zum Ausprobieren von Systemverhalten, Chaos und Regelkreisen.</p>
-            </div>
-            <a href="#" class="card-button" style="opacity: 0.5; cursor: not-allowed;" onclick="event.preventDefault();">
-                Demnächst verfügbar
-            </a>
+      <!-- MODUL 1: INTERAKTIVES GLOSSAR -->
+      <a href="glossar.html" class="learn-card" data-category="glossary">
+        <div>
+          <div class="card-top">
+            <span class="status-badge live">[ LIVE DATABASE ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">01</span>
+          </div>
+          <h3 class="card-title">Fachbegriffe & Glossar</h3>
+          <p class="card-desc">Interaktives Cyber-Glossar für Fachbegriffe aus Philosophie, Ethik, KI und Ökonomie.</p>
         </div>
-    </main>
+        <div class="tech-stack">&gt; Python ETL • Dynamic JSON • Cyber Index</div>
+      </a>
 
+      <!-- MODUL 2: TUTORIALS -->
+      <a href="#" class="learn-card" data-category="tutorials">
+        <div>
+          <div class="card-top">
+            <span class="status-badge dev">[ IN PREPARATION ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">02</span>
+          </div>
+          <h3 class="card-title">Tutorials & Guides</h3>
+          <p class="card-desc">Schritt-für-Schritt Anleitungen zu Data Engineering, Prompt-Design und Systemarchitektur.</p>
+        </div>
+        <div class="tech-stack">&gt; Step-by-Step • Code Snippets • Guides</div>
+      </a>
+
+      <!-- MODUL 3: INTERAKTIVES LERNEN -->
+      <a href="#" class="learn-card" data-category="interactive">
+        <div>
+          <div class="card-top">
+            <span class="status-badge dev">[ IN PREPARATION ]</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">03</span>
+          </div>
+          <h3 class="card-title">Interaktives Lernen</h3>
+          <p class="card-desc">Simulative Experimente, Quizzes und visuelle Demos zum praktischen Ausprobieren.</p>
+        </div>
+        <div class="tech-stack">&gt; Simulations • Interactive Demos • Exercises</div>
+      </a>
+
+    </div>
+  </main>
+
+  <script>
+    /* 1. MATRIX CANVAS EFFECT */
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789<>{}[]/*+=~#$_';
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(10, 10, 12, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ffcc';
+      ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 33);
+
+    /* 2. FILTER SYSTEM */
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const learnCards = document.querySelectorAll('.learn-card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-filter');
+
+        learnCards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
