@@ -447,12 +447,12 @@
       if (e.target.id === 'modal-overlay') closeModalDirect();
     }
 
-    // ADVANCED PAN & ZOOM ENGINE FOR VIEWPORT ONLY
+    // PAN & ZOOM ENGINE (FIXED & SMOOTH)
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
     
     let isDragging = false;
-    let startX, startY;
+    let startX = 0, startY = 0;
     let currentX = 0, currentY = 0;
     let scale = 1;
     
@@ -467,23 +467,26 @@
       updateWorldTransform();
     }
     
-    // ZOOMING VIA MOUSE WHEEL
+    // ZOOMEN PER MAUSRAD
     viewport.addEventListener('wheel', (e) => {
       e.preventDefault();
       const zoomFactor = 0.08;
       if (e.deltaY < 0) {
-        scale = Math.min(scale + zoomFactor, 2.5); // Max 250% Zoom
+        scale = Math.min(scale + zoomFactor, 2.2); // Max Zoom
       } else {
-        scale = Math.max(scale - zoomFactor, 0.4); // Min 40% Zoom
+        scale = Math.max(scale - zoomFactor, 0.4); // Min Zoom
       }
       updateWorldTransform();
     }, { passive: false });
     
-    // PANNING LOGIC (DRAG)
+    // MAUS PANNING (VERSCHIEBEN)
     viewport.addEventListener('mousedown', (e) => {
+      // Wenn auf ein Node geklickt wurde, kein Drag starten
+      if (e.target.closest('.node-box')) return;
       isDragging = true;
       startX = e.clientX - currentX;
       startY = e.clientY - currentY;
+      viewport.style.cursor = 'grabbing';
     });
     
     window.addEventListener('mousemove', (e) => {
@@ -493,47 +496,52 @@
       updateWorldTransform();
     });
     
-    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      viewport.style.cursor = 'grab';
+    });
     
-    // TOUCH PANNING & TOUCH PINCH-TO-ZOOM (MOBILE)
-    let initialTouchDistance = null;
+    // TOUCH PANNING & PINCH-ZOOM (FÜR TABLET / MOBILE)
+    let initialTouchDist = null;
     
     viewport.addEventListener('touchstart', (e) => {
+      if (e.target.closest('.node-box')) return;
+      
       if (e.touches.length === 1) {
         isDragging = true;
         startX = e.touches[0].clientX - currentX;
-        startY = e.touches[0].clientY - startY;
+        startY = e.touches[0].clientY - currentY;
       } else if (e.touches.length === 2) {
         isDragging = false;
-        initialTouchDistance = Math.hypot(
+        initialTouchDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
       }
-    });
+    }, { passive: true });
     
     viewport.addEventListener('touchmove', (e) => {
       if (isDragging && e.touches.length === 1) {
         currentX = e.touches[0].clientX - startX;
         currentY = e.touches[0].clientY - startY;
         updateWorldTransform();
-      } else if (e.touches.length === 2 && initialTouchDistance) {
-        const currentDistance = Math.hypot(
+      } else if (e.touches.length === 2 && initialTouchDist) {
+        const dist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        const diff = currentDistance - initialTouchDistance;
+        const diff = dist - initialTouchDist;
         if (Math.abs(diff) > 5) {
-          scale = Math.min(Math.max(scale + (diff > 0 ? 0.03 : -0.03), 0.4), 2.5);
-          initialTouchDistance = currentDistance;
+          scale = Math.min(Math.max(scale + (diff > 0 ? 0.02 : -0.02), 0.4), 2.2);
+          initialTouchDist = dist;
           updateWorldTransform();
         }
       }
-    });
+    }, { passive: true });
     
     viewport.addEventListener('touchend', () => {
       isDragging = false;
-      initialTouchDistance = null;
+      initialTouchDist = null;
     });
 
     // MATRIX BACKGROUND
