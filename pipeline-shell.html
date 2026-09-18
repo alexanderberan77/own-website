@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Architecture // Flight Level Framework</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -447,44 +447,94 @@
       if (e.target.id === 'modal-overlay') closeModalDirect();
     }
 
-    // PANNING LOGIC
+    // ADVANCED PAN & ZOOM ENGINE FOR VIEWPORT ONLY
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
+    
     let isDragging = false;
     let startX, startY;
     let currentX = 0, currentY = 0;
-
+    let scale = 1;
+    
+    function updateWorldTransform() {
+      world.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) scale(${scale})`;
+    }
+    
+    function resetWorldPosition() {
+      currentX = 0;
+      currentY = 0;
+      scale = 1;
+      updateWorldTransform();
+    }
+    
+    // ZOOMING VIA MOUSE WHEEL
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = 0.08;
+      if (e.deltaY < 0) {
+        scale = Math.min(scale + zoomFactor, 2.5); // Max 250% Zoom
+      } else {
+        scale = Math.max(scale - zoomFactor, 0.4); // Min 40% Zoom
+      }
+      updateWorldTransform();
+    }, { passive: false });
+    
+    // PANNING LOGIC (DRAG)
     viewport.addEventListener('mousedown', (e) => {
       isDragging = true;
       startX = e.clientX - currentX;
       startY = e.clientY - currentY;
     });
-
+    
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       currentX = e.clientX - startX;
       currentY = e.clientY - startY;
-      world.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`;
+      updateWorldTransform();
     });
-
+    
     window.addEventListener('mouseup', () => isDragging = false);
-
+    
+    // TOUCH PANNING & TOUCH PINCH-TO-ZOOM (MOBILE)
+    let initialTouchDistance = null;
+    
     viewport.addEventListener('touchstart', (e) => {
-      if(e.touches.length === 1) {
+      if (e.touches.length === 1) {
         isDragging = true;
         startX = e.touches[0].clientX - currentX;
-        startY = e.touches[0].clientY - currentY;
+        startY = e.touches[0].clientY - startY;
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        initialTouchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
       }
     });
-
-    window.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
-      currentX = e.touches[0].clientX - startX;
-      currentY = e.touches[0].clientY - startY;
-      world.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`;
+    
+    viewport.addEventListener('touchmove', (e) => {
+      if (isDragging && e.touches.length === 1) {
+        currentX = e.touches[0].clientX - startX;
+        currentY = e.touches[0].clientY - startY;
+        updateWorldTransform();
+      } else if (e.touches.length === 2 && initialTouchDistance) {
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const diff = currentDistance - initialTouchDistance;
+        if (Math.abs(diff) > 5) {
+          scale = Math.min(Math.max(scale + (diff > 0 ? 0.03 : -0.03), 0.4), 2.5);
+          initialTouchDistance = currentDistance;
+          updateWorldTransform();
+        }
+      }
     });
-
-    window.addEventListener('touchend', () => isDragging = false);
+    
+    viewport.addEventListener('touchend', () => {
+      isDragging = false;
+      initialTouchDistance = null;
+    });
 
     // MATRIX BACKGROUND
     const canvas = document.getElementById('matrix-canvas');
