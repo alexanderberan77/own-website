@@ -1,65 +1,84 @@
+<!-- INTERACTIVE TOGGLE BAR FOR PIPELINE COMPLEXITY -->
+<div style="position: absolute; top: 20px; right: 40px; z-index: 100; display: flex; align-items: center; gap: 12px; background: rgba(10, 15, 25, 0.85); padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 6px; backdrop-filter: blur(8px);">
+  <span style="font-size: 0.75rem; color: #fff; font-weight: bold; letter-spacing: 1px;">CONNECTIONS:</span>
+  <button id="toggle-connections-btn" onclick="toggleConnections()" style="background: var(--cyber-glow); color: #000; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
+    SHOW SUB-NODE LINKS
+  </button>
+</div>
+
 <!-- CONNECTOR SVG PATHS, FEEDBACK LOOPS & ANIMATED PULSES -->
-<svg class="connections-svg" style="width: 2400px; height: 800px;">
+<svg class="connections-svg" style="width: 2900px; height: 850px; position: absolute; top: 0; left: 0; pointer-events: none;">
   <defs>
-    <!-- Pfeilspitze für Feedback-Loops -->
-    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <!-- Pfeilspitzen -->
+    <marker id="arrow-alert" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cyber-alert)" />
     </marker>
     <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cyber-glow)" />
     </marker>
+    <marker id="arrow-internal" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c77dff" />
+    </marker>
   </defs>
 
-  <!-- LINEAR MAIN FLOW PATHS (Green Streams) -->
-  <!-- Node 01 -> Node 02 -->
-  <path class="pipe-line active-green" d="M 430,350 L 520,350" />
-  <!-- Node 02 -> Node 03 -->
-  <path class="pipe-line active-green" d="M 910,350 L 1000,350" />
-  <!-- Node 03 -> Node 04 -->
-  <path class="pipe-line active-green" d="M 1390,310 L 1480,310" />
-  <!-- Node 04 -> Node 05 -->
-  <path class="pipe-line active-green" d="M 1830,310 L 1920,310" />
+  <!-- ========================================== -->
+  <!-- MAIN PIPELINE FLOW (MAIN NODES CONNECTORS) -->
+  <!-- ========================================== -->
+  <!-- 00 (Raw Sources) -> 01 (Ingestion) -->
+  <path class="pipe-line active-green" d="M 390,380 L 480,380" />
+  <!-- 01 (Ingestion) -> 02 (Enrichment) -->
+  <path class="pipe-line active-green" d="M 870,380 L 960,380" />
+  <!-- 02 (Enrichment) -> 03 (Internal DWH / Persistence) -->
+  <path class="pipe-line active-green" d="M 1350,380 L 1440,380" />
+  <!-- 03 (Internal DWH) -> 04 (Compute Engine) -->
+  <path class="pipe-line active-green" d="M 1830,340 L 1920,340" />
+  <!-- 04 (Compute Engine) -> 05 (Frontend & Interfaces) -->
+  <path class="pipe-line active-green" d="M 2270,340 L 2360,340" />
 
-  <!-- SPECIAL ROUTING & CROSS-CONNECTIONS -->
-  <!-- Node 03 (Cold DB 03b) directly to Node 05c (Research/Marketing) -->
-  <path class="pipe-line line-internal" d="M 1390,440 C 1600,440 1700,560 1920,560" />
+  <!-- ========================================== -->
+  <!-- COMPLEX & SUB-NODE DIRECT LINKS (TOGGLEABLE) -->
+  <!-- ========================================== -->
+  <g id="sub-node-connections" style="display: none; transition: opacity 0.3s ease;">
+    <!-- Direct Inbound from Internal DWH (03b) directly to Compute Engine (04a) [Pre-filled Historical DB] -->
+    <path class="pipe-line line-internal" d="M 1830,470 C 1880,470 1880,320 1920,320" marker-end="url(#arrow-internal)" />
+    
+    <!-- Raw File Ingestion (00b) Direct Stream to Data Stitching (02c) -->
+    <path class="pipe-line line-internal" d="M 390,360 C 650,360 700,520 960,520" stroke-dasharray="4 4" />
 
-  <!-- FEEDBACK LOOP 1: Quality Guard (04b) -> Ingestion Cascade (01d) GANZ NACH LINKS! -->
-  <!-- Bogen verläuft oben rum von X=1655, Y=370 zurück zu X=235, Y=560 -->
-  <path id="feedback-reingest" class="pipe-line line-fred" d="M 1655,420 C 1655,700 235,700 235,590" marker-end="url(#arrow)" />
+    <!-- External API Inputs (00a) -> Ingestion Cascade (01d) -->
+    <path class="pipe-line active-green" d="M 390,220 C 430,220 440,540 480,540" />
+  </g>
 
-  <!-- FEEDBACK LOOP 2: Research/Marketing (05c) -> Analytics (04a) for Ad-Hoc Compute -->
-  <path id="feedback-adhoc" class="pipe-line line-fred" d="M 1920,540 C 1780,540 1780,330 1655,310" marker-end="url(#arrow)" />
+  <!-- ========================================== -->
+  <!-- FEEDBACK LOOPS & RETURN STREAMS -->
+  <!-- ========================================== -->
+  <!-- FEEDBACK LOOP 1: Frontend (05) -> Internal DWH (03b) [Neukunden-IDs, Metadaten, Snapshots] -->
+  <path id="feedback-frontend-db" class="pipe-line line-fred" d="M 2360,570 C 2100,720 1650,720 1635,590" marker-end="url(#arrow-alert)" />
 
+  <!-- FEEDBACK LOOP 2: Quality Guard (04b) -> Historical Ingestion Cascade (01d) [Lücken-Nachforderung] -->
+  <path id="feedback-reingest" class="pipe-line line-fred" d="M 2100,480 C 2100,770 670,770 670,590" marker-end="url(#arrow-alert)" />
+
+  <!-- FEEDBACK LOOP 3: Research/Marketing (05c) -> Analytics (04a) [Ad-Hoc Compute Request] -->
+  <path id="feedback-adhoc" class="pipe-line line-internal" d="M 2360,510 C 2200,510 2200,310 2100,310" marker-end="url(#arrow-internal)" />
+
+  <!-- ========================================== -->
   <!-- ANIMATED PULSE PARTICLES -->
-  <!-- Main Forward Flow -->
-  <circle class="pulse-particle" fill="var(--cyber-glow)">
-    <animateMotion dur="1.8s" repeatCount="indefinite" path="M 430,350 L 520,350" />
-  </circle>
-  <circle class="pulse-particle" fill="var(--cyber-glow)">
-    <animateMotion dur="2.0s" repeatCount="indefinite" path="M 910,350 L 1000,350" />
-  </circle>
-  <circle class="pulse-particle" fill="var(--cyber-glow)">
-    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 1390,310 L 1480,310" />
-  </circle>
-  <circle class="pulse-particle" fill="var(--cyber-glow)">
-    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 1830,310 L 1920,310" />
-  </circle>
+  <!-- ========================================== -->
+  <!-- Main Forward Flow Pulses -->
+  <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 390,380 L 480,380" /></circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 870,380 L 960,380" /></circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="2.0s" repeatCount="indefinite" path="M 1350,380 L 1440,380" /></circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 1830,340 L 1920,340" /></circle>
+  <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 2270,340 L 2360,340" /></circle>
 
-  <!-- Direct Storage -> Research Stream (Magenta) -->
-  <circle class="pulse-particle" fill="var(--color-internal)">
-    <animateMotion dur="3s" repeatCount="indefinite" path="M 1390,440 C 1600,440 1700,560 1920,560" />
-  </circle>
+  <!-- DWH to Engine Direct Historical Feed Pulse -->
+  <circle class="pulse-particle" fill="#c77dff"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 1830,470 C 1880,470 1880,320 1920,320" /></circle>
 
-  <!-- FEEDBACK LOOP ANIMATIONS (Rückwärts fließende Impulse) -->
-  <!-- Re-Ingestion Trigger Signal (Alert Yellow/Orange) -->
-  <circle class="pulse-particle" fill="var(--cyber-alert)">
-    <animateMotion dur="4s" repeatCount="indefinite" path="M 1655,420 C 1655,700 235,700 235,590" />
-  </circle>
-  <!-- Ad-Hoc Compute Request Signal -->
-  <circle class="pulse-particle" fill="var(--cyber-alert)">
-    <animateMotion dur="3.2s" repeatCount="indefinite" path="M 1920,540 C 1780,540 1780,330 1655,310" />
-  </circle>
+  <!-- Feedback Loop Pulses (Alert Yellow/Orange & Purple) -->
+  <!-- Frontend -> DB Metadata Feedback -->
+  <circle class="pulse-particle" fill="var(--cyber-alert)"><animateMotion dur="3.8s" repeatCount="indefinite" path="M 2360,570 C 2100,720 1650,720 1635,590" /></circle>
+  <!-- Quality Guard -> Ingestion Feedback -->
+  <circle class="pulse-particle" fill="var(--cyber-alert)"><animateMotion dur="4.5s" repeatCount="indefinite" path="M 2100,480 C 2100,770 670,770 670,590" /></circle>
 </svg>
 
 <!-- CONTAINER STYLING FOR GROUPED NODES -->
@@ -67,16 +86,16 @@
   .node-group {
     position: absolute;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(10, 15, 25, 0.4);
-    backdrop-filter: blur(5px);
-    border-radius: 4px;
-    padding: 10px;
+    background: rgba(10, 15, 25, 0.45);
+    backdrop-filter: blur(6px);
+    border-radius: 6px;
+    padding: 12px;
   }
   .group-title {
     font-size: 0.65rem;
     color: var(--cyber-glow);
     letter-spacing: 1.5px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: bold;
     text-transform: uppercase;
   }
@@ -86,6 +105,7 @@
     padding: 0.6rem 0.8rem;
     margin-bottom: 8px;
     cursor: pointer;
+    border-radius: 4px;
     transition: all 0.2s ease;
   }
   .sub-node:last-child { margin-bottom: 0; }
@@ -95,16 +115,17 @@
     transform: translateX(3px);
   }
   .sub-title { font-size: 0.8rem; color: #fff; font-weight: bold; }
-  .sub-desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+  .sub-desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; line-height: 1.2; }
   
   .badge-tag {
     display: inline-block;
     font-size: 0.55rem;
-    padding: 1px 4px;
+    padding: 1px 5px;
     border-radius: 2px;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     font-weight: bold;
   }
+  .tag-source { background: rgba(0, 180, 216, 0.2); color: #00b4d8; }
   .tag-stream { background: rgba(0, 255, 204, 0.15); color: var(--cyber-glow); }
   .tag-batch { background: rgba(255, 183, 3, 0.15); color: var(--cyber-alert); }
   .tag-meta { background: rgba(157, 78, 221, 0.2); color: #c77dff; }
@@ -112,9 +133,40 @@
 </style>
 
 <!-- ========================================== -->
-<!-- NODE 01 // SMART INGESTION ENGINE (4 SUB-NODES) -->
+<!-- NODE 00 // RAW INPUTS & DATA SOURCES -->
 <!-- ========================================== -->
-<div class="node-group" style="top: 120px; left: 40px; width: 390px; height: 530px;">
+<div class="node-group" style="top: 120px; left: 40px; width: 350px; height: 550px;">
+  <div class="group-title">[ NODE 00 // RAW DATA SOURCES ]</div>
+  
+  <div class="sub-node" onclick="openNodeModal('src_api')">
+    <span class="badge-tag tag-source">EXTERNAL APIS</span>
+    <div class="sub-title">00a: Market & Macro Feeds</div>
+    <div class="sub-desc">Yahoo Finance, FRED, Bloomberg/Refinitiv Market & FX Data.</div>
+  </div>
+
+  <div class="sub-node" onclick="openNodeModal('src_files')">
+    <span class="badge-tag tag-source">FILE INGESTION</span>
+    <div class="sub-title">00b: Flatfiles & Documents</div>
+    <div class="sub-desc">Lokale & externe Excel (.xlsx), CSV, XML, JSON Snapshots.</div>
+  </div>
+
+  <div class="sub-node" onclick="openNodeModal('src_frontend')">
+    <span class="badge-tag tag-source">FRONTEND INPUTS</span>
+    <div class="sub-title">00c: Interactive User Data</div>
+    <div class="sub-desc">Formulare, Manuelle Stammdaten-Eingaben, Neukunden-Erfassung.</div>
+  </div>
+
+  <div class="sub-node" onclick="openNodeModal('src_3rdparty')">
+    <span class="badge-tag tag-source">PARTNER SYSTEMS</span>
+    <div class="sub-title">00d: 3rd Party & Subsystems</div>
+    <div class="sub-desc">Externe Partner-Webhooks, Zahlungsdienstleister & ERPs.</div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- NODE 01 // SMART INGESTION ENGINE -->
+<!-- ========================================== -->
+<div class="node-group" style="top: 120px; left: 480px; width: 390px; height: 550px;">
   <div class="group-title">[ NODE 01 // SMART INGESTION ENGINE ]</div>
   
   <div class="sub-node" onclick="openNodeModal('ingest_stream')">
@@ -126,96 +178,96 @@
   <div class="sub-node" onclick="openNodeModal('ingest_macro')">
     <span class="badge-tag tag-batch">DELTA CHECKER</span>
     <div class="sub-title">01b: Macro Delta & Timestamp Checker</div>
-    <div class="sub-desc">Prüft FRED Timestamp-Header. Triggert Download nur bei neuem Datum (BIP/CPI).</div>
+    <div class="sub-desc">Prüft FRED Timestamp-Header. Triggert Download nur bei neuem Datum.</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('ingest_meta')">
     <span class="badge-tag tag-meta">EXCEL / SHEETS IMPORT</span>
     <div class="sub-title">01c: Master Data & Ticker Registry</div>
-    <div class="sub-desc">Importiert neue Ticker, Isin, Country-Codes (DE/US) & Sektoren aus Excel/Sheets.</div>
+    <div class="sub-desc">Importiert neue Ticker, ISIN, Country-Codes (DE/US) & Sektoren.</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('ingest_cascade')" style="border-color: rgba(255, 183, 3, 0.4);">
     <span class="badge-tag tag-batch">HISTORICAL FALLBACK</span>
     <div class="sub-title">01d: Historical Ingestion Cascade</div>
-    <div class="sub-desc">Multi-Vendor Fallback (API 1 -> API 2 -> WebScrape) für alte Zeitreihen & Backtests.</div>
+    <div class="sub-desc">Multi-Vendor Fallback (API 1 -> API 2 -> Scrape) für alte Zeitreihen.</div>
   </div>
 </div>
 
 <!-- ========================================== -->
-<!-- NODE 02 // TRANSFORM & ENRICHMENT (3 SUB-NODES) -->
+<!-- NODE 02 // TRANSFORM & ENRICHMENT -->
 <!-- ========================================== -->
-<div class="node-group" style="top: 170px; left: 520px; width: 390px; height: 430px;">
+<div class="node-group" style="top: 150px; left: 960px; width: 390px; height: 460px;">
   <div class="group-title">[ NODE 02 // TRANSFORM & ENRICHMENT ]</div>
   
   <div class="sub-node" onclick="openNodeModal('trans_tz')">
     <span class="badge-tag tag-stream">SCHEDULER & SYNC</span>
     <div class="sub-title">02a: Timezone & Market Hours Sync</div>
-    <div class="sub-desc">Handles Trading Closing (XETRA 17:30 CET vs. NYSE 22:00 CET) & Day-End Cutoffs.</div>
+    <div class="sub-desc">Handles Closing (XETRA 17:30 CET vs. NYSE 22:00 CET) & Cutoffs.</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('trans_enrich')">
     <span class="badge-tag tag-meta">METADATA JOIN</span>
     <div class="sub-title">02b: Metadata Join & Enrichment</div>
-    <div class="sub-desc">Verknüpft rohe Price-Ticks mit Stammdaten (Land = US, Sektor = Tech, Währung = USD).</div>
+    <div class="sub-desc">Verknüpft Price-Ticks mit Stammdaten (Land = US, Sektor = Tech).</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('trans_stitch')">
     <span class="badge-tag tag-batch">DATA STITCHING</span>
     <div class="sub-title">02c: Data Stitching & Outlier Cleansing</div>
-    <div class="sub-desc">Stitched alte & neue Ticker-Formate nahtlos zusammen; entfernt Ausreißer & Fill-Gaps.</div>
+    <div class="sub-desc">Stitched alte/neue Formate nahtlos; entfernt Ausreißer & Lücken.</div>
   </div>
 </div>
 
 <!-- ========================================== -->
-<!-- NODE 03 // PERSISTENCE & DISPATCHER (3 SUB-NODES) -->
+<!-- NODE 03 // INTERNAL DB / DWH & PERSISTENCE -->
 <!-- ========================================== -->
-<div class="node-group" style="top: 170px; left: 1000px; width: 390px; height: 430px;">
-  <div class="group-title">[ NODE 03 // PERSISTENCE & DISPATCHER ]</div>
+<div class="node-group" style="top: 150px; left: 1440px; width: 390px; height: 460px;">
+  <div class="group-title">[ NODE 03 // INTERNAL DB / DWH ]</div>
   
   <div class="sub-node" onclick="openNodeModal('store_hot')">
     <span class="badge-tag tag-stream">IN-MEMORY CACHE</span>
     <div class="sub-title">03a: Hot Storage / Low-Latency Cache</div>
-    <div class="sub-desc">Redis-In-Memory-Speicher für Live-Streams & Millisekunden-Zugriff im HUD.</div>
+    <div class="sub-desc">Redis-In-Memory-Speicher für Live-Streams & Millisekunden-Zugriff.</div>
   </div>
 
-  <div class="sub-node" onclick="openNodeModal('store_cold')">
-    <span class="badge-tag tag-batch">COLD TSDB</span>
-    <div class="sub-title">03b: Cold Time-Series Database</div>
-    <div class="sub-desc">Historisierte, dauerhafte Speicherung gereinigter Daten (TimescaleDB / Postgres).</div>
+  <div class="sub-node" onclick="openNodeModal('store_cold')" style="border-color: rgba(199, 125, 255, 0.5);">
+    <span class="badge-tag tag-meta">HISTORICAL DWH</span>
+    <div class="sub-title">03b: Cold Time-Series & Master DWH</div>
+    <div class="sub-desc">Historische ETL-Daten, Bestandskunden-Profile & Stamm-Metadaten.</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('store_dispatch')">
-    <span class="badge-tag tag-meta">EVENT BUS</span>
+    <span class="badge-tag tag-batch">EVENT BUS</span>
     <div class="sub-title">03c: Event & Data Dispatcher</div>
-    <div class="sub-desc">Verteilt Datenpakete geordnet an Analytics, Reporting und externe Konsumenten.</div>
+    <div class="sub-desc">Verteilt Datenpakete geordnet an Analytics & Konsumenten.</div>
   </div>
 </div>
 
 <!-- ========================================== -->
-<!-- NODE 04 // ANALYTICS & QUALITY GUARD (2 SUB-NODES) -->
+<!-- NODE 04 // COMPUTE & ANALYTICS ENGINE -->
 <!-- ========================================== -->
-<div class="node-group" style="top: 200px; left: 1480px; width: 350px; height: 320px;">
-  <div class="group-title">[ NODE 04 // ANALYTICS ENGINE ]</div>
+<div class="node-group" style="top: 180px; left: 1920px; width: 350px; height: 350px;">
+  <div class="group-title">[ NODE 04 // COMPUTE & ENGINE ]</div>
   
   <div class="sub-node" onclick="openNodeModal('ana_kpi')">
     <span class="badge-tag tag-stream">COMPUTE ENGINE</span>
-    <div class="sub-title">04a: Aggregated Risk & Country Engine</div>
-    <div class="sub-desc">Berechnet Volatilität, VaR & Portfolio-Exposure aufgeteilt nach Land/Sektor.</div>
+    <div class="sub-title">04a: Aggregated Risk & Calculation Engine</div>
+    <div class="sub-desc">Berechnet Volatilität, VaR & Portfolio-Metriken (Inputs: ETL + DWH).</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('ana_guard')" style="border-color: var(--cyber-alert);">
     <span class="badge-tag tag-feedback">FEEDBACK TRIGGER</span>
     <div class="sub-title">04b: Data Quality Guard</div>
-    <div class="sub-desc">Erkennt Lücken/Fehler & schickt automatisches Re-Ingest Signal an Node 01!</div>
+    <div class="sub-desc">Erkennt Lücken/Fehler & schickt Re-Ingest Signal an Node 01!</div>
   </div>
 </div>
 
 <!-- ========================================== -->
-<!-- NODE 05 // MULTI-DOMAIN INTERFACES (4 SUB-NODES) -->
+<!-- NODE 05 // FRONTEND & INTERFACES -->
 <!-- ========================================== -->
-<div class="node-group" style="top: 120px; left: 1920px; width: 420px; height: 530px;">
-  <div class="group-title">[ NODE 05 // MULTI-DOMAIN INTERFACES ]</div>
+<div class="node-group" style="top: 120px; left: 2360px; width: 420px; height: 550px;">
+  <div class="group-title">[ NODE 05 // FRONTEND & INTERFACES ]</div>
   
   <div class="sub-node" onclick="openNodeModal('ui_hud')">
     <span class="badge-tag tag-stream">OPERATIONS</span>
@@ -226,152 +278,81 @@
   <div class="sub-node" onclick="openNodeModal('ui_accounting')">
     <span class="badge-tag tag-batch">FINANCE & AUDIT</span>
     <div class="sub-title">05b: Accounting & Regulatory Export</div>
-    <div class="sub-desc">Automatisierte EOD-Reports, PDF/CSV-Exporte für Buchhaltung & Compliance.</div>
+    <div class="sub-desc">Automatisierte EOD-Reports, PDF/CSV-Exporte für Buchhaltung.</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('ui_research')">
     <span class="badge-tag tag-meta">RESEARCH / MARKETING</span>
     <div class="sub-title">05c: Ad-Hoc Research & Marketing</div>
-    <div class="sub-desc">Kombiniert DB-Macrodaten mit lokalen Excel-Verkaufsdaten für Korrelationsanalysen.</div>
+    <div class="sub-desc">Kombiniert DB-Macrodaten mit lokalen Excel-Verkaufsdaten.</div>
   </div>
 
   <div class="sub-node" onclick="openNodeModal('ui_alerts')">
-    <span class="badge-tag tag-feedback">WEBHOOKS & ALERTS</span>
-    <div class="sub-title">05d: Automated Alerting System</div>
-    <div class="sub-desc">Triggert Push-Notifications / Slack-Webhooks bei Schwellenwert-Überschreitung.</div>
+    <span class="badge-tag tag-feedback">CUSTOMER & METADATA FEEDBACK</span>
+    <div class="sub-title">05d: Customer Registration & Feedback Loop</div>
+    <div class="sub-desc">Generiert Neukunden-IDs, speichert UI-State & updated Metadaten im DWH.</div>
   </div>
 </div>
 
-<!-- MODAL DATA DEFINITIONS FOR FLIGHT LEVEL 3 -->
+<!-- MODAL DATA DEFINITIONS FOR FLIGHT LEVEL 3 & TOGGLE LOGIC -->
 <script>
-  window.nodeSpecs = {
-    ingest_stream: {
-      tag: '[ NODE 01a // REALTIME STREAM ]',
-      title: 'High-Frequency Market Stream Ingestion',
-      desc: 'Kontinuierlicher Abruf von Live-Tickdaten für Aktien (US & DE) und Devisenkurse über WebSocket/REST-Polling im Minutentakt.',
-      specs: 'Intervall: 1 Minute / Tick. Format: JSON Stream. Protokoll: HTTPS / WSS.',
-      principles: 'Geringe Latenz für den Live-Betrieb. Kurse werden ungefiltert in den In-Memory Pipeline-Buffer weitergeleitet.',
-      code: `{\n  "ticker": "AAPL",\n  "price": 224.50,\n  "currency": "USD",\n  "timestamp": "2026-09-18T13:45:00Z"\n}`
+  // TOGGLE FUNCTION FOR COMPLEX SUB-NODE CONNECTIONS
+  function toggleConnections() {
+    const subConn = document.getElementById('sub-node-connections');
+    const btn = document.getElementById('toggle-connections-btn');
+    
+    if (subConn.style.display === 'none') {
+      subConn.style.display = 'block';
+      btn.innerText = 'HIDE SUB-NODE LINKS';
+      btn.style.background = 'var(--cyber-alert)';
+    } else {
+      subConn.style.display = 'none';
+      btn.innerText = 'SHOW SUB-NODE LINKS';
+      btn.style.background = 'var(--cyber-glow)';
+    }
+  }
+
+  // NODE SPECIFICATIONS (Extends existing window.nodeSpecs)
+  window.nodeSpecs = Object.assign(window.nodeSpecs || {}, {
+    src_api: {
+      tag: '[ NODE 00a // RAW DATA SOURCE ]',
+      title: 'Market & Macro External APIs',
+      desc: 'Externe Schnittstellen zu Finanz- und Makrodatenanbietern (z. B. Yahoo Finance, FRED, Bloomberg).',
+      specs: 'Protokolle: REST, WebSockets, Rate-Limited APIs.',
+      principles: 'Rohdaten werden unbefiltert empfangen und an die Ingestion Engine (Node 01) weitergeleitet.',
+      code: `GET /v8/finance/chart/AAPL?interval=1m\nHost: query1.finance.yahoo.com`
     },
-    ingest_macro: {
-      tag: '[ NODE 01b // SMART BATCH ]',
-      title: 'Macro Delta & Timestamp Checker',
-      desc: 'Effizienz-Mechanismus für Macrodaten (z. B. BIP, CPI via FRED). Liest primär nur den Timestamp-Header der Quelle.',
-      specs: 'Intervall: Täglich 08:00 Uhr. Payload: Lightweight HTTP HEAD Request.',
-      principles: 'Ressourcenschonung: Nur wenn "Last-Modified > Inhouse-Datum" vorliegt, wird ein kompletter Data-Download ausgelöst.',
-      code: `IF fred.last_modified > db.get_max_date('DE_GDP') THEN\n   TRIGGER full_ingest('DE_GDP')\nELSE\n   LOG("No new data available. Skip Ingest.");`
+    src_files: {
+      tag: '[ NODE 00b // RAW FILE INGESTION ]',
+      title: 'Flatfiles & Document Import',
+      desc: 'Manuelle oder automatisierte Ad-Hoc-Uploads aus Dateisystemen (Excel, CSV, XML).',
+      specs: 'Formate: .xlsx, .csv, .xml, .json.',
+      principles: 'Ermöglicht die Integration von Daten aus Drittsystemen ohne direkte API-Anbindung.',
+      code: `pandas.read_excel('portfolio_snapshot_2026.xlsx')`
     },
-    ingest_meta: {
-      tag: '[ NODE 01c // MASTER DATA ]',
-      title: 'Master Data & Ticker Registry (Excel Import)',
-      desc: 'Ermöglicht Fachanwendern das Hochladen von Excel/Sheets-Dateien zur Ticker-Erweiterung und Stammdaten-Pflege.',
-      specs: 'Input: .xlsx / Google Sheets API. Metadaten: ISIN, Country, Sector, Currency.',
-      principles: 'Schema-Evolution: Neue Ticker erfordern zwingend Ländercodes (DE, US), damit das Dashboard später filtern kann.',
-      code: `// Ticker Metadata Mapping\n{\n  "ticker": "NVDA",\n  "isin": "US67066G1040",\n  "country": "US",\n  "sector": "Semiconductors",\n  "currency": "USD"\n}`
+    src_frontend: {
+      tag: '[ NODE 00c // USER INPUTS ]',
+      title: 'Interactive Frontend Forms & Inputs',
+      desc: 'Direkte Benutzereingaben über Benutzeroberflächen (z. B. Neukunden-Anlage, Konfigurationsänderungen).',
+      specs: 'Input: Formularfelder, Validierte JSON Payloads.',
+      principles: 'Daten durchlaufen vor der Speicherung die vollständige Verarbeitungs- und Validierungskette.',
+      code: `{\n  "action": "CREATE_CUSTOMER",\n  "name": "Acme Corp",\n  "region": "DE"\n}`
     },
-    ingest_cascade: {
-      tag: '[ NODE 01d // FALLBACK CHAIN ]',
-      title: 'Historical Ingestion Cascade',
-      desc: 'Ausfallsichere Kaskade für historisierte Datenabfragen über Jahrzehnte (z. B. für Backtesting oder Risikomodelle).',
-      specs: 'Kaskade: Primary API -> Secondary Vendor -> Historical CSV Archive.',
-      principles: 'Sollten sich Ticker-Namen oder URLs historisch geändert haben, schaltet das System automatisch auf Sekundärquellen um.',
-      code: `try:\n    data = fetch_vendor_primary(ticker, start_date)\nexcept VendorAPIError:\n    data = fetch_historical_archive_fallback(ticker, start_date)`
-    },
-    trans_tz: {
-      tag: '[ NODE 02a // SCHEDULER ]',
-      title: 'Timezone & Market Hours Sync',
-      desc: 'Synchronisiert unterschiedliche weltweite Börsen-Schlusszeiten (z. B. XETRA 17:30 CET vs. NYSE 22:00 CET).',
-      specs: 'Timezones: UTC, CET, EST. Handhabt Feiertagskalender & Handelsunterbrechungen.',
-      principles: 'Stellt sicher, dass EOD-Berechnungen erst dann finalisiert werden, wenn der jeweilige Markt tatsächlich geschlossen ist.',
-      code: `IF market_status('NYSE') == 'CLOSED' AND current_time >= '22:00:00 CET':\n    finalize_eod_prices('US')`
-    },
-    trans_enrich: {
-      tag: '[ NODE 02b // ENRICHMENT ]',
-      title: 'Metadata Join & Enrichment Core',
-      desc: 'Führt rohe Preis-Ticks mit den registrierten Stammdaten zusammen (Data Join).',
-      specs: 'Join-Key: Ticker / ISIN. Output: Enriched Time-Series Object.',
-      principles: 'Jeder Datenpunkt erhält Metadaten-Tags (Country=DE, Region=EU, Sector=Tech) für spätere Slice-and-Dice Analysen.',
-      code: `SELECT t.time, t.price, m.country, m.sector \nFROM market_ticks t \nJOIN ticker_metadata m ON t.ticker = m.ticker;`
-    },
-    trans_stitch: {
-      tag: '[ NODE 02c // CLEANSIING ]',
-      title: 'Data Stitching & Outlier Cleansing',
-      desc: 'Bereinigt historische Datenbrüche, entfernt fehlerhafte Ticks (Outlier) und schließt Lücken (Forward-Fill).',
-      specs: 'Algorithms: 3-Sigma Outlier Detection, Forward Fill (FFill).',
-      principles: 'Nahtloses Zusammenfügen (Stitching) von Daten aus der Ingestion-Kaskade zu einer homogenen Zeitreihe.',
-      code: `df.remove_outliers(std_threshold=3.0)\n  .forward_fill_missing()\n  .stitch_historical_fragments()`
-    },
-    store_hot: {
-      tag: '[ NODE 03a // CACHE ]',
-      title: 'Hot Storage / Low-Latency Cache',
-      desc: 'In-Memory Cache (Redis) für ungefilterte Live-Daten. Garantiert extrem schnelle Lesezugriffe für das Dashboard.',
-      specs: 'Latency: < 5ms. Retention: 24 Stunden rolling.',
-      principles: 'Trennt hochfrequenten Live-Zugriff von der schweren Datenbank-Belastung.',
-      code: `REDIS.setex("TICKER:AAPL", 86400, json_payload)`
-    },
-    store_cold: {
-      tag: '[ NODE 03b // TSDB ]',
-      title: 'Cold Time-Series Database',
-      desc: 'Dauerhafte, strukturierte Persistierung aller historisierten und bereinigten Zeitreihen inkl. Metadaten.',
-      specs: 'DB Engine: TimescaleDB / PostgreSQL. Index: Timestamp + ISIN.',
-      principles: 'Single Source of Truth für historische Analysen, Backtesting, Auditierung und Buchhaltung.',
-      code: `CREATE TABLE time_series_master (\n  timestamp TIMESTAMPTZ NOT NULL,\n  ticker VARCHAR(16),\n  country VARCHAR(2),\n  val DOUBLE PRECISION\n);`
-    },
-    store_dispatch: {
-      tag: '[ NODE 03c // DISPATCHER ]',
-      title: 'Event & Data Dispatcher',
-      desc: 'Routet eintreffende Datenpakete entkoppelt an verschiedene Ziel-Systeme (Push/Pull PubSub).',
-      specs: 'Event Bus / PubSub Pattern.',
-      principles: 'Entkopplung der Schnittstellen: Analytics, Reporting und Marketing greifen unabhängig voneinander auf Daten zu.',
-      code: `EVENT_BUS.publish('market_data_updated', payload)`
-    },
-    ana_kpi: {
-      tag: '[ NODE 04a // COMPUTATION ]',
-      title: 'Aggregated Risk & Country Engine',
-      desc: 'Berechnet finanzmathematische Kennzahlen (Volatility, VaR, Max Drawdown) aggregiert nach Land, Sektor und Assetklasse.',
-      specs: 'Execution: NumPy / C++ Analytics Modules.',
-      principles: 'Nutzt die angereicherten Metadaten (Node 02b), um Risikokonzentrationen in bestimmten Ländern (z. B. US-Exposure) offenzulegen.',
-      code: `def calc_country_exposure(portfolio_df):\n    return portfolio_df.groupby('country')['market_val'].sum()`
-    },
-    ana_guard: {
-      tag: '[ NODE 04b // FEEDBACK LOOP ]',
-      title: 'Data Quality Guard & Re-Ingest Trigger',
-      desc: 'Überwacht die Vollständigkeit und Plausibilität der Datenreihen in Echtzeit. Erkennt er Datenlücken oder alte Ticker...',
-      specs: 'Automated Feedback Loop. Target: Node 01d (Ingestion Cascade).',
-      principles: 'RÜCKKOPPLUNG: Sendet ein automatisches Nachforderungssignal (Re-Ingest) an den Anfang der Pipeline, um fehlende Historien nachzuladen.',
-      code: `IF check_missing_history(ticker, required_range):\n    EMIT_SIGNAL('TRIGGER_REINGEST_CASCADE', ticker, missing_dates)`
-    },
-    ui_hud: {
-      tag: '[ NODE 05a // OPERATIONS ]',
-      title: 'Realtime Trading HUD & Risk Dashboard',
-      desc: 'Visuelle Bedienoberfläche für den Anwender mit Filtern nach Land (DE vs. US), Sektoren und Risikokennzahlen.',
-      specs: 'Frontend: HTML5 / WebSockets / SVG Charting.',
-      principles: 'Erlaubt interaktives Filtern der Systemdaten in Echtzeit auf Basis der im Ingestion-Schritt definierten Metadaten.',
-      code: `renderDashboard({ countryFilter: 'US', sector: 'Tech' });`
-    },
-    ui_accounting: {
-      tag: '[ NODE 05b // FINANCE ]',
-      title: 'Accounting & Regulatory Export Interface',
-      desc: 'Strukturierte Exporte und Stichtagsberichte für die Buchhaltung, Steuererklärung oder Wirtschaftsprüfer.',
-      specs: 'Format: Automated EOD CSV, PDF Report, Audit Logs.',
-      principles: 'Basiert auf den verifizierten Daten der Cold TSDB (Node 03b) für 100%ige Nachvollziehbarkeit (Revisionssicherheit).',
-      code: `generateEODAccountingReport(date='2026-09-18', format='CSV');`
-    },
-    ui_research: {
-      tag: '[ NODE 05c // MARKETING ]',
-      title: 'Ad-Hoc Research & Marketing Interface',
-      desc: 'Schnittstelle für Marktforschung, Vertrieb und Marketing. Liest globale Macrodaten (BIP/CPI) aus der DB...',
-      specs: 'Hybrid Data Join: TSDB Data + Local Excel/CSV Uploads.',
-      principles: 'Ermöglicht das Verknüpfen von externen Wirtschaftsdaten mit eigenen lokalen Firmen-Verkaufszahlen (z. B. im Excel-Format).',
-      code: `// Local Sales Join with Macro GDP\nJOIN local_sales_sheet ON cold_db.macro_gdp`
+    src_3rdparty: {
+      tag: '[ NODE 00d // PARTNER SYSTEMS ]',
+      title: 'Partner Systems & Webhook Ingest',
+      desc: 'Inbound Webhooks von externen Partnern, Payment Gateway Notifikationen und ERP-Systemen.',
+      specs: 'Events: Asynchrone HTTP POST Webhooks.',
+      principles: 'Ermöglicht ereignisgesteuerte Updates aus dem gesamten Firmenökosystem.',
+      code: `POST /api/v1/webhooks/partner_event\nHeader: X-Signature-256`
     },
     ui_alerts: {
-      tag: '[ NODE 05d // ALERTS ]',
-      title: 'Automated Alerting & Webhooks',
-      desc: 'Benachrichtigungssystem bei kritischen Markt-Events, Limit-Überschreitungen oder Datenfehlern.',
-      specs: 'Channels: Slack Webhook, Email, Mobile Push.',
-      principles: 'Proaktives Informieren des Teams bei relevanten Systemzuständen.',
-      code: `sendSlackAlert("ALERT: US Portfolio Drawdown exceeds 5%!");`
+      tag: '[ NODE 05d // METADATA FEEDBACK ]',
+      title: 'Customer Registration & Metadata Feedback Loop',
+      desc: 'Visualisierungs- und Interaktionsschicht für Neukundenanlagen und Metadaten-Updates.',
+      specs: 'Rückfluss: Node 05d -> Node 03b (Cold TSDB / Master DWH).',
+      principles: 'RÜCKKOPPLUNG: Erzeugt beim Erfassen von Neukunden eine eindeutige System-ID und schreibt geänderte Kunden-Metadaten direkt ins DWH zurück.',
+      code: `async function registerCustomer(data) {\n  const res = await api.post('/dwh/customers', data);\n  updateDWHMetadata(res.customer_id);\n}`
     }
-  };
+  });
 </script>
