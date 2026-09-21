@@ -1,15 +1,7 @@
-<!-- INTERACTIVE TOGGLE BAR FOR PIPELINE COMPLEXITY -->
-<div style="position: absolute; top: 20px; right: 40px; z-index: 100; display: flex; align-items: center; gap: 12px; background: rgba(10, 15, 25, 0.85); padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 6px; backdrop-filter: blur(8px);">
-  <span style="font-size: 0.75rem; color: #fff; font-weight: bold; letter-spacing: 1px;">CONNECTIONS:</span>
-  <button id="toggle-connections-btn" onclick="toggleConnections()" style="background: var(--cyber-glow); color: #000; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease;">
-    SHOW SUB-NODE LINKS
-  </button>
-</div>
-
 <!-- CONNECTOR SVG PATHS, FEEDBACK LOOPS & ANIMATED PULSES -->
 <svg class="connections-svg" style="width: 2900px; height: 850px; position: absolute; top: 0; left: 0; pointer-events: none;">
   <defs>
-    <!-- Pfeilspitzen -->
+    <!-- Pfeilspitzen für Feedback-Loops -->
     <marker id="arrow-alert" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cyber-alert)" />
     </marker>
@@ -36,23 +28,12 @@
   <path class="pipe-line active-green" d="M 2270,340 L 2360,340" />
 
   <!-- ========================================== -->
-  <!-- COMPLEX & SUB-NODE DIRECT LINKS (TOGGLEABLE) -->
+  <!-- ESSENTIAL FEEDBACK LOOPS & DWH FEED -->
   <!-- ========================================== -->
-  <g id="sub-node-connections" style="display: none; transition: opacity 0.3s ease;">
-    <!-- Direct Inbound from Internal DWH (03b) directly to Compute Engine (04a) [Pre-filled Historical DB] -->
-    <path class="pipe-line line-internal" d="M 1830,470 C 1880,470 1880,320 1920,320" marker-end="url(#arrow-internal)" />
-    
-    <!-- Raw File Ingestion (00b) Direct Stream to Data Stitching (02c) -->
-    <path class="pipe-line line-internal" d="M 390,360 C 650,360 700,520 960,520" stroke-dasharray="4 4" />
+  <!-- Direct Inbound from Internal DWH (03b) directly to Compute Engine (04a) [Pre-filled Historical DB] -->
+  <path class="pipe-line line-internal" d="M 1830,470 C 1880,470 1880,320 1920,320" marker-end="url(#arrow-internal)" />
 
-    <!-- External API Inputs (00a) -> Ingestion Cascade (01d) -->
-    <path class="pipe-line active-green" d="M 390,220 C 430,220 440,540 480,540" />
-  </g>
-
-  <!-- ========================================== -->
-  <!-- FEEDBACK LOOPS & RETURN STREAMS -->
-  <!-- ========================================== -->
-  <!-- FEEDBACK LOOP 1: Frontend (05) -> Internal DWH (03b) [Neukunden-IDs, Metadaten, Snapshots] -->
+  <!-- FEEDBACK LOOP 1: Frontend (05d) -> Internal DWH (03b) [Neukunden-IDs, Metadaten, Snapshots] -->
   <path id="feedback-frontend-db" class="pipe-line line-fred" d="M 2360,570 C 2100,720 1650,720 1635,590" marker-end="url(#arrow-alert)" />
 
   <!-- FEEDBACK LOOP 2: Quality Guard (04b) -> Historical Ingestion Cascade (01d) [Lücken-Nachforderung] -->
@@ -64,20 +45,17 @@
   <!-- ========================================== -->
   <!-- ANIMATED PULSE PARTICLES -->
   <!-- ========================================== -->
-  <!-- Main Forward Flow Pulses -->
   <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 390,380 L 480,380" /></circle>
   <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 870,380 L 960,380" /></circle>
   <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="2.0s" repeatCount="indefinite" path="M 1350,380 L 1440,380" /></circle>
   <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 1830,340 L 1920,340" /></circle>
   <circle class="pulse-particle" fill="var(--cyber-glow)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 2270,340 L 2360,340" /></circle>
 
-  <!-- DWH to Engine Direct Historical Feed Pulse -->
+  <!-- DWH Direct Historical Feed Pulse -->
   <circle class="pulse-particle" fill="#c77dff"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 1830,470 C 1880,470 1880,320 1920,320" /></circle>
 
-  <!-- Feedback Loop Pulses (Alert Yellow/Orange & Purple) -->
-  <!-- Frontend -> DB Metadata Feedback -->
+  <!-- Feedback Loop Pulses -->
   <circle class="pulse-particle" fill="var(--cyber-alert)"><animateMotion dur="3.8s" repeatCount="indefinite" path="M 2360,570 C 2100,720 1650,720 1635,590" /></circle>
-  <!-- Quality Guard -> Ingestion Feedback -->
   <circle class="pulse-particle" fill="var(--cyber-alert)"><animateMotion dur="4.5s" repeatCount="indefinite" path="M 2100,480 C 2100,770 670,770 670,590" /></circle>
 </svg>
 
@@ -294,26 +272,10 @@
   </div>
 </div>
 
-<!-- MODAL DATA DEFINITIONS FOR FLIGHT LEVEL 3 & TOGGLE LOGIC -->
+<!-- COMPLETE MODAL DATA DEFINITIONS (ALL NODES INCLUDED) -->
 <script>
-  // TOGGLE FUNCTION FOR COMPLEX SUB-NODE CONNECTIONS
-  function toggleConnections() {
-    const subConn = document.getElementById('sub-node-connections');
-    const btn = document.getElementById('toggle-connections-btn');
-    
-    if (subConn.style.display === 'none') {
-      subConn.style.display = 'block';
-      btn.innerText = 'HIDE SUB-NODE LINKS';
-      btn.style.background = 'var(--cyber-alert)';
-    } else {
-      subConn.style.display = 'none';
-      btn.innerText = 'SHOW SUB-NODE LINKS';
-      btn.style.background = 'var(--cyber-glow)';
-    }
-  }
-
-  // NODE SPECIFICATIONS (Extends existing window.nodeSpecs)
-  window.nodeSpecs = Object.assign(window.nodeSpecs || {}, {
+  window.nodeSpecs = {
+    // NODE 00: RAW DATA SOURCES
     src_api: {
       tag: '[ NODE 00a // RAW DATA SOURCE ]',
       title: 'Market & Macro External APIs',
@@ -346,6 +308,136 @@
       principles: 'Ermöglicht ereignisgesteuerte Updates aus dem gesamten Firmenökosystem.',
       code: `POST /api/v1/webhooks/partner_event\nHeader: X-Signature-256`
     },
+
+    // NODE 01: SMART INGESTION ENGINE
+    ingest_stream: {
+      tag: '[ NODE 01a // REALTIME STREAM ]',
+      title: 'High-Frequency Market Stream Ingestion',
+      desc: 'Kontinuierlicher Abruf von Live-Tickdaten für Aktien (US & DE) und Devisenkurse über WebSocket/REST-Polling im Minutentakt.',
+      specs: 'Intervall: 1 Minute / Tick. Format: JSON Stream. Protokoll: HTTPS / WSS.',
+      principles: 'Geringe Latenz für den Live-Betrieb. Kurse werden ungefiltert in den In-Memory Pipeline-Buffer weitergeleitet.',
+      code: `{\n  "ticker": "AAPL",\n  "price": 224.50,\n  "currency": "USD",\n  "timestamp": "2026-09-18T13:45:00Z"\n}`
+    },
+    ingest_macro: {
+      tag: '[ NODE 01b // SMART BATCH ]',
+      title: 'Macro Delta & Timestamp Checker',
+      desc: 'Effizienz-Mechanismus für Macrodaten (z. B. BIP, CPI via FRED). Liest primär nur den Timestamp-Header der Quelle.',
+      specs: 'Intervall: Täglich 08:00 Uhr. Payload: Lightweight HTTP HEAD Request.',
+      principles: 'Ressourcenschonung: Nur wenn "Last-Modified > Inhouse-Datum" vorliegt, wird ein kompletter Data-Download ausgelöst.',
+      code: `IF fred.last_modified > db.get_max_date('DE_GDP') THEN\n   TRIGGER full_ingest('DE_GDP')\nELSE\n   LOG("No new data available. Skip Ingest.");`
+    },
+    ingest_meta: {
+      tag: '[ NODE 01c // MASTER DATA ]',
+      title: 'Master Data & Ticker Registry (Excel Import)',
+      desc: 'Ermöglicht Fachanwendern das Hochladen von Excel/Sheets-Dateien zur Ticker-Erweiterung und Stammdaten-Pflege.',
+      specs: 'Input: .xlsx / Google Sheets API. Metadaten: ISIN, Country, Sector, Currency.',
+      principles: 'Schema-Evolution: Neue Ticker erfordern zwingend Ländercodes (DE, US), damit das Dashboard später filtern kann.',
+      code: `// Ticker Metadata Mapping\n{\n  "ticker": "NVDA",\n  "isin": "US67066G1040",\n  "country": "US",\n  "sector": "Semiconductors",\n  "currency": "USD"\n}`
+    },
+    ingest_cascade: {
+      tag: '[ NODE 01d // FALLBACK CHAIN ]',
+      title: 'Historical Ingestion Cascade',
+      desc: 'Ausfallsichere Kaskade für historisierte Datenabfragen über Jahrzehnte (z. B. für Backtesting oder Risikomodelle).',
+      specs: 'Kaskade: Primary API -> Secondary Vendor -> Historical CSV Archive.',
+      principles: 'Sollten sich Ticker-Namen oder URLs historisch geändert haben, schaltet das System automatisch auf Sekundärquellen um.',
+      code: `try:\n    data = fetch_vendor_primary(ticker, start_date)\nexcept VendorAPIError:\n    data = fetch_historical_archive_fallback(ticker, start_date)`
+    },
+
+    // NODE 02: TRANSFORM & ENRICHMENT
+    trans_tz: {
+      tag: '[ NODE 02a // SCHEDULER ]',
+      title: 'Timezone & Market Hours Sync',
+      desc: 'Synchronisiert unterschiedliche weltweite Börsen-Schlusszeiten (z. B. XETRA 17:30 CET vs. NYSE 22:00 CET).',
+      specs: 'Timezones: UTC, CET, EST. Handhabt Feiertagskalender & Handelsunterbrechungen.',
+      principles: 'Stellt sicher, dass EOD-Berechnungen erst dann finalisiert werden, wenn der jeweilige Markt tatsächlich geschlossen ist.',
+      code: `IF market_status('NYSE') == 'CLOSED' AND current_time >= '22:00:00 CET':\n    finalize_eod_prices('US')`
+    },
+    trans_enrich: {
+      tag: '[ NODE 02b // ENRICHMENT ]',
+      title: 'Metadata Join & Enrichment Core',
+      desc: 'Führt rohe Preis-Ticks mit den registrierten Stammdaten zusammen (Data Join).',
+      specs: 'Join-Key: Ticker / ISIN. Output: Enriched Time-Series Object.',
+      principles: 'Jeder Datenpunkt erhält Metadaten-Tags (Country=DE, Region=EU, Sector=Tech) für spätere Slice-and-Dice Analysen.',
+      code: `SELECT t.time, t.price, m.country, m.sector \nFROM market_ticks t \nJOIN ticker_metadata m ON t.ticker = m.ticker;`
+    },
+    trans_stitch: {
+      tag: '[ NODE 02c // CLEANSIING ]',
+      title: 'Data Stitching & Outlier Cleansing',
+      desc: 'Bereinigt historische Datenbrüche, entfernt fehlerhafte Ticks (Outlier) und schließt Lücken (Forward-Fill).',
+      specs: 'Algorithms: 3-Sigma Outlier Detection, Forward Fill (FFill).',
+      principles: 'Nahtloses Zusammenfügen (Stitching) von Daten aus der Ingestion-Kaskade zu einer homogenen Zeitreihe.',
+      code: `df.remove_outliers(std_threshold=3.0)\n  .forward_fill_missing()\n  .stitch_historical_fragments()`
+    },
+
+    // NODE 03: PERSISTENCE & INTERNAL DWH
+    store_hot: {
+      tag: '[ NODE 03a // CACHE ]',
+      title: 'Hot Storage / Low-Latency Cache',
+      desc: 'In-Memory Cache (Redis) für ungefilterte Live-Daten. Garantiert extrem schnelle Lesezugriffe für das Dashboard.',
+      specs: 'Latency: < 5ms. Retention: 24 Stunden rolling.',
+      principles: 'Trennt hochfrequenten Live-Zugriff von der schweren Datenbank-Belastung.',
+      code: `REDIS.setex("TICKER:AAPL", 86400, json_payload)`
+    },
+    store_cold: {
+      tag: '[ NODE 03b // TSDB ]',
+      title: 'Cold Time-Series Database & Master DWH',
+      desc: 'Dauerhafte, strukturierte Persistierung aller historisierten Zeitreihen, Bestandskunden-Profile und Stammdaten.',
+      specs: 'DB Engine: TimescaleDB / PostgreSQL. Index: Timestamp + ISIN + CustomerID.',
+      principles: 'Single Source of Truth für historische Analysen, Backtesting, Auditierung und Kundenstammdaten.',
+      code: `CREATE TABLE time_series_master (\n  timestamp TIMESTAMPTZ NOT NULL,\n  ticker VARCHAR(16),\n  country VARCHAR(2),\n  val DOUBLE PRECISION\n);`
+    },
+    store_dispatch: {
+      tag: '[ NODE 03c // DISPATCHER ]',
+      title: 'Event & Data Dispatcher',
+      desc: 'Routet eintreffende Datenpakete entkoppelt an verschiedene Ziel-Systeme (Push/Pull PubSub).',
+      specs: 'Event Bus / PubSub Pattern.',
+      principles: 'Entkopplung der Schnittstellen: Analytics, Reporting und Marketing greifen unabhängig voneinander auf Daten zu.',
+      code: `EVENT_BUS.publish('market_data_updated', payload)`
+    },
+
+    // NODE 04: ANALYTICS & COMPUTE ENGINE
+    ana_kpi: {
+      tag: '[ NODE 04a // COMPUTATION ]',
+      title: 'Aggregated Risk & Calculation Engine',
+      desc: 'Berechnet finanzmathematische Kennzahlen (Volatility, VaR, Max Drawdown) aggregiert nach Land, Sektor und Assetklasse.',
+      specs: 'Execution: NumPy / C++ Analytics Modules.',
+      principles: 'Nutzt die angereicherten Metadaten (Node 02b) sowie Bestandskundendaten aus dem DWH (Node 03b), um Risikokonzentrationen offenzulegen.',
+      code: `def calc_country_exposure(portfolio_df):\n    return portfolio_df.groupby('country')['market_val'].sum()`
+    },
+    ana_guard: {
+      tag: '[ NODE 04b // FEEDBACK LOOP ]',
+      title: 'Data Quality Guard & Re-Ingest Trigger',
+      desc: 'Überwacht die Vollständigkeit und Plausibilität der Datenreihen in Echtzeit. Erkennt er Datenlücken oder fehlerhafte Werte...',
+      specs: 'Automated Feedback Loop. Target: Node 01d (Ingestion Cascade).',
+      principles: 'RÜCKKOPPLUNG: Sendet ein automatisches Nachforderungssignal (Re-Ingest) an den Anfang der Pipeline, um fehlende Historien nachzuladen.',
+      code: `IF check_missing_history(ticker, required_range):\n    EMIT_SIGNAL('TRIGGER_REINGEST_CASCADE', ticker, missing_dates)`
+    },
+
+    // NODE 05: FRONTEND & INTERFACES
+    ui_hud: {
+      tag: '[ NODE 05a // OPERATIONS ]',
+      title: 'Realtime Trading HUD & Risk Dashboard',
+      desc: 'Visuelle Bedienoberfläche für den Anwender mit Filtern nach Land (DE vs. US), Sektoren und Risikokennzahlen.',
+      specs: 'Frontend: HTML5 / WebSockets / SVG Charting.',
+      principles: 'Erlaubt interaktives Filtern der Systemdaten in Echtzeit auf Basis der im Ingestion-Schritt definierten Metadaten.',
+      code: `renderDashboard({ countryFilter: 'US', sector: 'Tech' });`
+    },
+    ui_accounting: {
+      tag: '[ NODE 05b // FINANCE ]',
+      title: 'Accounting & Regulatory Export Interface',
+      desc: 'Strukturierte Exporte und Stichtagsberichte für die Buchhaltung, Steuererklärung oder Wirtschaftsprüfer.',
+      specs: 'Format: Automated EOD CSV, PDF Report, Audit Logs.',
+      principles: 'Basiert auf den verifizierten Daten der Cold TSDB (Node 03b) für 100%ige Nachvollziehbarkeit (Revisionssicherheit).',
+      code: `generateEODAccountingReport(date='2026-09-18', format='CSV');`
+    },
+    ui_research: {
+      tag: '[ NODE 05c // MARKETING ]',
+      title: 'Ad-Hoc Research & Marketing Interface',
+      desc: 'Schnittstelle für Marktforschung, Vertrieb und Marketing. Liest globale Macrodaten (BIP/CPI) aus der DB...',
+      specs: 'Hybrid Data Join: TSDB Data + Local Excel/CSV Uploads.',
+      principles: 'Ermöglicht das Verknüpfen von externen Wirtschaftsdaten mit eigenen lokalen Firmen-Verkaufszahlen (z. B. im Excel-Format).',
+      code: `// Local Sales Join with Macro GDP\nJOIN local_sales_sheet ON cold_db.macro_gdp`
+    },
     ui_alerts: {
       tag: '[ NODE 05d // METADATA FEEDBACK ]',
       title: 'Customer Registration & Metadata Feedback Loop',
@@ -354,5 +446,5 @@
       principles: 'RÜCKKOPPLUNG: Erzeugt beim Erfassen von Neukunden eine eindeutige System-ID und schreibt geänderte Kunden-Metadaten direkt ins DWH zurück.',
       code: `async function registerCustomer(data) {\n  const res = await api.post('/dwh/customers', data);\n  updateDWHMetadata(res.customer_id);\n}`
     }
-  });
+  };
 </script>
