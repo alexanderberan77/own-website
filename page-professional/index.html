@@ -14,6 +14,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <link rel="stylesheet" href="professional.css">
 </head>
 <body>
@@ -140,12 +143,62 @@
       </div>
     </section>
 
-    <!-- PLATZHALTER: Interactive Process & Data Visualization -->
-    <section class="section-container">
+    <!-- INTERACTIVE DASHBOARD SECTION -->
+    <section class="section-container" id="dashboard-section">
       <div class="section-header">
         <span class="sub-badge">Live System Simulation</span>
-        <h2>Daten-Pipeline &amp; Risiko-Graph (Palantir/Stripe Design)</h2>
+        <h2>Interactive Executive Risk Dashboard</h2>
       </div>
+    
+      <div class="dashboard-wrapper">
+        <!-- Top Bar KPI Cards -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span class="kpi-title">Value at Risk (99%, 10d)</span>
+            <span class="kpi-value">€ 14.2M</span>
+            <span class="kpi-status positive">✓ Within Limit</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-title">Liquidity Coverage Ratio</span>
+            <span class="kpi-value">154.2 %</span>
+            <span class="kpi-status positive">✓ EBA Regulatory Safe</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-title">NII Stress Sensitivity</span>
+            <span class="kpi-value">- 2.4 %</span>
+            <span class="kpi-status warning">! +200 BPS Shift</span>
+          </div>
+        </div>
+    
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <!-- Chart 1: Donut (Asset Class Allocation) -->
+          <div class="chart-card">
+            <div class="chart-header">Asset Class Risk Exposure</div>
+            <div class="canvas-container">
+              <canvas id="donutChart"></canvas>
+            </div>
+          </div>
+    
+          <!-- Chart 2: Bar (Stress Test Scenarios) -->
+          <div class="chart-card">
+            <div class="chart-header">Stresstest Delta (Expected vs. Stress)</div>
+            <div class="canvas-container">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+    
+          <!-- Chart 3: Area (VaR / LCR Trend) -->
+          <div class="chart-card chart-card-wide">
+            <div class="chart-header">Historical VaR &amp; Stress Projection (12 M)</div>
+            <div class="canvas-container">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
 
       <!-- Dieser Container wird später durch process-sim.js und data-viz.js dynamisch befüllt -->
       <div id="data-viz-container" class="viz-placeholder-card">
