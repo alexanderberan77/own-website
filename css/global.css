@@ -1,0 +1,76 @@
+/* ==========================================
+   GLOBAL VARIABLES & RESET
+   ========================================== */
+:root {
+  --bg-color: #0a0a0c;
+  --text-main: #e0e0e0;
+  --text-muted: #888888;
+  --cyber-glow: #00ffcc; /* Neon Cyan */
+  --cyber-alert: #ffb703; /* Neon Amber */
+  --border-color: #2a2a30;
+  --card-bg: rgba(15, 15, 20, 0.9);
+  --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  line-height: 1.8;
+  font-size: 1.05rem;
+  position: relative;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+/* ==========================================
+   CANVAS BACKGROUND
+   ========================================== */
+#matrix-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+/* ==========================================
+   SHARED UI ELEMENTS
+   ========================================== */
+.status-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--cyber-alert);
+  border: 1px solid var(--cyber-alert);
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: rgba(255, 183, 3, 0.05);
+}
+
+/* Terminal Cursor */
+.cursor {
+  display: inline-block;
+  width: 10px;
+  background-color: var(--cyber-glow);
+  margin-left: 5px;
+  animation: blink 0.8s infinite;
+  box-shadow: 0 0 8px var(--cyber-glow);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
