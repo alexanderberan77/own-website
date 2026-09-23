@@ -71,119 +71,129 @@ document.addEventListener('DOMContentLoaded', () => {
     draw();
   }
 
-  // ==========================================
-  // PART 2: INTERACTIVE CHART.JS RISK DASHBOARD
-  // ==========================================
-  const dashboardSection = document.getElementById('dashboard-section');
-  if (!dashboardSection) return;
-
-  let initialized = false;
-
-  // IntersectionObserver triggert die Chart-Animation erst beim Hineinscrollen
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !initialized) {
-        initialized = true;
-        renderCharts();
+    // ==========================================
+    // PART 2: INTERACTIVE CHART.JS RISK DASHBOARD
+    // ==========================================
+    const dashboardSection = document.getElementById('dashboard-section');
+    if (!dashboardSection) return;
+  
+    let initialized = false;
+  
+    function initCharts() {
+      if (initialized) return;
+      
+      // Prüfen, ob Chart.js bereitsteht (sonst kurz warten)
+      if (typeof Chart === 'undefined') {
+        setTimeout(initCharts, 100);
+        return;
       }
-    });
-  }, { threshold: 0.2 });
-
-  observer.observe(dashboardSection);
-
-  function renderCharts() {
-    // Prüfen, ob Chart.js geladen ist
-    if (typeof Chart === 'undefined') return;
-
-    // Standard Config für dunkles Theme
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = 'JetBrains Mono, monospace';
-
-    // 1. DONUT CHART (Risk Allocation)
-    const ctxDonut = document.getElementById('donutChart')?.getContext('2d');
-    if (ctxDonut) {
-      new Chart(ctxDonut, {
-        type: 'doughnut',
-        data: {
-          labels: ['Kreditrisiko', 'Zinsrisiko (IRRBB)', 'Marktrisiko', 'OpRisk'],
-          datasets: [{
-            data: [45, 25, 18, 12],
-            backgroundColor: ['#6366f1', '#0ea5e9', '#a855f7', '#64748b'],
-            borderWidth: 2,
-            borderColor: '#1e293b'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 1800, easing: 'easeOutQuart' },
-          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+  
+      initialized = true;
+      renderCharts();
+    }
+  
+    // IntersectionObserver mit geringerem Schwellenwert (0.05)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          initCharts();
         }
       });
-    }
-
-    // 2. BAR CHART (Stresstest Delta)
-    const ctxBar = document.getElementById('barChart')?.getContext('2d');
-    if (ctxBar) {
-      new Chart(ctxBar, {
-        type: 'bar',
-        data: {
-          labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-          datasets: [
-            {
-              label: 'Base Case',
-              data: [12.4, 13.1, 12.8, 14.2],
-              backgroundColor: '#0ea5e9',
-              borderRadius: 6
-            },
-            {
-              label: 'Stress Scenario',
-              data: [18.2, 22.5, 25.1, 28.6],
-              backgroundColor: '#f59e0b',
-              borderRadius: 6
+    }, { threshold: 0.05 });
+  
+    observer.observe(dashboardSection);
+  
+    // Fallback: Falls Observer auf einigen Mobilgeräten blockiert
+    setTimeout(initCharts, 1500);
+  
+    function renderCharts() {
+      Chart.defaults.color = '#94a3b8';
+      Chart.defaults.font.family = 'JetBrains Mono, monospace';
+  
+      // 1. DONUT CHART (Risk Allocation)
+      const ctxDonut = document.getElementById('donutChart')?.getContext('2d');
+      if (ctxDonut) {
+        new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: {
+            labels: ['Kreditrisiko', 'Zinsrisiko (IRRBB)', 'Marktrisiko', 'OpRisk'],
+            datasets: [{
+              data: [45, 25, 18, 12],
+              backgroundColor: ['#6366f1', '#0ea5e9', '#a855f7', '#64748b'],
+              borderWidth: 2,
+              borderColor: '#1e293b'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 1200, easing: 'easeOutQuart' },
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+          }
+        });
+      }
+  
+      // 2. BAR CHART (Stresstest Delta)
+      const ctxBar = document.getElementById('barChart')?.getContext('2d');
+      if (ctxBar) {
+        new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+            datasets: [
+              {
+                label: 'Base Case',
+                data: [12.4, 13.1, 12.8, 14.2],
+                backgroundColor: '#0ea5e9',
+                borderRadius: 6
+              },
+              {
+                label: 'Stress Scenario',
+                data: [18.2, 22.5, 25.1, 28.6],
+                backgroundColor: '#f59e0b',
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 1400, easing: 'easeOutQuart' },
+            scales: {
+              x: { grid: { display: false } },
+              y: { grid: { color: '#334155' } }
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 2000, easing: 'easeOutQuart' },
-          scales: {
-            x: { grid: { display: false } },
-            y: { grid: { color: '#334155' } }
           }
-        }
-      });
-    }
-
-    // 3. LINE / AREA CHART (Historical Trend)
-    const ctxLine = document.getElementById('lineChart')?.getContext('2d');
-    if (ctxLine) {
-      new Chart(ctxLine, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-          datasets: [{
-            label: 'VaR 99% (in Mio. €)',
-            data: [10.2, 11.0, 10.8, 12.1, 11.5, 13.0, 12.4, 13.8, 13.2, 14.0, 13.9, 14.2],
-            borderColor: '#6366f1',
-            backgroundColor: 'rgba(99, 102, 241, 0.15)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointBackgroundColor: '#818cf8'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 2200, easing: 'easeOutQuart' },
-          scales: {
-            x: { grid: { color: '#334155' } },
-            y: { grid: { color: '#334155' } }
+        });
+      }
+  
+      // 3. LINE / AREA CHART (Historical Trend)
+      const ctxLine = document.getElementById('lineChart')?.getContext('2d');
+      if (ctxLine) {
+        new Chart(ctxLine, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+            datasets: [{
+              label: 'VaR 99% (in Mio. €)',
+              data: [10.2, 11.0, 10.8, 12.1, 11.5, 13.0, 12.4, 13.8, 13.2, 14.0, 13.9, 14.2],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.15)',
+              fill: true,
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: '#818cf8'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 1600, easing: 'easeOutQuart' },
+            scales: {
+              x: { grid: { color: '#334155' } },
+              y: { grid: { color: '#334155' } }
+            }
           }
-        }
-      });
+        });
+      }
     }
-  }
-});
