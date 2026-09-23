@@ -433,7 +433,7 @@
         if (charIndex < textToType.length) {
           typewriterElement.innerHTML = textToType.substring(0, charIndex + 1) + '<span class="cursor">_</span>';
           charIndex++;
-          setTimeout(typeWriter, Math.floor(Math.random() * 60) + 50);
+          setTimeout(typeWriter, Math.floor(Math.random() * 30) + 20);
         } else {
           typewriterElement.innerHTML = textToType;
           fadeContainer.classList.add("visible");
