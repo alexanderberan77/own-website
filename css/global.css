@@ -7,8 +7,9 @@
   --text-muted: #888888;
   --cyber-glow: #00ffcc; /* Neon Cyan */
   --cyber-alert: #ffb703; /* Neon Amber */
+  --cyber-purple: #b5179e; /* Neon Purple */
   --border-color: #2a2a30;
-  --card-bg: rgba(15, 15, 20, 0.9);
+  --card-bg: rgba(15, 15, 20, 0.85);
   --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
 }
 
@@ -25,6 +26,7 @@ body {
   min-height: 100vh;
   line-height: 1.8;
   font-size: 1.05rem;
+  padding: 2rem 8%;
   position: relative;
   overflow-x: hidden;
   touch-action: manipulation;
@@ -45,22 +47,172 @@ body {
 }
 
 /* ==========================================
-   SHARED UI ELEMENTS
+   LAYOUT CONTAINERS & HEADERS
    ========================================== */
-.status-badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  color: var(--cyber-alert);
-  border: 1px solid var(--cyber-alert);
-  padding: 0.2rem 0.6rem;
-  border-radius: 3px;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  background: rgba(255, 183, 3, 0.05);
+main {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-/* Terminal Cursor */
+.hud-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.hud-status {
+  font-size: 0.75rem;
+  color: var(--cyber-glow);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hud-title {
+  font-size: 1.8rem;
+  color: #fff;
+}
+
+/* ==========================================
+   BUTTONS & NAVIGATION
+   ========================================== */
+.nav-bar {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 2rem;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--cyber-glow);
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  background: rgba(0, 255, 204, 0.05);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: rgba(0, 255, 204, 0.15);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+  transform: translateX(-3px);
+}
+
+/* ==========================================
+   HUD CARDS SYSTEM
+   ========================================== */
+.hud-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  position: relative;
+  backdrop-filter: blur(5px);
+  margin-bottom: 1.2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.hud-card:hover {
+  border-color: rgba(0, 255, 204, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.08);
+}
+
+/* Signature Cyberpunk Corner Accent */
+.hud-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--cyber-glow);
+  border-left: 2px solid var(--cyber-glow);
+}
+
+.hud-card-title {
+  font-size: 0.9rem;
+  color: var(--cyber-glow);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.4rem;
+}
+
+/* ==========================================
+   TAGS & BADGES
+   ========================================== */
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.cyber-tag {
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.2rem 0.6rem;
+  color: #ccc;
+}
+
+.cyber-tag.highlight {
+  border-color: var(--cyber-alert);
+  color: var(--cyber-alert);
+}
+
+.status-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border: 1px solid var(--cyber-alert);
+  color: var(--cyber-alert);
+  background: rgba(255, 183, 3, 0.1);
+  text-transform: uppercase;
+}
+
+.status-badge.live {
+  color: var(--cyber-glow);
+  border-color: var(--cyber-glow);
+  background: rgba(0, 255, 204, 0.1);
+}
+
+.status-badge.lab {
+  color: var(--cyber-purple);
+  border-color: var(--cyber-purple);
+  background: rgba(181, 23, 158, 0.1);
+}
+
+/* ==========================================
+   SHARED LISTS & CURSOR
+   ========================================== */
+ul.custom-list {
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+ul.custom-list li {
+  position: relative;
+  padding-left: 1.2rem;
+  margin-bottom: 0.4rem;
+}
+
+ul.custom-list li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--cyber-glow);
+}
+
 .cursor {
   display: inline-block;
   width: 10px;
