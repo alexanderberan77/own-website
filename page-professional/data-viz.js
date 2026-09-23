@@ -197,3 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
       }
+
+      // Testweise direkter Aufruf nach 1 Sekunde
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          if (typeof renderCharts === 'function') {
+            renderCharts();
+          }
+        }, 1000);
+      });
+
