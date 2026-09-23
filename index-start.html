@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alexander Beran // Portal-Auswahl</title>
+  
+  <!-- Inter Font für den modernen Stripe-Look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #fae8ff 100%);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary-color: #6366f1;
+      --primary-hover: #4f46e5;
+      --secondary-color: #0f172a;
+      --secondary-hover: #1e293b;
+      --border-color: rgba(226, 232, 240, 0.8);
+      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      color: var(--text-main);
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary-color);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 2.25rem;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--secondary-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+
+    .btn-tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      opacity: 0.9;
+    }
+
+    .btn-primary .btn-tag {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .btn-secondary .btn-tag {
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <main class="modal-card">
+    <span class="badge">Alexander Beran</span>
+    <h1>Bitte Ansicht wählen</h1>
+    <p>Wählen Sie den gewünschten Bereich für detaillierte Informationen zu Qualifikationen, Systemen und Projekten.</p>
+
+    <div class="btn-group">
+      <!-- Verlinkung auf die neue helle Beratungsseite -->
+      <a href="page-professional/index.html" class="btn btn-primary">
+        <span>Professional Profile &amp; Consulting</span>
+        <span class="btn-tag">&rarr;</span>
+      </a>
+
+      <!-- Verlinkung auf deine bestehende Cyberpunk-Seite -->
+      <a href="index.html" class="btn btn-secondary">
+        <span>Interactive – Private Website</span>
+        <span class="btn-tag">Early Stage</span>
+      </a>
+    </div>
+  </main>
+
+</body>
+</html>
