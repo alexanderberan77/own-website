@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
           // Zufällige Winkel und Geschwindigkeiten für das organische Wabern
           angleX: Math.random() * Math.PI * 2,
           angleY: Math.random() * Math.PI * 2,
-          speedX: 0.05 + Math.random() * 0.015,
-          speedY: 0.05 + Math.random() * 0.015
+          speedX: 0.01 + Math.random() * 0.015,
+          speedY: 0.01 + Math.random() * 0.015
         });
       }
     }
