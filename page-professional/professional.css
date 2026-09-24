@@ -540,6 +540,7 @@ body {
 .canvas-container {
   position: relative;
   height: 220px;
+  min-height: 220px; /* Verhindert das Zusammenfallen beim Tab-Wechsel */
   width: 100%;
 }
 
