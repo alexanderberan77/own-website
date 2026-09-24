@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bgCanvas = document.createElement('canvas');
   bgCanvas.id = 'ambient-bg-canvas';
   // Etwas sichtbarer gestellt (Opazität 0.6)
-  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.6;';
+  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.8;';
   document.body.appendChild(bgCanvas);
 
   const ctx = bgCanvas.getContext('2d');
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Je näher beieinander, desto deutlicher die Linie
           const alpha = (1 - dist / maxDistance) * 0.25; // Maximale Linien-Opazität (0.25)
           ctx.strokeStyle = `rgba(148, 163, 184, ${alpha})`; // Schickes Dezent-Grau/Blau
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 2;
 
           ctx.beginPath();
           ctx.moveTo(nodes[i].x, nodes[i].y);
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Knotenpunkte (Punkte) zeichnen
     nodes.forEach(node => {
-      ctx.fillStyle = 'rgba(99, 102, 241, 0.1)'; // Leichtes Indigoblau für die Knoten
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.02)'; // Leichtes Indigoblau für die Knoten
       ctx.beginPath();
       ctx.arc(node.x, node.y, 2, 0, Math.PI * 0.5); // Kleine 2px Knotenpunkte
       ctx.fill();
