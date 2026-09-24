@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bgCanvas = document.createElement('canvas');
   bgCanvas.id = 'ambient-bg-canvas';
   // Etwas sichtbarer gestellt (Opazität 0.6)
-  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.6;';
+  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.75;';
   document.body.appendChild(bgCanvas);
 
   const ctx = bgCanvas.getContext('2d');
