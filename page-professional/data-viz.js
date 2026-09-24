@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let nodes = [];
 
   // Konfiguration für das Netz
-  const spacing = 40;        // Rasterabstand der Knoten
-  const maxDistance = 55;   // Maximale Entfernung für Linienverbindung
-  const wobbleRadius = 10;   // Wie weit die Knoten wabern/oszillieren dürfen
+  const spacing = 35;        // Rasterabstand der Knoten
+  const maxDistance = 75;   // Maximale Entfernung für Linienverbindung
+  const wobbleRadius = 15;   // Wie weit die Knoten wabern/oszillieren dürfen
 
   function initNodes() {
     width = bgCanvas.width = window.innerWidth;
