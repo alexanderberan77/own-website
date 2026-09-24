@@ -1,11 +1,71 @@
 /**
- * DATA-VIZ.JS - Scroll-Driven Dynamic Charts & Layout Fix
+ * DATA-VIZ.JS - Scroll-Driven Dynamic Charts, Tab-Fix & Ambient Background
  */
 
 // ==========================================
-// PART 1: PALANTIR CANVAS WAVE ANIMATION
+// PART 1: DEZENTER AMBIENT BACKGROUND CANVAS
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Erstellt ein vollflächiges Canvas im Hintergrund
+  const bgCanvas = document.createElement('canvas');
+  bgCanvas.id = 'ambient-bg-canvas';
+  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.35;';
+  document.body.appendChild(bgCanvas);
+
+  const ctx = bgCanvas.getContext('2d');
+  let width, height;
+  let particles = [];
+
+  function resizeBg() {
+    width = bgCanvas.width = window.innerWidth;
+    height = bgCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeBg);
+  resizeBg();
+
+  // Erzeuge unaufdringliche, schwebende Datenpunkte
+  for (let i = 0; i < 25; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      speedY: -0.2 - Math.random() * 0.3, // Langsames Driften nach oben
+      size: Math.random() * 2 + 1,
+      alpha: Math.random() * 0.5 + 0.1
+    });
+  }
+
+  function drawBg() {
+    ctx.clearRect(0, 0, width, height);
+    
+    // Feines Finanz-Raster (Grid Lines)
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
+    ctx.lineWidth = 1;
+    const gridSize = 60;
+
+    for (let x = 0; x < width; x += gridSize) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+    }
+    for (let y = 0; y < height; y += gridSize) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+    }
+
+    // Sanft schwebende Datenpunkte
+    ctx.fillStyle = '#6366f1';
+    particles.forEach(p => {
+      p.y += p.speedY;
+      if (p.y < 0) p.y = height;
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    requestAnimationFrame(drawBg);
+  }
+  drawBg();
+
+  // Palantir Wave Canvas Integration (falls Element existiert)
   const container = document.getElementById('data-viz-container');
   if (container) {
     const canvas = document.createElement('canvas');
@@ -13,42 +73,42 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.style.cssText = 'width: 100%; height: 120px; display: block; background: #0b0f19; border-top: 1px solid #1e293b;';
     container.appendChild(canvas);
 
-    const ctx = canvas.getContext('2d');
+    const waveCtx = canvas.getContext('2d');
     let step = 0;
 
-    function resize() {
+    function resizeWave() {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
     }
-    window.addEventListener('resize', resize);
-    resize();
+    window.addEventListener('resize', resizeWave);
+    resizeWave();
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = 'rgba(51, 65, 85, 0.25)';
-      ctx.lineWidth = 1;
+    function drawWave() {
+      waveCtx.clearRect(0, 0, canvas.width, canvas.height);
+      waveCtx.strokeStyle = 'rgba(51, 65, 85, 0.25)';
+      waveCtx.lineWidth = 1;
       for (let x = 0; x < canvas.width; x += 30) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        waveCtx.beginPath(); waveCtx.moveTo(x, 0); waveCtx.lineTo(x, canvas.height); waveCtx.stroke();
       }
 
       step += 0.03;
-      ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(99, 102, 241, 0.7)';
+      waveCtx.beginPath(); waveCtx.lineWidth = 2; waveCtx.strokeStyle = 'rgba(99, 102, 241, 0.7)';
       for (let x = 0; x < canvas.width; x++) {
         const y = Math.sin(x * 0.01 + step) * 20 + canvas.height / 2;
-        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        if (x === 0) waveCtx.moveTo(x, y); else waveCtx.lineTo(x, y);
       }
-      ctx.stroke();
+      waveCtx.stroke();
 
-      ctx.beginPath(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(14, 165, 233, 0.5)';
+      waveCtx.beginPath(); waveCtx.lineWidth = 1.5; waveCtx.strokeStyle = 'rgba(14, 165, 233, 0.5)';
       for (let x = 0; x < canvas.width; x++) {
         const y = Math.cos(x * 0.015 - step * 0.8) * 15 + canvas.height / 2;
-        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        if (x === 0) waveCtx.moveTo(x, y); else waveCtx.lineTo(x, y);
       }
-      ctx.stroke();
+      waveCtx.stroke();
 
-      requestAnimationFrame(draw);
+      requestAnimationFrame(drawWave);
     }
-    draw();
+    drawWave();
   }
 });
 
@@ -59,9 +119,9 @@ let barChartInstance = null;
 let lineChartInstance = null;
 let donutChartInstance = null;
 
-// Ziel-Daten
+// Ziel-Daten (Korrektur: Fehlende Klammer bei originalBarData2 ergänzt)
 const originalBarData1 = [12.4, 13.1, 12.8, 14.2];
-const originalBarData2 = [18.2, 22.5, 25.1, 22.7;
+const originalBarData2 = [18.2, 22.5, 25.1, 22.7];
 const originalLineData = [10.2, 11.0, 9.8, 12.1, 10.5, 13.0, 14.4, 13.8, 12.2, 10.0, 12.9, 14.2];
 
 // Donut-Phasen: Phase 0 (Anfang) -> Phase 1 (Mitte) -> Phase 2 (Ende)
@@ -144,8 +204,6 @@ function getElementScrollProgress(element) {
   const rect = element.getBoundingClientRect();
   const windowHeight = window.innerHeight;
 
-  // Startet bei 0.0 wenn die Oberkante des Elements den unteren Bildschirmrand berührt
-  // Erreicht 1.0 wenn die Unterkante des Elements die obere Hälfte des Bildschirms erreicht
   const start = windowHeight;
   const end = windowHeight * 0.2;
 
@@ -155,7 +213,7 @@ function getElementScrollProgress(element) {
 
 // SCROLL-EVENT HANDLER
 function handleScrollAnimation() {
-  // 1. DONUT CHART ANIMATION (3-Phasen Interpolation)
+  // 1. DONUT CHART ANIMATION (3-Phasen Interpolation 70/30)
   const donutCanvas = document.getElementById('donutChart');
   if (donutCanvas && donutChartInstance) {
     const p = getElementScrollProgress(donutCanvas.parentElement);
@@ -196,11 +254,22 @@ function handleScrollAnimation() {
   }
 }
 
-// BROWSER RESIZE FIX (Neuzeichnen bei Orientierungswechsel Hoch/Quer)
-window.addEventListener('resize', () => {
+// FORCE RESIZE FUNCTION (Gegen Schrumpfen bei Orientierungs- & Tab-Wechsel)
+function forceResizeCharts() {
   if (donutChartInstance) donutChartInstance.resize();
   if (barChartInstance) barChartInstance.resize();
   if (lineChartInstance) lineChartInstance.resize();
+  handleScrollAnimation();
+}
+
+// BROWSER RESIZE FIX
+window.addEventListener('resize', forceResizeCharts);
+
+// TAB VISIBILITY FIX (Behebt das Tablet-Schrumpfproblem beim Wiederkehren)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    setTimeout(forceResizeCharts, 100);
+  }
 });
 
 // Event-Binding
