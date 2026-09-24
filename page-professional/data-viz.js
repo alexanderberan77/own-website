@@ -1,5 +1,5 @@
 /**
- * DATA-VIZ.JS - Stripe-Style Scroll-Driven Animations
+ * DATA-VIZ.JS - Scroll-Driven Dynamic Charts & Layout Fix
  */
 
 // ==========================================
@@ -53,16 +53,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// PART 2: STRIPE-STYLE SCROLL-DRIVEN CHARTS
+// PART 2: SCROLL-DRIVEN CHARTS PER ELEMENT
 // ==========================================
 let barChartInstance = null;
 let lineChartInstance = null;
 let donutChartInstance = null;
 
-// Ziel-Daten für die Diagramme
+// Ziel-Daten
 const originalBarData1 = [12.4, 13.1, 12.8, 14.2];
 const originalBarData2 = [18.2, 22.5, 25.1, 28.6];
 const originalLineData = [10.2, 11.0, 10.8, 12.1, 11.5, 13.0, 12.4, 13.8, 13.2, 14.0, 13.9, 14.2];
+
+// Donut-Phasen: Phase 0 (Anfang) -> Phase 1 (Mitte) -> Phase 2 (Ende)
+const donutPhase0 = [45, 25, 18, 12];
+const donutPhase1 = [25, 40, 20, 15]; // Zinsrisiko steigt
+const donutPhase2 = [15, 20, 50, 15]; // Marktrisiko dominiert
 
 function initChartsOnce() {
   Chart.defaults.color = '#94a3b8';
@@ -76,7 +81,7 @@ function initChartsOnce() {
       data: {
         labels: ['Kreditrisiko', 'Zinsrisiko', 'Marktrisiko', 'OpRisk'],
         datasets: [{
-          data: [45, 25, 18, 12],
+          data: [...donutPhase0],
           backgroundColor: ['#6366f1', '#0ea5e9', '#a855f7', '#64748b'],
           borderWidth: 2,
           borderColor: '#1e293b'
@@ -86,7 +91,7 @@ function initChartsOnce() {
     });
   }
 
-  // 2. Bar Chart (Stresstest)
+  // 2. Bar Chart
   const ctxBar = document.getElementById('barChart')?.getContext('2d');
   if (ctxBar && !barChartInstance) {
     barChartInstance = new Chart(ctxBar, {
@@ -101,13 +106,13 @@ function initChartsOnce() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false, // Wichtig: Deaktiviert Standard-Animation für flüssiges Scrollen
+        animation: false,
         scales: { x: { grid: { display: false } }, y: { min: 0, max: 30, grid: { color: '#334155' } } }
       }
     });
   }
 
-  // 3. Line Chart (Trend)
+  // 3. Line Chart
   const ctxLine = document.getElementById('lineChart')?.getContext('2d');
   if (ctxLine && !lineChartInstance) {
     lineChartInstance = new Chart(ctxLine, {
@@ -133,40 +138,74 @@ function initChartsOnce() {
   }
 }
 
-// SCROLL-EVENT LISTENER (Reagiert direkt auf Finger- und Scrollbewegungen)
-function handleScrollAnimation() {
-  const section = document.getElementById('dashboard-section');
-  if (!section) return;
-
-  const rect = section.getBoundingClientRect();
+// Berechnet den genauen Scroll-Fortschritt (0.0 bis 1.0) für EIN EINZELNES Element
+function getElementScrollProgress(element) {
+  if (!element) return 0;
+  const rect = element.getBoundingClientRect();
   const windowHeight = window.innerHeight;
 
-  // Berechne Fortschritt: 0.0 (Sektion betritt Bildschirm) bis 1.0 (Sektion verlässt Bildschirm)
-  let progress = (windowHeight - rect.top) / (windowHeight + rect.height * 0.5);
-  progress = Math.max(0, Math.min(1, progress)); // Wert zwischen 0 und 1 clampen
+  // Startet bei 0.0 wenn die Oberkante des Elements den unteren Bildschirmrand berührt
+  // Erreicht 1.0 wenn die Unterkante des Elements die obere Hälfte des Bildschirms erreicht
+  const start = windowHeight;
+  const end = windowHeight * 0.2;
 
-  // 1. BAR CHART: Balken wachsen synchron zum Scrollen
-  if (barChartInstance) {
-    barChartInstance.data.datasets[0].data = originalBarData1.map(val => val * progress);
-    barChartInstance.data.datasets[1].data = originalBarData2.map(val => val * progress);
-    barChartInstance.update('none'); // 'none' verhindert Ruckeln beim Scrollen
+  let progress = (start - rect.top) / (start - end);
+  return Math.max(0, Math.min(1, progress));
+}
+
+// SCROLL-EVENT HANDLER
+function handleScrollAnimation() {
+  // 1. DONUT CHART ANIMATION (3-Phasen Interpolation)
+  const donutCanvas = document.getElementById('donutChart');
+  if (donutCanvas && donutChartInstance) {
+    const p = getElementScrollProgress(donutCanvas.parentElement);
+    let interpolatedData = [];
+
+    if (p <= 0.5) {
+      // Phase 0 -> Phase 1 (Scroll-Fortschritt 0% bis 50%)
+      const localP = p / 0.5;
+      interpolatedData = donutPhase0.map((v0, i) => v0 + (donutPhase1[i] - v0) * localP);
+    } else {
+      // Phase 1 -> Phase 2 (Scroll-Fortschritt 50% bis 100%)
+      const localP = (p - 0.5) / 0.5;
+      interpolatedData = donutPhase1.map((v1, i) => v1 + (donutPhase2[i] - v1) * localP);
+    }
+
+    donutChartInstance.data.datasets[0].data = interpolatedData;
+    donutChartInstance.update('none');
   }
 
-  // 2. LINE CHART: Punkte werden Schritt für Schritt mit dem Scrollen freigeschaltet
-  if (lineChartInstance) {
-    const pointsToShow = Math.ceil(progress * originalLineData.length);
+  // 2. BAR CHART ANIMATION
+  const barCanvas = document.getElementById('barChart');
+  if (barCanvas && barChartInstance) {
+    const p = getElementScrollProgress(barCanvas.parentElement);
+    barChartInstance.data.datasets[0].data = originalBarData1.map(val => val * p);
+    barChartInstance.data.datasets[1].data = originalBarData2.map(val => val * p);
+    barChartInstance.update('none');
+  }
+
+  // 3. LINE CHART ANIMATION
+  const lineCanvas = document.getElementById('lineChart');
+  if (lineCanvas && lineChartInstance) {
+    const p = getElementScrollProgress(lineCanvas.parentElement);
+    const pointsToShow = Math.ceil(p * originalLineData.length);
     lineChartInstance.data.datasets[0].data = originalLineData.map((val, idx) => {
-      return idx < pointsToShow ? val * Math.min(1, progress * 1.2) : null;
+      return idx < pointsToShow ? val * Math.min(1, p * 1.1) : null;
     });
     lineChartInstance.update('none');
   }
 }
 
+// BROWSER RESIZE FIX (Neuzeichnen bei Orientierungswechsel Hoch/Quer)
+window.addEventListener('resize', () => {
+  if (donutChartInstance) donutChartInstance.resize();
+  if (barChartInstance) barChartInstance.resize();
+  if (lineChartInstance) lineChartInstance.resize();
+});
+
 // Event-Binding
 document.addEventListener('DOMContentLoaded', () => {
   initChartsOnce();
-  
-  // Höre auf das Scroll-Event
   window.addEventListener('scroll', handleScrollAnimation, { passive: true });
-  handleScrollAnimation(); // Erstes Mal beim Laden ausführen
+  handleScrollAnimation();
 });
