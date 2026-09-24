@@ -577,3 +577,153 @@ h1, h2, h3, h4, p, span, div, a, li, .stat-number {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   RESUME ACCORDION STYLES
+   ========================================================================== */
+
+.resume-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.accordion-item {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: var(--shadow-lg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.accordion-item:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.accordion-company {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.accordion-role {
+  font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.accordion-date {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(241, 245, 249, 0.8);
+  border: 1px solid var(--card-border);
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.accordion-summary {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  line-height: 1.55;
+}
+
+/* Button & Triggers */
+.accordion-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+}
+
+.accordion-toggle-btn:hover {
+  color: var(--primary-hover);
+}
+
+.accordion-toggle-btn .btn-icon {
+  font-size: 1rem;
+  font-weight: 700;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+/* Aufklappbarer Inhalt (Standardmäßig versteckt) */
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s cubic-bezier(0, 1, 0, 1), opacity 0.25s ease, margin-top 0.25s ease;
+  margin-top: 0;
+}
+
+.accordion-item.active .accordion-content {
+  max-height: 1000px; /* Groß genug für den Inhalt */
+  opacity: 1;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--card-border);
+  padding-top: 1.25rem;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease 0.1s, margin-top 0.25s ease;
+}
+
+/* Tag Container & Badges (Erst bei Aktivierung gut sichtbar) */
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.tag {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.tag-highlight {
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--primary);
+  border-color: rgba(99, 102, 241, 0.2);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .accordion-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .accordion-date {
+    white-space: normal;
+  }
+}
