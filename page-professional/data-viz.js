@@ -61,8 +61,8 @@ let donutChartInstance = null;
 
 // Ziel-Daten
 const originalBarData1 = [12.4, 13.1, 12.8, 14.2];
-const originalBarData2 = [18.2, 22.5, 25.1, 28.6];
-const originalLineData = [10.2, 11.0, 10.8, 12.1, 11.5, 13.0, 12.4, 13.8, 13.2, 14.0, 13.9, 14.2];
+const originalBarData2 = [18.2, 22.5, 25.1, 22.7;
+const originalLineData = [10.2, 11.0, 9.8, 12.1, 10.5, 13.0, 14.4, 13.8, 12.2, 10.0, 12.9, 14.2];
 
 // Donut-Phasen: Phase 0 (Anfang) -> Phase 1 (Mitte) -> Phase 2 (Ende)
 const donutPhase0 = [40, 20, 20, 20];
@@ -99,8 +99,8 @@ function initChartsOnce() {
       data: {
         labels: ['Q1', 'Q2', 'Q3', 'Q4'],
         datasets: [
-          { label: 'Base Case', data: [0, 0, 0, 0], backgroundColor: '#0ea5e9', borderRadius: 6 },
-          { label: 'Stress Scenario', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', borderRadius: 6 }
+          { label: 'Base Case', data: [0, 0, 0, 0], backgroundColor: '#a855f7', borderRadius: 6 },
+          { label: 'Stress Scenario', data: [0, 0, 0, 0], backgroundColor: '#6366f1', borderRadius: 6 }
         ]
       },
       options: {
