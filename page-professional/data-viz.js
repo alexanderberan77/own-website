@@ -84,9 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Knotenpunkte (Punkte) zeichnen
     nodes.forEach(node => {
-      ctx.fillStyle = 'rgba(99, 102, 241, 0.25)'; // Leichtes Indigoblau für die Knoten
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.1)'; // Leichtes Indigoblau für die Knoten
       ctx.beginPath();
-      ctx.arc(node.x, node.y, 2, 0, Math.PI * 1); // Kleine 2px Knotenpunkte
+      ctx.arc(node.x, node.y, 2, 0, Math.PI * 0.5); // Kleine 2px Knotenpunkte
       ctx.fill();
     });
 
