@@ -442,6 +442,26 @@ body {
 }
 
 /* Executive Dashboard Styles */
+/* Verhindert das Überlappen und Abstehen im Hoch- & Querformat */
+#dashboard-section, 
+#dashboard-section * {
+  box-sizing: border-box;
+}
+
+#dashboard-section .chart-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  position: relative;
+  overflow: hidden; /* Schneidet überstehende Elemente ab */
+}
+
+#dashboard-section canvas {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+
+
 .dashboard-wrapper {
   background: #0f172a;
   border: 1px solid #1e293b;
