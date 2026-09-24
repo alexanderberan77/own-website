@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let nodes = [];
 
   // Konfiguration für das Netz
-  const spacing = 80;        // Rasterabstand der Knoten
-  const maxDistance = 110;   // Maximale Entfernung für Linienverbindung
-  const wobbleRadius = 12;   // Wie weit die Knoten wabern/oszillieren dürfen
+  const spacing = 40;        // Rasterabstand der Knoten
+  const maxDistance = 55;   // Maximale Entfernung für Linienverbindung
+  const wobbleRadius = 10;   // Wie weit die Knoten wabern/oszillieren dürfen
 
   function initNodes() {
     width = bgCanvas.width = window.innerWidth;
@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
           // Zufällige Winkel und Geschwindigkeiten für das organische Wabern
           angleX: Math.random() * Math.PI * 2,
           angleY: Math.random() * Math.PI * 2,
-          speedX: 0.008 + Math.random() * 0.008,
-          speedY: 0.008 + Math.random() * 0.008
+          speedX: 0.05 + Math.random() * 0.015,
+          speedY: 0.05 + Math.random() * 0.015
         });
       }
     }
@@ -84,9 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Knotenpunkte (Punkte) zeichnen
     nodes.forEach(node => {
-      ctx.fillStyle = 'rgba(99, 102, 241, 0.4)'; // Leichtes Indigoblau für die Knoten
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.25)'; // Leichtes Indigoblau für die Knoten
       ctx.beginPath();
-      ctx.arc(node.x, node.y, 2, 0, Math.PI * 2); // Kleine 2px Knotenpunkte
+      ctx.arc(node.x, node.y, 2, 0, Math.PI * 1); // Kleine 2px Knotenpunkte
       ctx.fill();
     });
 
