@@ -3,69 +3,99 @@
  */
 
 // ==========================================
-// PART 1: DEZENTER AMBIENT BACKGROUND CANVAS
+// PART 1: ORGANISCHES, WABERNDES DATENNETZ (NETWORK GRID)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Erstellt ein vollflächiges Canvas im Hintergrund
   const bgCanvas = document.createElement('canvas');
   bgCanvas.id = 'ambient-bg-canvas';
-  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.35;';
+  // Etwas sichtbarer gestellt (Opazität 0.6)
+  bgCanvas.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; opacity: 0.6;';
   document.body.appendChild(bgCanvas);
 
   const ctx = bgCanvas.getContext('2d');
   let width, height;
-  let particles = [];
+  let nodes = [];
 
-  function resizeBg() {
+  // Konfiguration für das Netz
+  const spacing = 80;        // Rasterabstand der Knoten
+  const maxDistance = 110;   // Maximale Entfernung für Linienverbindung
+  const wobbleRadius = 12;   // Wie weit die Knoten wabern/oszillieren dürfen
+
+  function initNodes() {
     width = bgCanvas.width = window.innerWidth;
     height = bgCanvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resizeBg);
-  resizeBg();
+    nodes = [];
 
-  // Erzeuge unaufdringliche, schwebende Datenpunkte
-  for (let i = 0; i < 25; i++) {
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      speedY: -0.2 - Math.random() * 0.3, // Langsames Driften nach oben
-      size: Math.random() * 2 + 1,
-      alpha: Math.random() * 0.5 + 0.1
-    });
+    // Erzeuge Knotenpunkte in einem strukturierten, aber flexiblen Grid
+    for (let x = 0; x < width + spacing; x += spacing) {
+      for (let y = 0; y < height + spacing; y += spacing) {
+        nodes.push({
+          baseX: x,
+          baseY: y,
+          x: x,
+          y: y,
+          // Zufällige Winkel und Geschwindigkeiten für das organische Wabern
+          angleX: Math.random() * Math.PI * 2,
+          angleY: Math.random() * Math.PI * 2,
+          speedX: 0.008 + Math.random() * 0.008,
+          speedY: 0.008 + Math.random() * 0.008
+        });
+      }
+    }
   }
 
-  function drawBg() {
+  window.addEventListener('resize', initNodes);
+  initNodes();
+
+  function drawNetwork() {
     ctx.clearRect(0, 0, width, height);
-    
-    // Feines Finanz-Raster (Grid Lines)
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
-    ctx.lineWidth = 1;
-    const gridSize = 60;
 
-    for (let x = 0; x < width; x += gridSize) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
-    }
-    for (let y = 0; y < height; y += gridSize) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+    // 1. Positionen der Knotenpunkte berechnen & aktualisieren
+    nodes.forEach(node => {
+      node.angleX += node.speedX;
+      node.angleY += node.speedY;
+
+      // Sanfte Sinus-Waber-Bewegung um die Basis-Position
+      node.x = node.baseX + Math.sin(node.angleX) * wobbleRadius;
+      node.y = node.baseY + Math.cos(node.angleY) * wobbleRadius;
+    });
+
+    // 2. Verbindungen (Netzlinien) zeichnen
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Verbinden, wenn die Punkte nahe genug beieinander liegen
+        if (dist < maxDistance) {
+          // Je näher beieinander, desto deutlicher die Linie
+          const alpha = (1 - dist / maxDistance) * 0.25; // Maximale Linien-Opazität (0.25)
+          ctx.strokeStyle = `rgba(148, 163, 184, ${alpha})`; // Schickes Dezent-Grau/Blau
+          ctx.lineWidth = 1;
+
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
     }
 
-    // Sanft schwebende Datenpunkte
-    ctx.fillStyle = '#6366f1';
-    particles.forEach(p => {
-      p.y += p.speedY;
-      if (p.y < 0) p.y = height;
-      ctx.globalAlpha = p.alpha;
+    // 3. Knotenpunkte (Punkte) zeichnen
+    nodes.forEach(node => {
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.4)'; // Leichtes Indigoblau für die Knoten
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, 2, 0, Math.PI * 2); // Kleine 2px Knotenpunkte
       ctx.fill();
     });
-    ctx.globalAlpha = 1.0;
 
-    requestAnimationFrame(drawBg);
+    requestAnimationFrame(drawNetwork);
   }
-  drawBg();
 
-  // Palantir Wave Canvas Integration (falls Element existiert)
+  drawNetwork();
+
+  // Palantir Wave Canvas Integration (sofern vorhanden)
   const container = document.getElementById('data-viz-container');
   if (container) {
     const canvas = document.createElement('canvas');
@@ -111,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawWave();
   }
 });
+
 
 // ==========================================
 // PART 2: SCROLL-DRIVEN CHARTS PER ELEMENT
