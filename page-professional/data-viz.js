@@ -65,9 +65,9 @@ const originalBarData2 = [18.2, 22.5, 25.1, 28.6];
 const originalLineData = [10.2, 11.0, 10.8, 12.1, 11.5, 13.0, 12.4, 13.8, 13.2, 14.0, 13.9, 14.2];
 
 // Donut-Phasen: Phase 0 (Anfang) -> Phase 1 (Mitte) -> Phase 2 (Ende)
-const donutPhase0 = [45, 25, 18, 12];
-const donutPhase1 = [25, 40, 20, 15]; // Zinsrisiko steigt
-const donutPhase2 = [15, 20, 50, 15]; // Marktrisiko dominiert
+const donutPhase0 = [40, 20, 20, 20];
+const donutPhase1 = [20, 30, 40, 10]; // Zinsrisiko steigt
+const donutPhase2 = [25, 35, 20, 20]; // Marktrisiko dominiert
 
 function initChartsOnce() {
   Chart.defaults.color = '#94a3b8';
@@ -161,13 +161,13 @@ function handleScrollAnimation() {
     const p = getElementScrollProgress(donutCanvas.parentElement);
     let interpolatedData = [];
 
-    if (p <= 0.5) {
-      // Phase 0 -> Phase 1 (Scroll-Fortschritt 0% bis 50%)
-      const localP = p / 0.5;
+    if (p <= 0.7) {
+      // Phase 0 -> Phase 1 (Scroll-Fortschritt 0% bis 70%)
+      const localP = p / 0.7;
       interpolatedData = donutPhase0.map((v0, i) => v0 + (donutPhase1[i] - v0) * localP);
     } else {
-      // Phase 1 -> Phase 2 (Scroll-Fortschritt 50% bis 100%)
-      const localP = (p - 0.5) / 0.5;
+      // Phase 1 -> Phase 2 (Scroll-Fortschritt 70% bis 100%)
+      const localP = (p - 0.7) / 0.3;
       interpolatedData = donutPhase1.map((v1, i) => v1 + (donutPhase2[i] - v1) * localP);
     }
 
