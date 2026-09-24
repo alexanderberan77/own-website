@@ -353,6 +353,28 @@
       </div>
     </section>
 
+    <!-- SCROLLYTELLING PIPELINE SECTION -->
+    <section class="section-container" id="pipeline-scrollytelling">
+      <div class="section-header">
+        <span class="sub-badge">Ende-zu-Ende Datenarchitektur</span>
+        <h2>Interactive Data Pipeline Journey</h2>
+      </div>
+    
+      <div class="scrolly-sticky-viewport">
+        <!-- Das Canvas zeichnet die Schlange & die Mini-Szenen -->
+        <canvas id="pipelineCanvas"></canvas>
+        
+        <!-- Dynamisches Text-HUD unter dem Canvas -->
+        <div class="scrolly-hud">
+          <div class="hud-phase-badge" id="hudPhase">PHASE 01 // INGESTION</div>
+          <h3 class="hud-title" id="hudTitle">Multi-Source Data Ingestion</h3>
+          <p class="hud-desc" id="hudDesc">
+            Auskramen und Bündeln unstrukturierter Datenströme (APIs, SQL, CSV) in ein zentrales Gateway.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- FOOTER / CONTACT CTA -->
     <footer id="contact" class="footer-container">
       <div class="footer-card">
@@ -368,8 +390,14 @@
 
   </main>
 
-    <!-- Skripte für interaktive Grafiken und Simulation -->
+  <!-- Skripte für interaktive Grafiken und Simulation -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- GSAP & ScrollTrigger CDN (für pipeline-story-scrollytelling) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- Einbindung Eigene Scripte-->
+  <script src="pipeline-story.js"></script>
   <script src="process-sim.js"></script>
   <script src="data-viz.js"></script>
   <script src="main.js"></script>
