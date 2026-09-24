@@ -1,16 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
-  gsap.registerPlugin(ScrollTrigger);
+  // GSAP ScrollTrigger Plugin-Registrierung
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+  } else {
+    console.warn("GSAP oder ScrollTrigger nicht geladen.");
+    return;
+  }
 
   const canvas = document.getElementById('pipelineCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  // Element-Referenzen für Text-Updates
+  // DOM Referenzen für das HUD
   const hudPhase = document.getElementById('hudPhase');
   const hudTitle = document.getElementById('hudTitle');
   const hudDesc = document.getElementById('hudDesc');
 
-  // Canvas Responsive Resizing
+  // Dynamic Canvas Resizing
   function resizeCanvas() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
@@ -18,42 +24,55 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // Phasen-Texte
+  // Story-Phasen Konfiguration
   const phases = [
     {
       badge: "PHASE 01 // INGESTION",
       title: "Multi-Source Data Ingestion",
-      desc: "Unstrukturierte Datenströme (APIs, SQL-Datenbanken, Excel/CSV) fließen in ein zentrales automatisierte Ingestion Gateway."
+      desc: "Unstrukturierte Datenströme (APIs, SQL-Datenbanken, Excel/CSV) fliegen in ein zentrales, geprüftes Ingestion-Gateway."
     },
     {
       badge: "PHASE 02 // ETL & NORMALIZATION",
       title: "Transformation, Cleaning & Governance",
-      desc: "Automatisierte ETL-Logiken bereinigen unvollständige Sätze, prüfen Schemas und normalisieren Daten audit-sicher."
+      desc: "Automatisierte ETL-Logiken bereinigen unvollständige Datensätze, prüfen Schemas und normalisieren audit-sicher."
     },
     {
       badge: "PHASE 03 // RISK CALCULATION ENGINE",
       title: "Quantitative Risk Model Processing",
-      desc: "Der Core-Processing-Cube verarbeitet die Daten: Stresstest-Schockfaktoren, Cashflow-Simulationen & VaR-Berechnungen."
+      desc: "Der Core-Processing-Cube berechnet Stresstest-Schockfaktoren, Cashflow-Behavioristik & barwertigen Value-at-Risk."
     },
     {
       badge: "PHASE 04 // EXECUTIVE DASHBOARD",
-      title: "Automated BI & Decision Output",
-      desc: "Vollwertige Kennzahlen und visuelle Charts stehen Ad-hoc für Vorstand, Aufsichtsrat und Regulierer bereit."
+      title: "Automated BI & Executive Output",
+      desc: "Hochaggregierte Kennzahlen und interaktive Visualisierungen stehen Ad-hoc für Vorstand und Aufsichtsrat bereit."
     }
   ];
 
-  let progress = 0; // 0.0 bis 1.0 durch Scrollen gestuert
+  // Globaler Animation-State
+  let scrollProgress = 0; // 0.0 bis 1.0
+  let particles = [];
+  
+  // Partikel-Initialisierung für Ingestion & ETL
+  for (let i = 0; i < 30; i++) {
+    particles.push({
+      x: (Math.random() - 0.5) * 200,
+      y: (Math.random() - 0.5) * 200,
+      size: Math.random() * 4 + 2,
+      speed: Math.random() * 1.5 + 0.5,
+      type: Math.random() > 0.3 ? 'good' : 'bad' // 'bad' für gefilterte Daten in Scene 2
+    });
+  }
 
-  // GSAP ScrollTrigger für das Pinning & Progress
+  // GSAP ScrollTrigger für Pinning & Fortschritt
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
-    start: "top top+=80px", // Pinnt kurz vor dem oberen Rand
-    end: "+=2200",          // Scroll-Distanz der Sequenz
+    start: "top top+=70px",
+    end: "+=2600",
     pin: true,
-    scrub: 0.6,
+    scrub: 0.5,
     onUpdate: (self) => {
-      progress = self.progress;
-      updateHUD(progress);
+      scrollProgress = self.progress;
+      updateHUD(scrollProgress);
     }
   });
 
@@ -63,140 +82,223 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (p > 0.5) index = 2;
     else if (p > 0.25) index = 1;
 
-    hudPhase.textContent = phases[index].badge;
-    hudTitle.textContent = phases[index].title;
-    hudDesc.textContent = phases[index].desc;
+    if (hudPhase) hudPhase.textContent = phases[index].badge;
+    if (hudTitle) hudTitle.textContent = phases[index].title;
+    if (hudDesc) hudDesc.textContent = phases[index].desc;
   }
 
-  // Hilfsfunktion: Zeichnet geschwungene Schlangenlinien (Snake Path)
-  function drawPipeline(p) {
+  // 4 Knotenpunkte im virtuellen Raum (Welt-Koordinaten)
+  const worldNodes = [
+    { x: 100,  y: 150 },
+    { x: 450,  y: 380 },
+    { x: 800,  y: 180 },
+    { x: 1150, y: 350 }
+  ];
+
+  // Haupt-Render-Schleife mit Kamera-Transformation
+  function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const w = canvas.width;
     const h = canvas.height;
 
-    // 4 Hauptknoten-Punkte für die Stationen im Z-Muster / Snake-Kurven
-    const nodes = [
-      { x: w * 0.15, y: h * 0.3 },
-      { x: w * 0.4,  y: h * 0.7 },
-      { x: w * 0.65, y: h * 0.25 },
-      { x: w * 0.88, y: h * 0.65 }
-    ];
-
-    // 1. Statische Pfad-Linie im Hintergrund (schwach lila)
-    ctx.beginPath();
-    ctx.moveTo(nodes[0].x, nodes[0].y);
-    ctx.bezierCurveTo(w * 0.25, h * 0.8, w * 0.3, h * 0.1, nodes[1].x, nodes[1].y);
-    ctx.bezierCurveTo(w * 0.5, h * 0.9, w * 0.55, h * 0.1, nodes[2].x, nodes[2].y);
-    ctx.bezierCurveTo(w * 0.75, h * 0.4, w * 0.8, h * 0.8, nodes[3].x, nodes[3].y);
+    // 1. KAMERA-BERECHNUNG (Kamera folgt der Position der Schlange)
+    const currentPos = getPathPoint(scrollProgress, worldNodes);
     
-    ctx.strokeStyle = "rgba(99, 102, 241, 0.2)";
-    ctx.lineWidth = 6;
-    ctx.stroke();
+    ctx.save();
+    
+    // Zoom-Faktor & Zentrierung auf den aktuellen Kopf-Punkt
+    const zoom = w < 600 ? 1.1 : 1.3; // Auf Mobilgeräten etwas angepasster Zoom
+    ctx.translate(w / 2, h / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-currentPos.x, -currentPos.y);
 
-    // 2. Aktive Lila Snake-Linie basierend auf Scroll-Progress
-    const currentLength = p;
+    // 2. ZEICHNE WELT-HINTERGRUNDGRID
+    drawGrid();
+
+    // 3. ZEICHNE DEN PIPELINE-PFAD (Lila Snake & Statische Führung)
+    drawSnakePath(scrollProgress, worldNodes);
+
+    // 4. ZEICHNE DIE 4 SZENEN / KNOTENPUNKTE (Daumenkino-Elemente)
+    worldNodes.forEach((node, idx) => {
+      drawSceneNode(node.x, node.y, idx, scrollProgress);
+    });
+
+    // 5. ZEICHNE DEN GLASFASER-SNAKE-KOPF (Orange Glow)
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(nodes[0].x, nodes[0].y);
-    ctx.bezierCurveTo(w * 0.25, h * 0.8, w * 0.3, h * 0.1, nodes[1].x, nodes[1].y);
-    ctx.bezierCurveTo(w * 0.5, h * 0.9, w * 0.55, h * 0.1, nodes[2].x, nodes[2].y);
-    ctx.bezierCurveTo(w * 0.75, h * 0.4, w * 0.8, h * 0.8, nodes[3].x, nodes[3].y);
-    
-    ctx.strokeStyle = "#6366f1"; // Haupt-Lila
-    ctx.lineWidth = 6;
-    ctx.setLineDash([canvas.width * 2]);
-    ctx.lineDashOffset = (1 - currentLength) * canvas.width * 2;
-    ctx.stroke();
-    ctx.restore();
-
-    // 3. Den leuchtenden orangenen "Snake-Kopf" (Glass-Fiber Pulse) berechnen
-    const headPos = getPointOnCurve(p, nodes, w, h);
-    
-    // Glowing Effect für den Kopf
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(headPos.x, headPos.y, 10, 0, Math.PI * 2);
-    ctx.fillStyle = "#f97316"; // Orange
+    ctx.arc(currentPos.x, currentPos.y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = "#f97316";
     ctx.shadowColor = "#ff5500";
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 18;
     ctx.fill();
     ctx.restore();
 
-    // 4. Daumenkino / Mini-Animationen an den Stationen zeichnen
-    nodes.forEach((node, i) => {
-      const active = (p >= i * 0.25);
-      drawStationIcon(node.x, node.y, i + 1, active, p);
-    });
+    ctx.restore(); // Kamera-Reset für den nächsten Frame
 
-    requestAnimationFrame(() => drawPipeline(progress));
+    requestAnimationFrame(render);
   }
 
-  // Punkt-Berechnung auf der Bezier-Kurve
-  function getPointOnCurve(p, n, w, h) {
-    // Näherungswert für die Kopf-Position auf dem Pfad
-    let start = n[0];
-    let end = n[3];
-    if (p < 0.33) {
-      start = n[0]; end = n[1];
-    } else if (p < 0.66) {
-      start = n[1]; end = n[2];
-    } else {
-      start = n[2]; end = n[3];
+  // Hilfsfunktion: Berechnet genaue Position & Bezier-Pfad
+  function getPathPoint(p, nodes) {
+    if (p <= 0) return { x: nodes[0].x, y: nodes[0].y };
+    if (p >= 1) return { x: nodes[3].x, y: nodes[3].y };
+
+    let segP = p * 3; // 3 Segmente zwischen 4 Knoten
+    let idx = Math.floor(segP);
+    let t = segP - idx;
+    if (idx >= 3) { idx = 2; t = 1; }
+
+    const p0 = nodes[idx];
+    const p1 = nodes[idx + 1];
+
+    // Kontrollpunkte für geschwungene Haken
+    const cp1 = { x: p0.x + 150, y: p0.y + (idx % 2 === 0 ? 120 : -120) };
+    const cp2 = { x: p1.x - 150, y: p1.y + (idx % 2 === 0 ? -120 : 120) };
+
+    // Kubische Bezier-Formel
+    const cx = Math.pow(1 - t, 3) * p0.x + 3 * Math.pow(1 - t, 2) * t * cp1.x + 3 * (1 - t) * Math.pow(t, 2) * cp2.x + Math.pow(t, 3) * p1.x;
+    const cy = Math.pow(1 - t, 3) * p0.y + 3 * Math.pow(1 - t, 2) * t * cp1.y + 3 * (1 - t) * Math.pow(t, 2) * cp2.y + Math.pow(t, 3) * p1.y;
+
+    return { x: cx, y: cy };
+  }
+
+  // Zeichnet den Pfad & den lila Laser-Fortschritt
+  function drawSnakePath(p, nodes) {
+    // Statischer Hintergrund-Pfad
+    ctx.beginPath();
+    drawFullBezierPath(nodes);
+    ctx.strokeStyle = "rgba(99, 102, 241, 0.15)";
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    // Aktiver Lila-Laser-Pfad
+    ctx.save();
+    ctx.beginPath();
+    drawFullBezierPath(nodes);
+    ctx.strokeStyle = "#6366f1";
+    ctx.lineWidth = 6;
+    ctx.shadowColor = "#6366f1";
+    ctx.shadowBlur = 10;
+    
+    // Strich-Anpassung basierend auf Fortschritt
+    const totalLength = 1600;
+    ctx.setLineDash([totalLength]);
+    ctx.lineDashOffset = totalLength * (1 - p);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFullBezierPath(nodes) {
+    ctx.moveTo(nodes[0].x, nodes[0].y);
+    for (let i = 0; i < 3; i++) {
+      const p0 = nodes[i];
+      const p1 = nodes[i + 1];
+      const cp1 = { x: p0.x + 150, y: p0.y + (i % 2 === 0 ? 120 : -120) };
+      const cp2 = { x: p1.x - 150, y: p1.y + (i % 2 === 0 ? -120 : 120) };
+      ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p1.x, p1.y);
     }
-    const subP = (p % 0.33) * 3;
-    return {
-      x: start.x + (end.x - start.x) * subP,
-      y: start.y + (end.y - start.y) * subP
-    };
   }
 
-  // Mini-Daumenkino-Stationen
-  function drawStationIcon(x, y, stage, active, p) {
+  // Zeichnet die dynamischen Mini-Szenen (Daumenkino)
+  function drawSceneNode(x, y, stage, p) {
     ctx.save();
     ctx.translate(x, y);
 
-    // Kreis-Container der Station
+    const activeRangeMin = stage * 0.25 - 0.1;
+    const activeRangeMax = stage * 0.25 + 0.25;
+    const isActive = (p >= activeRangeMin && p <= activeRangeMax);
+
+    // Basis-Knoten-Ring
     ctx.beginPath();
-    ctx.arc(0, 0, 24, 0, Math.PI * 2);
-    ctx.fillStyle = active ? "#1e293b" : "#0f172a";
-    ctx.strokeStyle = active ? "#6366f1" : "#334155";
-    ctx.lineWidth = 3;
+    ctx.arc(0, 0, 32, 0, Math.PI * 2);
+    ctx.fillStyle = isActive ? "rgba(30, 41, 59, 0.95)" : "rgba(15, 23, 42, 0.8)";
+    ctx.strokeStyle = isActive ? "#6366f1" : "#334155";
+    ctx.lineWidth = isActive ? 3 : 2;
+    if (isActive) {
+      ctx.shadowColor = "#6366f1";
+      ctx.shadowBlur = 15;
+    }
     ctx.fill();
     ctx.stroke();
 
-    // Symbol-Grafiken je Station
-    if (stage === 1) { // Ingestion (Fliegende Datenblöcke)
-      ctx.fillStyle = active ? "#f97316" : "#64748b";
-      const offset = (Math.sin(Date.now() * 0.005) * 4);
-      ctx.fillRect(-8 + offset, -8, 6, 6);
-      ctx.fillRect(-2 - offset, 2, 6, 6);
-      ctx.fillRect(4, -4 + offset, 6, 6);
-    } else if (stage === 2) { // ETL / Filter (Zahnrad / Trieur)
-      ctx.strokeStyle = active ? "#a855f7" : "#64748b";
+    // SZENE 1: INGESTION (Fliegende Partikel in Trichter)
+    if (stage === 0) {
+      ctx.fillStyle = "#f97316";
+      particles.forEach((part, i) => {
+        if (i < 12) {
+          const ang = (Date.now() * 0.002 + i) % (Math.PI * 2);
+          const rad = 18 + Math.sin(Date.now() * 0.003 + i) * 6;
+          ctx.beginPath();
+          ctx.arc(Math.cos(ang) * rad, Math.sin(ang) * rad, part.size / 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px sans-serif";
+      ctx.fillText("IN", -5, 4);
+    }
+
+    // SZENE 2: ETL & NORMALIZATION (Mahlwerk/Filter)
+    else if (stage === 1) {
+      ctx.rotate(Date.now() * 0.001);
+      ctx.strokeStyle = isActive ? "#a855f7" : "#64748b";
       ctx.lineWidth = 2;
-      ctx.strokeRect(-8, -8, 16, 16);
-      if (active) {
-        ctx.beginPath();
-        ctx.arc(0, 0, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "#10b981"; // Grüner Filter-Erfolg
-        ctx.fill();
-      }
-    } else if (stage === 3) { // Risk Engine (Pulsierender Core-Cube)
-      ctx.fillStyle = active ? "#0ea5e9" : "#64748b";
-      const scale = active ? (1 + Math.sin(Date.now() * 0.008) * 0.15) : 1;
+      ctx.strokeRect(-12, -12, 24, 24);
+      
+      ctx.rotate(-Date.now() * 0.002);
+      ctx.fillStyle = isActive ? "#10b981" : "#475569";
+      ctx.fillRect(-6, -6, 12, 12);
+    }
+
+    // SZENE 3: RISK CALCULATION ENGINE (Pulsierender 3D-Cube)
+    else if (stage === 2) {
+      const scale = isActive ? (1 + Math.sin(Date.now() * 0.006) * 0.15) : 1;
       ctx.scale(scale, scale);
-      ctx.fillRect(-7, -7, 14, 14);
-    } else if (stage === 4) { // Output (Dashboard Mini Chart)
-      ctx.fillStyle = active ? "#10b981" : "#64748b";
-      ctx.fillRect(-10, 2, 4, 8);
-      ctx.fillRect(-4, -4, 4, 14);
-      ctx.fillRect(2, -8, 4, 18);
+      ctx.fillStyle = isActive ? "#0ea5e9" : "#64748b";
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(12, -7);
+      ctx.lineTo(12, 7);
+      ctx.lineTo(0, 14);
+      ctx.lineTo(-12, 7);
+      ctx.lineTo(-12, -7);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // SZENE 4: EXECUTIVE DASHBOARD OUTPUT (Aufploppende Charts)
+    else if (stage === 3) {
+      ctx.fillStyle = isActive ? "#10b981" : "#64748b";
+      const h1 = isActive ? 12 + Math.sin(Date.now() * 0.005) * 3 : 8;
+      const h2 = isActive ? 18 + Math.cos(Date.now() * 0.005) * 4 : 12;
+      ctx.fillRect(-12, 10 - h1, 6, h1);
+      ctx.fillRect(-3, 10 - h2, 6, h2);
+      ctx.fillRect(6, 10 - (h1 * 0.8), 6, h1 * 0.8);
     }
 
     ctx.restore();
   }
 
-  // Animation starten
-  drawPipeline(0);
+  // Dezent-subtiles Tech-Grid im Hintergrund
+  function drawGrid() {
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+    ctx.lineWidth = 1;
+    const step = 60;
+    for (let x = -200; x < 1500; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, -200);
+      ctx.lineTo(x, 800);
+      ctx.stroke();
+    }
+    for (let y = -200; y < 800; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(-200, y);
+      ctx.lineTo(1500, y);
+      ctx.stroke();
+    }
+  }
+
+  // Start der Render-Engine
+  render();
 });
