@@ -4,19 +4,6 @@
  * 2. Chart.js Risk Dashboard (mit Scroll-Trigger)
  */
 
-// TRICK FÜR TABLETS: Erstellt ein rotes Fehler-Fenster auf der Seite
-window.onerror = function(msg, url, line) {
-  let errBox = document.getElementById('tablet-error-log');
-  if (!errBox) {
-    errBox = document.createElement('div');
-    errBox.id = 'tablet-error-log';
-    errBox.style.cssText = 'position:fixed; top:10px; left:10px; right:10px; background:red; color:white; padding:15px; z-index:99999; font-size:12px; font-family:monospace; word-break:break-all; border-radius:8px; box-shadow:0 10px 20px rgba(0,0,0,0.5);';
-    document.body.appendChild(errBox);
-  }
-  errBox.innerHTML += '<b>FEHLER:</b> ' + msg + '<br><small>Zeile: ' + line + '</small><hr style="border-color:white;margin:5px 0">';
-};
-
-
 // ==========================================
 // PART 1: PALANTIR CANVAS WAVE ANIMATION
 // ==========================================
