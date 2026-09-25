@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // 2. FACHLICH & TECHNISCH PRÄZISE TEXTE
+  // FACHLICH & TECHNISCH PRÄZISE TEXTE
   const phases = [
     {
       badge: "PHASE 01 // DATA INGESTION & CONSOLIDATION",
@@ -42,15 +42,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   ];
 
+  // Waypoints der Strecke (18 Punkte -> 17 Segmente)
+  // Index 0: DB (p=0.0) | Index 5: ETL (p=0.294) | Index 11: Calc Engine (p=0.647) | Index 17: Laptop (p=1.0)
+  const waypoints = [
+    { x: 300, y: 300 }, // [0] Szene 1: DB Center
+    { x: 300, y: 180 }, // [1]
+    { x: 500, y: 180 }, // [2]
+    { x: 500, y: 420 }, // [3]
+    { x: 700, y: 420 }, // [4]
+    { x: 700, y: 300 }, // [5] Szene 2: ETL Grid
+    { x: 850, y: 300 }, // [6]
+    { x: 850, y: 150 }, // [7]
+    { x: 1050, y: 150 },// [8]
+    { x: 1050, y: 450 },// [9]
+    { x: 1250, y: 450 },// [10]
+    { x: 1250, y: 300 },// [11] Szene 3: Calc Engine
+    { x: 1400, y: 300 },// [12]
+    { x: 1400, y: 200 },// [13]
+    { x: 1600, y: 200 },// [14]
+    { x: 1600, y: 400 },// [15]
+    { x: 1800, y: 400 },// [16]
+    { x: 1800, y: 300 } // [17] Szene 4: Laptop
+  ];
+
+  // Exakte prozentuale Fortschritte der 4 Szenen basierend auf Segmenten
+  const totalSegments = waypoints.length - 1; // 17 Segmente
+  const stationProgresses = [
+    0 / totalSegments,   // Station 1: 0.000
+    5 / totalSegments,   // Station 2: 0.294
+    11 / totalSegments,  // Station 3: 0.647
+    17 / totalSegments   // Station 4: 1.000
+  ];
+
   let rawScrollProgress = 0;
 
-  // 4. GSAP ScrollTrigger: Entschleunigte Scroll-Distanz (+=5500)
+  // GSAP ScrollTrigger
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
     start: "top top+=70px",
-    end: "+=5500",
+    end: "+=4500",
     pin: true,
-    scrub: 0.4,
+    scrub: 0.3,
     onUpdate: (self) => {
       rawScrollProgress = self.progress;
       const easedP = getEasedProgress(rawScrollProgress);
@@ -58,56 +90,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 4. NON-LINEAR EASING: Bremst die Fahrt an den 4 Stationen spürbar ab
+  // CONTINUOUS EASING: Fließende Entschleunigung ohne Stehenbleiben
   function getEasedProgress(p) {
-    // 0.00..0.15 -> Station 1 (DB)
-    if (p < 0.15) return 0;
-    // 0.15..0.30 -> Fahrt zu Station 2
-    if (p < 0.30) return ((p - 0.15) / 0.15) * 0.28;
-    // 0.30..0.45 -> Station 2 (ETL Grid)
-    if (p < 0.45) return 0.28;
-    // 0.45..0.60 -> Fahrt zu Station 3
-    if (p < 0.60) return 0.28 + ((p - 0.45) / 0.15) * 0.31;
-    // 0.60..0.75 -> Station 3 (Calc Engine)
-    if (p < 0.75) return 0.59;
-    // 0.75..0.90 -> Fahrt zu Station 4
-    if (p < 0.90) return 0.59 + ((p - 0.75) / 0.15) * 0.41;
-    // 0.90..1.00 -> Station 4 (Laptop & Output)
-    return 1.0;
+    if (p <= 0) return 0;
+    if (p >= 1) return 1;
+
+    // Sanfte Modulation über Sinus-Wellen an den 4 Zielpunkten
+    let adjustment = 0;
+    const radius = 0.08; // Einflussbereich der Verlangsamung
+
+    stationProgresses.forEach(stP => {
+      const dist = p - stP;
+      if (Math.abs(dist) < radius) {
+        // Erzeugt eine sanfte Senke in der Geschwindigkeit um die Station herum
+        const factor = Math.cos((dist / radius) * (Math.PI / 2));
+        adjustment -= dist * factor * 0.45;
+      }
+    });
+
+    return Math.min(1, Math.max(0, p + adjustment));
   }
 
   function updateHUD(p) {
     let index = 0;
-    if (p >= 0.85) index = 3;
-    else if (p >= 0.55) index = 2;
-    else if (p >= 0.25) index = 1;
+    if (p >= 0.82) index = 3;
+    else if (p >= 0.48) index = 2;
+    else if (p >= 0.15) index = 1;
 
     if (hudPhase) hudPhase.textContent = phases[index].badge;
     if (hudTitle) hudTitle.textContent = phases[index].title;
     if (hudDesc) hudDesc.textContent = phases[index].desc;
   }
-
-  // Pfad-Koordinaten
-  const waypoints = [
-    { x: 300, y: 300 }, // Szene 1: DB Center (p ~ 0.0)
-    { x: 300, y: 180 },
-    { x: 500, y: 180 },
-    { x: 500, y: 420 },
-    { x: 700, y: 420 },
-    { x: 700, y: 300 }, // Szene 2: ETL Grid (p ~ 0.28)
-    { x: 850, y: 300 },
-    { x: 850, y: 150 },
-    { x: 1050, y: 150 },
-    { x: 1050, y: 450 },
-    { x: 1250, y: 450 },
-    { x: 1250, y: 300 }, // Szene 3: Calc Engine (p ~ 0.59)
-    { x: 1400, y: 300 },
-    { x: 1400, y: 200 },
-    { x: 1600, y: 200 },
-    { x: 1600, y: 400 },
-    { x: 1800, y: 400 },
-    { x: 1800, y: 300 }  // Szene 4: Laptop (p = 1.0)
-  ];
 
   function getSnakePos(p) {
     const totalSegs = waypoints.length - 1;
@@ -136,11 +149,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.save();
 
-    // 3. DYNAMISCHE ZOOMSTUFE FÜR DISPLAYGRÖSSEN (Handy, Tablet, Desktop)
-    const baseScaleX = w / 1000;
-    const baseScaleY = h / 600;
-    let dynamicZoom = Math.min(baseScaleX, baseScaleY);
-    dynamicZoom = Math.min(Math.max(dynamicZoom, 0.75), 1.35);
+    // DYNAMISCHE ZOOMSTUFE: Optimiert für Tablet & Desktop (kein "Zu-weit-weg" Effekt mehr)
+    const scaleByHeight = h / 450; 
+    const scaleByWidth = w / 850;
+    
+    // Zoom orientiert sich primär an der Vertikalen, verhindert zu starkes Verkleinern
+    let dynamicZoom = Math.min(scaleByHeight, scaleByWidth);
+    
+    // Untergrenze auf 0.95 angehoben, damit Tablets Nahaufnahme behalten
+    if (window.innerWidth <= 1024) {
+      dynamicZoom = Math.max(0.95, dynamicZoom);
+    } else {
+      dynamicZoom = Math.max(1.0, Math.min(dynamicZoom, 1.4));
+    }
 
     ctx.translate(w / 2, h / 2);
     ctx.scale(dynamicZoom, dynamicZoom);
@@ -148,13 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     drawGrid();
     drawPurplePath(currentP, headPos);
-    drawScene1DB(300, 300, currentP);
-    drawScene2ETL(700, 300, currentP);
-    drawScene3Engine(1250, 300, currentP);
-    drawScene4Laptop(1800, 300, currentP);
+    drawScene1DB(waypoints[0].x, waypoints[0].y, currentP);
+    drawScene2ETL(waypoints[5].x, waypoints[5].y, currentP);
+    drawScene3Engine(waypoints[11].x, waypoints[11].y, currentP);
+    drawScene4Laptop(waypoints[17].x, waypoints[17].y, currentP);
 
     // Oranger Datenpunkt
-    if (currentP > 0.02) {
+    if (currentP > 0.01) {
       ctx.save();
       ctx.beginPath();
       ctx.arc(headPos.x, headPos.y, 8, 0, Math.PI * 2);
@@ -170,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function drawPurplePath(p, currentHeadPos) {
-    if (p <= 0.02) return;
+    if (p <= 0.01) return;
 
     ctx.save();
     ctx.beginPath();
@@ -203,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let dbScale = 1;
     if (p > 0.03) {
-      dbScale = Math.max(0, 1 - (p - 0.03) * 15);
+      dbScale = Math.max(0, 1 - (p - 0.03) * 12);
     }
 
     if (dbScale > 0) {
@@ -247,10 +268,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.save();
     ctx.translate(x, y);
 
-    const dist = Math.abs(p - 0.28);
-    let gridScale = 0.5;
-    if (dist < 0.15) {
-      gridScale = 0.5 + (1 - dist / 0.15) * 0.6;
+    const st2P = stationProgresses[1];
+    const dist = Math.abs(p - st2P);
+    let gridScale = 0.65;
+    if (dist < 0.12) {
+      gridScale = 0.65 + (1 - dist / 0.12) * 0.45;
     }
 
     ctx.scale(gridScale, gridScale);
@@ -269,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.stroke();
     }
 
-    if (p > 0.28) {
+    if (p > st2P) {
       ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
       ctx.lineWidth = 3;
       
@@ -346,8 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.closePath();
     ctx.fill();
 
-    if (p > 0.85) {
-      const pop = Math.min(1, (p - 0.85) / 0.12);
+    if (p > 0.80) {
+      const pop = Math.min(1, (p - 0.80) / 0.15);
 
       const charts = [
         { dx: -70, dy: -60, label: "Pie" },
