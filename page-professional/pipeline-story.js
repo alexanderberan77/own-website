@@ -1,22 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // GSAP ScrollTrigger Plugin-Registrierung
   if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
-  } else {
-    console.warn("GSAP oder ScrollTrigger nicht geladen.");
-    return;
   }
 
   const canvas = document.getElementById('pipelineCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  // DOM Referenzen für das HUD
   const hudPhase = document.getElementById('hudPhase');
   const hudTitle = document.getElementById('hudTitle');
   const hudDesc = document.getElementById('hudDesc');
 
-  // Dynamic Canvas Resizing
   function resizeCanvas() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
@@ -24,52 +18,38 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // Story-Phasen Konfiguration
   const phases = [
     {
       badge: "PHASE 01 // INGESTION",
-      title: "Multi-Source Data Ingestion",
-      desc: "Unstrukturierte Datenströme (APIs, SQL-Datenbanken, Excel/CSV) fliegen in ein zentrales, geprüftes Ingestion-Gateway."
+      title: "Data Collection & Central Storage",
+      desc: "Dokumente und Datenblätter fliegen in die zentrale Datenbank und werden zu einem fokussierten Datenpunkt komprimiert."
     },
     {
       badge: "PHASE 02 // ETL & NORMALIZATION",
-      title: "Transformation, Cleaning & Governance",
-      desc: "Automatisierte ETL-Logiken bereinigen unvollständige Datensätze, prüfen Schemas und normalisieren audit-sicher."
+      title: "Grid Transformation & Routing",
+      desc: "Der Datenpunkt durchläuft das ETL-Gitter. Daten werden strukturiert und in verschiedene Datenströme aufgeteilt."
     },
     {
-      badge: "PHASE 03 // RISK CALCULATION ENGINE",
-      title: "Quantitative Risk Model Processing",
-      desc: "Der Core-Processing-Cube berechnet Stresstest-Schockfaktoren, Cashflow-Behavioristik & barwertigen Value-at-Risk."
+      badge: "PHASE 03 // CALCULATION ENGINE",
+      title: "Math & Risk Model Processing",
+      desc: "Formeln, Zahnräder und mathematische Modelle berechnen Risiko-Schockfaktoren und Kennzahlen."
     },
     {
-      badge: "PHASE 04 // EXECUTIVE DASHBOARD",
-      title: "Automated BI & Executive Output",
-      desc: "Hochaggregierte Kennzahlen und interaktive Visualisierungen stehen Ad-hoc für Vorstand und Aufsichtsrat bereit."
+      badge: "PHASE 04 // EXECUTIVE OUTPUT",
+      title: "Dashboard & Laptop Delivery",
+      desc: "Die fertigen Daten fließen in den Laptop – interaktive Diagramme, Charts und Berichte ploppen auf."
     }
   ];
 
-  // Globaler Animation-State
-  let scrollProgress = 0; // 0.0 bis 1.0
-  let particles = [];
-  
-  // Partikel-Initialisierung für Ingestion & ETL
-  for (let i = 0; i < 30; i++) {
-    particles.push({
-      x: (Math.random() - 0.5) * 200,
-      y: (Math.random() - 0.5) * 200,
-      size: Math.random() * 4 + 2,
-      speed: Math.random() * 1.5 + 0.5,
-      type: Math.random() > 0.3 ? 'good' : 'bad' // 'bad' für gefilterte Daten in Scene 2
-    });
-  }
+  let scrollProgress = 0;
 
-  // GSAP ScrollTrigger für Pinning & Fortschritt
+  // GSAP ScrollTrigger
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
     start: "top top+=70px",
-    end: "+=2600",
+    end: "+=3200",
     pin: true,
-    scrub: 0.5,
+    scrub: 0.3,
     onUpdate: (self) => {
       scrollProgress = self.progress;
       updateHUD(scrollProgress);
@@ -87,218 +67,348 @@ document.addEventListener('DOMContentLoaded', () => {
     if (hudDesc) hudDesc.textContent = phases[index].desc;
   }
 
-  // 4 Knotenpunkte im virtuellen Raum (Welt-Koordinaten)
-  const worldNodes = [
-    { x: 100,  y: 150 },
-    { x: 450,  y: 380 },
-    { x: 800,  y: 180 },
-    { x: 1150, y: 350 }
+  // Pfad-Koordinaten für das 90°-Schlangen-Platinenmuster (World Space)
+  const waypoints = [
+    { x: 300, y: 300 }, // Szene 1: DB Center
+    { x: 300, y: 180 },
+    { x: 500, y: 180 },
+    { x: 500, y: 420 },
+    { x: 700, y: 420 },
+    { x: 700, y: 300 }, // Szene 2: ETL Grid (700, 300)
+    { x: 850, y: 300 },
+    { x: 850, y: 150 },
+    { x: 1050, y: 150 },
+    { x: 1050, y: 450 },
+    { x: 1250, y: 450 },
+    { x: 1250, y: 300 }, // Szene 3: Calc Engine (1250, 300)
+    { x: 1400, y: 300 },
+    { x: 1400, y: 200 },
+    { x: 1600, y: 200 },
+    { x: 1600, y: 400 },
+    { x: 1800, y: 400 },
+    { x: 1800, y: 300 }  // Szene 4: Laptop (1800, 300)
   ];
 
-  // Haupt-Render-Schleife mit Kamera-Transformation
+  // Hilfsfunktion: Berechnet aktuelle Punkt-Position entlang der 90°-Segmente
+  function getSnakePos(p) {
+    const totalSegs = waypoints.length - 1;
+    const progressSeg = p * totalSegs;
+    const idx = Math.min(Math.floor(progressSeg), totalSegs - 1);
+    const t = progressSeg - idx;
+
+    const p1 = waypoints[idx];
+    const p2 = waypoints[idx + 1];
+
+    return {
+      x: p1.x + (p2.x - p1.x) * t,
+      y: p1.y + (p2.y - p1.y) * t,
+      currentIdx: idx
+    };
+  }
+
+  // Haupt-Render-Schleife
   function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const w = canvas.width;
     const h = canvas.height;
+    const headPos = getSnakePos(scrollProgress);
 
-    // 1. KAMERA-BERECHNUNG (Kamera folgt der Position der Schlange)
-    const currentPos = getPathPoint(scrollProgress, worldNodes);
-    
     ctx.save();
-    
-    // Zoom-Faktor & Zentrierung auf den aktuellen Kopf-Punkt
-    const zoom = w < 600 ? 1.1 : 1.3; // Auf Mobilgeräten etwas angepasster Zoom
+
+    // Kamera bleibt IMMER auf den orangenen Datenpunkt zentriert!
+    const zoom = w < 600 ? 1.0 : 1.2;
     ctx.translate(w / 2, h / 2);
     ctx.scale(zoom, zoom);
-    ctx.translate(-currentPos.x, -currentPos.y);
+    ctx.translate(-headPos.x, -headPos.y);
 
-    // 2. ZEICHNE WELT-HINTERGRUNDGRID
+    // Grid Hintergrund
     drawGrid();
 
-    // 3. ZEICHNE DEN PIPELINE-PFAD (Lila Snake & Statische Führung)
-    drawSnakePath(scrollProgress, worldNodes);
+    // 1. ZURÜCKGELEGTER LILA PFAD (mit leichtem Verblassen)
+    drawPurplePath(scrollProgress, headPos);
 
-    // 4. ZEICHNE DIE 4 SZENEN / KNOTENPUNKTE (Daumenkino-Elemente)
-    worldNodes.forEach((node, idx) => {
-      drawSceneNode(node.x, node.y, idx, scrollProgress);
-    });
+    // 2. SZENE 1: DATENBANK & EINFLEGENDE DOKUMENTE (Skizze 1 & 2)
+    drawScene1DB(300, 300, scrollProgress);
 
-    // 5. ZEICHNE DEN GLASFASER-SNAKE-KOPF (Orange Glow)
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(currentPos.x, currentPos.y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = "#f97316";
-    ctx.shadowColor = "#ff5500";
-    ctx.shadowBlur = 18;
-    ctx.fill();
+    // 3. SZENE 2: ETL GRID & ABZWEIGUNGEN (Skizze 3, 4 & 5)
+    drawScene2ETL(700, 300, scrollProgress);
+
+    // 4. SZENE 3: CALC ENGINE & ZAHNRÄDER (Skizze 5 & 6)
+    drawScene3Engine(1250, 300, scrollProgress);
+
+    // 5. SZENE 4: LAPTOP & AUFPLOPPENDE DIAGRAMME (Skizze 6 & 7)
+    drawScene4Laptop(1800, 300, scrollProgress);
+
+    // 6. ORANGER DATENPUNKT (Kopf)
+    if (scrollProgress > 0.08) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(headPos.x, headPos.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = "#f97316";
+      ctx.shadowColor = "#ff5500";
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.restore();
+    }
+
     ctx.restore();
-
-    ctx.restore(); // Kamera-Reset für den nächsten Frame
-
     requestAnimationFrame(render);
   }
 
-  // Hilfsfunktion: Berechnet genaue Position & Bezier-Pfad
-  function getPathPoint(p, nodes) {
-    if (p <= 0) return { x: nodes[0].x, y: nodes[0].y };
-    if (p >= 1) return { x: nodes[3].x, y: nodes[3].y };
+  // Zeichnet den zurückgelegten lila Pfad
+  function drawPurplePath(p, currentHeadPos) {
+    if (p <= 0.08) return;
 
-    let segP = p * 3; // 3 Segmente zwischen 4 Knoten
-    let idx = Math.floor(segP);
-    let t = segP - idx;
-    if (idx >= 3) { idx = 2; t = 1; }
-
-    const p0 = nodes[idx];
-    const p1 = nodes[idx + 1];
-
-    // Kontrollpunkte für geschwungene Haken
-    const cp1 = { x: p0.x + 150, y: p0.y + (idx % 2 === 0 ? 120 : -120) };
-    const cp2 = { x: p1.x - 150, y: p1.y + (idx % 2 === 0 ? -120 : 120) };
-
-    // Kubische Bezier-Formel
-    const cx = Math.pow(1 - t, 3) * p0.x + 3 * Math.pow(1 - t, 2) * t * cp1.x + 3 * (1 - t) * Math.pow(t, 2) * cp2.x + Math.pow(t, 3) * p1.x;
-    const cy = Math.pow(1 - t, 3) * p0.y + 3 * Math.pow(1 - t, 2) * t * cp1.y + 3 * (1 - t) * Math.pow(t, 2) * cp2.y + Math.pow(t, 3) * p1.y;
-
-    return { x: cx, y: cy };
-  }
-
-  // Zeichnet den Pfad & den lila Laser-Fortschritt
-  function drawSnakePath(p, nodes) {
-    // Statischer Hintergrund-Pfad
-    ctx.beginPath();
-    drawFullBezierPath(nodes);
-    ctx.strokeStyle = "rgba(99, 102, 241, 0.15)";
-    ctx.lineWidth = 6;
-    ctx.stroke();
-
-    // Aktiver Lila-Laser-Pfad
     ctx.save();
     ctx.beginPath();
-    drawFullBezierPath(nodes);
-    ctx.strokeStyle = "#6366f1";
-    ctx.lineWidth = 6;
-    ctx.shadowColor = "#6366f1";
+    ctx.moveTo(waypoints[0].x, waypoints[0].y);
+
+    const totalSegs = waypoints.length - 1;
+    const currentProgressSeg = p * totalSegs;
+    const currentIdx = Math.floor(currentProgressSeg);
+
+    for (let i = 1; i <= currentIdx && i < waypoints.length; i++) {
+      ctx.lineTo(waypoints[i].x, waypoints[i].y);
+    }
+    ctx.lineTo(currentHeadPos.x, currentHeadPos.y);
+
+    ctx.strokeStyle = "#a855f7";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.shadowColor = "#a855f7";
     ctx.shadowBlur = 10;
-    
-    // Strich-Anpassung basierend auf Fortschritt
-    const totalLength = 1600;
-    ctx.setLineDash([totalLength]);
-    ctx.lineDashOffset = totalLength * (1 - p);
     ctx.stroke();
     ctx.restore();
   }
 
-  function drawFullBezierPath(nodes) {
-    ctx.moveTo(nodes[0].x, nodes[0].y);
-    for (let i = 0; i < 3; i++) {
-      const p0 = nodes[i];
-      const p1 = nodes[i + 1];
-      const cp1 = { x: p0.x + 150, y: p0.y + (i % 2 === 0 ? 120 : -120) };
-      const cp2 = { x: p1.x - 150, y: p1.y + (i % 2 === 0 ? -120 : 120) };
-      ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p1.x, p1.y);
-    }
-  }
+  // SZENE 1: Zylinder-Datenbank + fliegende Blätter
+  function drawScene1DB(x, y, p) {
+    if (p > 0.2) return; // Blendet aus, wenn wir weiterziehen
 
-  // Zeichnet die dynamischen Mini-Szenen (Daumenkino)
-  function drawSceneNode(x, y, stage, p) {
     ctx.save();
     ctx.translate(x, y);
 
-    const activeRangeMin = stage * 0.25 - 0.1;
-    const activeRangeMax = stage * 0.25 + 0.25;
-    const isActive = (p >= activeRangeMin && p <= activeRangeMax);
-
-    // Basis-Knoten-Ring
-    ctx.beginPath();
-    ctx.arc(0, 0, 32, 0, Math.PI * 2);
-    ctx.fillStyle = isActive ? "rgba(30, 41, 59, 0.95)" : "rgba(15, 23, 42, 0.8)";
-    ctx.strokeStyle = isActive ? "#6366f1" : "#334155";
-    ctx.lineWidth = isActive ? 3 : 2;
-    if (isActive) {
-      ctx.shadowColor = "#6366f1";
-      ctx.shadowBlur = 15;
-    }
-    ctx.fill();
-    ctx.stroke();
-
-    // SZENE 1: INGESTION (Fliegende Partikel in Trichter)
-    if (stage === 0) {
-      ctx.fillStyle = "#f97316";
-      particles.forEach((part, i) => {
-        if (i < 12) {
-          const ang = (Date.now() * 0.002 + i) % (Math.PI * 2);
-          const rad = 18 + Math.sin(Date.now() * 0.003 + i) * 6;
-          ctx.beginPath();
-          ctx.arc(Math.cos(ang) * rad, Math.sin(ang) * rad, part.size / 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 10px sans-serif";
-      ctx.fillText("IN", -5, 4);
+    // DB Schrumpf-Faktor (Skizze 2: schrumpft auf Punkt zusammen)
+    let dbScale = 1;
+    if (p > 0.05) {
+      dbScale = Math.max(0, 1 - (p - 0.05) * 20);
     }
 
-    // SZENE 2: ETL & NORMALIZATION (Mahlwerk/Filter)
-    else if (stage === 1) {
-      ctx.rotate(Date.now() * 0.001);
-      ctx.strokeStyle = isActive ? "#a855f7" : "#64748b";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(-12, -12, 24, 24);
-      
-      ctx.rotate(-Date.now() * 0.002);
-      ctx.fillStyle = isActive ? "#10b981" : "#475569";
-      ctx.fillRect(-6, -6, 12, 12);
-    }
+    if (dbScale > 0) {
+      ctx.scale(dbScale, dbScale);
 
-    // SZENE 3: RISK CALCULATION ENGINE (Pulsierender 3D-Cube)
-    else if (stage === 2) {
-      const scale = isActive ? (1 + Math.sin(Date.now() * 0.006) * 0.15) : 1;
-      ctx.scale(scale, scale);
-      ctx.fillStyle = isActive ? "#0ea5e9" : "#64748b";
-      ctx.beginPath();
-      ctx.moveTo(0, -14);
-      ctx.lineTo(12, -7);
-      ctx.lineTo(12, 7);
-      ctx.lineTo(0, 14);
-      ctx.lineTo(-12, 7);
-      ctx.lineTo(-12, -7);
-      ctx.closePath();
-      ctx.fill();
-    }
+      // Fliegende Blätter/Dokumente (Skizze 1)
+      const docCount = 6;
+      const flyProgress = Math.min(1, p / 0.05);
 
-    // SZENE 4: EXECUTIVE DASHBOARD OUTPUT (Aufploppende Charts)
-    else if (stage === 3) {
-      ctx.fillStyle = isActive ? "#10b981" : "#64748b";
-      const h1 = isActive ? 12 + Math.sin(Date.now() * 0.005) * 3 : 8;
-      const h2 = isActive ? 18 + Math.cos(Date.now() * 0.005) * 4 : 12;
-      ctx.fillRect(-12, 10 - h1, 6, h1);
-      ctx.fillRect(-3, 10 - h2, 6, h2);
-      ctx.fillRect(6, 10 - (h1 * 0.8), 6, h1 * 0.8);
+      for (let i = 0; i < docCount; i++) {
+        const angle = (i / docCount) * Math.PI * 2;
+        const dist = 90 * (1 - flyProgress);
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+
+        ctx.save();
+        ctx.translate(dx, dy);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.strokeStyle = "#38bdf8";
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-8, -10, 16, 20);
+        ctx.strokeRect(-8, -10, 16, 20);
+        ctx.restore();
+      }
+
+      // Datenbank Zylinder
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 3;
+
+      // Zylinder-Ringe
+      for (let offset of [-20, 0, 20]) {
+        ctx.beginPath();
+        ctx.ellipse(0, offset, 30, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
     }
 
     ctx.restore();
   }
 
-  // Dezent-subtiles Tech-Grid im Hintergrund
+  // SZENE 2: ETL Grid & Abzweigungen (Skizze 3, 4 & 5)
+  function drawScene2ETL(x, y, p) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Grid wächst, je näher der Punkt kommt (Skizze 3)
+    const dist = Math.abs(p - 0.28);
+    let gridScale = 0.5;
+    if (dist < 0.15) {
+      gridScale = 0.5 + (1 - dist / 0.15) * 0.6;
+    }
+
+    ctx.scale(gridScale, gridScale);
+
+    // Raster zeichnen
+    ctx.strokeStyle = "#a855f7";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+    ctx.fillRect(-35, -35, 70, 70);
+    ctx.strokeRect(-35, -35, 70, 70);
+
+    // Innere Gitterlinien
+    for (let i = -20; i <= 20; i += 10) {
+      ctx.beginPath();
+      ctx.moveTo(i, -35); ctx.lineTo(i, 35);
+      ctx.moveTo(-35, i); ctx.lineTo(35, i);
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.3)";
+      ctx.stroke();
+    }
+
+    // Toter Nebenzweig nach oben & unten (Skizze 4 & 5 - verblassen)
+    if (p > 0.28) {
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
+      ctx.lineWidth = 3;
+      
+      // Zweig oben
+      ctx.beginPath();
+      ctx.moveTo(0, -35); ctx.lineTo(0, -80); ctx.lineTo(40, -80);
+      ctx.stroke();
+
+      // Zweig unten
+      ctx.beginPath();
+      ctx.moveTo(0, 35); ctx.lineTo(0, 80); ctx.lineTo(40, 80);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  // SZENE 3: Calculation Engine mit Zahnrädern & Sinuskurve (Skizze 5 & 6)
+  function drawScene3Engine(x, y, p) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Rahmen für Calc Engine
+    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+    ctx.strokeStyle = "#0ea5e9";
+    ctx.lineWidth = 2;
+    ctx.fillRect(-45, -45, 90, 90);
+    ctx.strokeRect(-45, -45, 90, 90);
+
+    // Rotating Gears (Zahnräder)
+    const time = Date.now() * 0.002;
+    drawGear(-15, -15, 12, time);
+    drawGear(15, -10, 9, -time);
+
+    // Sinus-Welle im unteren Bereich
+    ctx.beginPath();
+    ctx.strokeStyle = "#f97316";
+    ctx.lineWidth = 2;
+    for (let gx = -35; gx <= 35; gx += 2) {
+      const gy = 22 + Math.sin(gx * 0.2 + time * 3) * 6;
+      if (gx === -35) ctx.moveTo(gx, gy);
+      else ctx.lineTo(gx, gy);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawGear(gx, gy, rad, angle) {
+    ctx.save();
+    ctx.translate(gx, gy);
+    ctx.rotate(angle);
+    ctx.fillStyle = "#38bdf8";
+    ctx.beginPath();
+    ctx.arc(0, 0, rad, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Zähne
+    for (let i = 0; i < 6; i++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.fillRect(-2, -rad - 3, 4, 4);
+    }
+    ctx.restore();
+  }
+
+  // SZENE 4: Laptop & aufploppende Diagramm-Blätter (Skizze 6 & 7)
+  function drawScene4Laptop(x, y, p) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Laptop Symbol
+    ctx.fillStyle = "#cbd5e1";
+    // Bildschirmschräge
+    ctx.fillRect(-20, -25, 40, 26);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(-17, -22, 34, 20);
+
+    // Tastatur-Basis
+    ctx.fillStyle = "#94a3b8";
+    ctx.beginPath();
+    ctx.moveTo(-28, 5);
+    ctx.lineTo(28, 5);
+    ctx.lineTo(22, 12);
+    ctx.lineTo(-22, 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Aufploppende Diagramme (Skizze 7 - Wenn der Punkt angekommen ist)
+    if (p > 0.85) {
+      const pop = Math.min(1, (p - 0.85) / 0.12);
+
+      const charts = [
+        { dx: -70, dy: -60, label: "Pie" },
+        { dx: 60, dy: -70, label: "Bar" },
+        { dx: 70, dy: 30, label: "Line" },
+        { dx: -60, dy: 50, label: "Grid" }
+      ];
+
+      charts.forEach((ch, i) => {
+        const curX = ch.dx * pop;
+        const curY = ch.dy * pop;
+
+        ctx.save();
+        ctx.translate(curX, curY);
+        ctx.scale(pop, pop);
+
+        ctx.fillStyle = "rgba(30, 41, 59, 0.95)";
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-22, -18, 44, 36);
+        ctx.strokeRect(-22, -18, 44, 36);
+
+        // Mini-Chart Dummys
+        ctx.fillStyle = "#10b981";
+        if (i === 0) { // Pie chart symbol
+          ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 1.3); ctx.lineTo(0, 0); ctx.fill();
+        } else if (i === 1) { // Bar chart
+          ctx.fillRect(-12, 2, 5, 8); ctx.fillRect(-4, -4, 5, 14); ctx.fillRect(4, -8, 5, 18);
+        } else { // Line / Wave
+          ctx.beginPath(); ctx.moveTo(-12, 5); ctx.lineTo(-4, -5); ctx.lineTo(4, 2); ctx.lineTo(12, -8);
+          ctx.strokeStyle = "#38bdf8"; ctx.stroke();
+        }
+
+        ctx.restore();
+      });
+    }
+
+    ctx.restore();
+  }
+
+  // Tech-Grid im Hintergrund
   function drawGrid() {
     ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
     ctx.lineWidth = 1;
-    const step = 60;
-    for (let x = -200; x < 1500; x += step) {
-      ctx.beginPath();
-      ctx.moveTo(x, -200);
-      ctx.lineTo(x, 800);
-      ctx.stroke();
+    for (let x = 0; x < 2200; x += 50) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 800); ctx.stroke();
     }
-    for (let y = -200; y < 800; y += step) {
-      ctx.beginPath();
-      ctx.moveTo(-200, y);
-      ctx.lineTo(1500, y);
-      ctx.stroke();
+    for (let y = 0; y < 800; y += 50) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(2200, y); ctx.stroke();
     }
   }
 
-  // Start der Render-Engine
   render();
 });
