@@ -734,37 +734,38 @@ h1, h2, h3, h4, p, span, div, a, li, .stat-number {
   width: 100%;
 }
 
+/* Der fixierte Hauptcontainer: Passt sich der Bildschirmhöhe des Tablets an */
 .scrolly-sticky-viewport {
   position: relative;
   width: 100%;
-  height: 75vh;
-  min-height: 520px;
-  max-height: 700px;
+  /* 70vh stellt sicher, dass der Container nie höher ist als das Tablet-Display inkl. Platz für Header */
+  height: 70vh; 
+  min-height: 480px;
+  max-height: 620px;
   background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 24px;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Staucht Canvas oben, hält HUD unten im Bild */
   box-shadow: var(--shadow-lg);
 }
 
-/* Canvas gibt flexibel Raum ab & schiebt das HUD nie weg */
+/* Canvas: Passt sich dynamisch an und WEICHT DEM HUD AUS */
 #pipelineCanvas {
   width: 100%;
-  flex: 1 1 0px;
-  min-height: 0;
+  flex: 1 1 0px; /* Nimmt nur den Restplatz ein, der NACH dem HUD übrig bleibt */
+  min-height: 0;  /* WICHTIG: Erlaubt dem Canvas, kleiner zu werden statt das HUD rauszuschieben */
   display: block;
 }
 
-/* ELASTISCHES HUD: Passt sich dem Text an & ist immer sichtbar */
+/* HUD Textbereich: Garantiert immer im sichtbaren Bereich unten platziert */
 .scrolly-hud {
-  flex: 0 0 auto;
-  min-height: auto;
+  flex: 0 0 auto; /* Holt sich fest den Platz, den der Text braucht */
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(12px);
   border-top: 1px solid #1e293b;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -777,36 +778,27 @@ h1, h2, h3, h4, p, span, div, a, li, .stat-number {
   font-weight: 700;
   color: #f97316;
   letter-spacing: 0.08em;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
   text-transform: uppercase;
 }
 
 .hud-title {
-  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
   color: var(--primary);
   font-weight: 700;
-  margin-bottom: 0.3rem;
-  line-height: 1.25;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
 }
 
 .hud-desc {
-  font-size: clamp(0.82rem, 1.6vw, 0.92rem);
+  font-size: clamp(0.8rem, 1.6vw, 0.88rem);
   color: #94a3b8;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-@media (max-width: 900px) {
+/* Spezielle Höhen-Anpassung für Tablets & kleinere Screens */
+@media (max-height: 800px) {
   .scrolly-sticky-viewport {
-    height: 80vh;
-    min-height: 550px;
-  }
-}
-
-@media (max-width: 600px) {
-  .scrolly-sticky-viewport {
-    height: 85vh;
-  }
-  .scrolly-hud {
-    padding: 0.85rem 1rem;
+    height: 65vh; /* Reduziert die Gesamthöhe leicht, damit ScrollTrigger es sauber ins Bild setzt */
   }
 }
