@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentP > 0.01) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(headPos.x, headPos.y, 8, 0, Math.PI);
+      ctx.arc(headPos.x, headPos.y, 4, 0, Math.PI*2);
       ctx.fillStyle = "#f97316";
       ctx.shadowColor = "#ff5500";
       ctx.shadowBlur = 15;
