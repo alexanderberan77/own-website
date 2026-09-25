@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   // Waypoints der Strecke (18 Punkte -> 17 Segmente)
-  // Index 0: DB (p=0.0) | Index 5: ETL (p=0.294) | Index 11: Calc Engine (p=0.647) | Index 17: Laptop (p=1.0)
   const waypoints = [
     { x: 300, y: 300 }, // [0] Szene 1: DB Center
     { x: 300, y: 180 }, // [1]
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     { x: 1800, y: 300 } // [17] Szene 4: Laptop
   ];
 
-  // Exakte prozentuale Fortschritte der 4 Szenen basierend auf Segmenten
   const totalSegments = waypoints.length - 1; // 17 Segmente
   const stationProgresses = [
     0 / totalSegments,   // Station 1: 0.000
@@ -76,11 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let rawScrollProgress = 0;
 
-  // GSAP ScrollTrigger
-  // GSAP ScrollTrigger: Fixierung orientiert sich am UNTEREN Bildschirmrand
+  // GSAP ScrollTrigger: Fixierung am unteren Bildschirmrand
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
-    // Sobald die UNTERKANTE des Elements die UNTERKANTE des Viewports erreicht (vollständig sichtbar)
     start: "bottom bottom", 
     end: "+=3500",
     pin: true,
@@ -88,46 +84,53 @@ document.addEventListener('DOMContentLoaded', () => {
     scrub: 0.1,
     onUpdate: (self) => {
       rawScrollProgress = self.progress;
-      const easedP = getEasedProgress(rawScrollProgress);
-      updateHUD(easedP);
+      updateHUD(rawScrollProgress);
     }
   });
 
-  // CONTINUOUS EASING: Fließende Entschleunigung ohne Stehenbleiben
-  function getEasedProgress(p) {
-    if (p <= 0) return 0;
-    if (p >= 1) return 1;
+  // PHASEN-EINTEILUNG: p in [0.15, 0.85] wird zu pathP in [0.0, 1.0] umgerechnet
+  function getPathProgress(p) {
+    const startP = 0.15;
+    const endP = 0.85;
+    if (p <= startP) return 0;
+    if (p >= endP) return 1;
+    return (p - startP) / (endP - startP);
+  }
 
-    // Sanfte Modulation über Sinus-Wellen an den 4 Zielpunkten
+  // CONTINUOUS EASING: Bleibt vollständig für den Pfadverlauf (pathP) erhalten
+  function getEasedPathProgress(pathP) {
+    if (pathP <= 0) return 0;
+    if (pathP >= 1) return 1;
+
     let adjustment = 0;
-    const radius = 0.08; // Einflussbereich der Verlangsamung
+    const radius = 0.08;
 
     stationProgresses.forEach(stP => {
-      const dist = p - stP;
+      const dist = pathP - stP;
       if (Math.abs(dist) < radius) {
-        // Erzeugt eine sanfte Senke in der Geschwindigkeit um die Station herum
         const factor = Math.cos((dist / radius) * (Math.PI / 2));
         adjustment -= dist * factor * 0.45;
       }
     });
 
-    return Math.min(1, Math.max(0, p + adjustment));
+    return Math.min(1, Math.max(0, pathP + adjustment));
   }
 
   function updateHUD(p) {
     let index = 0;
-    if (p >= 0.82) index = 3;
-    else if (p >= 0.48) index = 2;
-    else if (p >= 0.15) index = 1;
+    if (p >= 0.80) index = 3;      // Phase 4: Dashboard & Laptop
+    else if (p >= 0.50) index = 2; // Phase 3: Risk Engine
+    else if (p >= 0.20) index = 1; // Phase 2: ETL Clearing
+    else index = 0;                // Phase 1: Ingestion
 
     if (hudPhase) hudPhase.textContent = phases[index].badge;
     if (hudTitle) hudTitle.textContent = phases[index].title;
     if (hudDesc) hudDesc.textContent = phases[index].desc;
   }
 
-  function getSnakePos(p) {
+  function getSnakePos(pathP) {
     const totalSegs = waypoints.length - 1;
-    const progressSeg = p * totalSegs;
+    const progressSeg = pathP * totalSegs;
     const idx = Math.min(Math.floor(progressSeg), totalSegs - 1);
     const t = progressSeg - idx;
 
@@ -147,19 +150,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const w = canvas.width;
     const h = canvas.height;
 
-    const currentP = getEasedProgress(rawScrollProgress);
-    const headPos = getSnakePos(currentP);
+    const rawP = rawScrollProgress;
+    const pathP = getPathProgress(rawP);
+    const easedPathP = getEasedPathProgress(pathP);
+    const headPos = getSnakePos(easedPathP);
 
     ctx.save();
 
-    // DYNAMISCHE ZOOMSTUFE: Optimiert für Tablet & Desktop (kein "Zu-weit-weg" Effekt mehr)
+    // DYNAMISCHE ZOOMSTUFE
     const scaleByHeight = h / 450; 
     const scaleByWidth = w / 850;
-    
-    // Zoom orientiert sich primär an der Vertikalen, verhindert zu starkes Verkleinern
     let dynamicZoom = Math.min(scaleByHeight, scaleByWidth);
     
-    // Untergrenze auf 0.95 angehoben, damit Tablets Nahaufnahme behalten
     if (window.innerWidth <= 1024) {
       dynamicZoom = Math.max(0.95, dynamicZoom);
     } else {
@@ -171,17 +173,17 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.translate(-headPos.x, -headPos.y);
 
     drawGrid();
-    drawPurplePath(currentP, headPos);
-    drawScene1DB(waypoints[0].x, waypoints[0].y, currentP);
-    drawScene2ETL(waypoints[5].x, waypoints[5].y, currentP);
-    drawScene3Engine(waypoints[11].x, waypoints[11].y, currentP);
-    drawScene4Laptop(waypoints[17].x, waypoints[17].y, currentP);
+    drawPurplePath(easedPathP, headPos);
+    drawScene1DB(waypoints[0].x, waypoints[0].y, rawP);
+    drawScene2ETL(waypoints[5].x, waypoints[5].y, easedPathP);
+    drawScene3Engine(waypoints[11].x, waypoints[11].y, easedPathP);
+    drawScene4Laptop(waypoints[17].x, waypoints[17].y, rawP);
 
-    // Oranger Datenpunkt
-    if (currentP > 0.01) {
+    // Oranger Datenpunkt (erst sichtbar, wenn die Reise losgeht)
+    if (rawP >= 0.14) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(headPos.x, headPos.y, 4, 0, Math.PI*2);
+      ctx.arc(headPos.x, headPos.y, 4, 0, Math.PI * 2);
       ctx.fillStyle = "#f97316";
       ctx.shadowColor = "#ff5500";
       ctx.shadowBlur = 15;
@@ -193,15 +195,15 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(render);
   }
 
-  function drawPurplePath(p, currentHeadPos) {
-    if (p <= 0.01) return;
+  function drawPurplePath(pathP, currentHeadPos) {
+    if (pathP <= 0.001) return;
 
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(waypoints[0].x, waypoints[0].y);
 
     const totalSegs = waypoints.length - 1;
-    const currentProgressSeg = p * totalSegs;
+    const currentProgressSeg = pathP * totalSegs;
     const currentIdx = Math.floor(currentProgressSeg);
 
     for (let i = 1; i <= currentIdx && i < waypoints.length; i++) {
@@ -219,32 +221,44 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.restore();
   }
 
-  function drawScene1DB(x, y, p) {
-    if (p > 0.2) return;
+  // SZENE 1: GESTAFFELTES EINFLIEGEN DER DOKUMENTE (p von 0.00 bis 0.12)
+  function drawScene1DB(x, y, rawP) {
+    if (rawP > 0.25) return;
 
     ctx.save();
     ctx.translate(x, y);
 
+    // Sanftes Ausblenden / Schrumpfen der DB kurz vor Start des Punktes
     let dbScale = 1;
-    if (p > 0.03) {
-      dbScale = Math.max(0, 1 - (p - 0.03) * 12);
+    if (rawP > 0.12) {
+      dbScale = Math.max(0, 1 - (rawP - 0.12) * 15);
     }
 
     if (dbScale > 0) {
       ctx.scale(dbScale, dbScale);
 
       const docCount = 6;
-      const flyProgress = Math.min(1, p / 0.03);
-
       for (let i = 0; i < docCount; i++) {
-        const angle = (i / docCount) * Math.PI * 2;
-        const dist = 90 * (1 - flyProgress);
+        // Jedes Dokument hat ein leicht versetztes Zeitfenster für das Einfliegen
+        const docStartP = i * 0.015; 
+        const docEndP = docStartP + 0.04;
+        
+        let flyProgress = 0;
+        if (rawP >= docEndP) {
+          flyProgress = 1;
+        } else if (rawP > docStartP) {
+          flyProgress = (rawP - docStartP) / (docEndP - docStartP);
+        }
+
+        // Variierte Anflugwinkel & Startdistanzen
+        const angle = (i / docCount) * Math.PI * 2 + (i % 2 === 0 ? 0.2 : -0.2);
+        const dist = 110 * (1 - flyProgress);
         const dx = Math.cos(angle) * dist;
         const dy = Math.sin(angle) * dist;
 
         ctx.save();
         ctx.translate(dx, dy);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
         ctx.strokeStyle = "#38bdf8";
         ctx.lineWidth = 1.5;
         ctx.fillRect(-8, -10, 16, 20);
@@ -252,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.restore();
       }
 
+      // Datenbank-Zylinder
       ctx.fillStyle = "#1e293b";
       ctx.strokeStyle = "#38bdf8";
       ctx.lineWidth = 3;
@@ -267,12 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.restore();
   }
 
-  function drawScene2ETL(x, y, p) {
+  function drawScene2ETL(x, y, pathP) {
     ctx.save();
     ctx.translate(x, y);
 
     const st2P = stationProgresses[1];
-    const dist = Math.abs(p - st2P);
+    const dist = Math.abs(pathP - st2P);
     let gridScale = 0.65;
     if (dist < 0.12) {
       gridScale = 0.65 + (1 - dist / 0.12) * 0.45;
@@ -294,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.stroke();
     }
 
-    if (p > st2P) {
+    if (pathP > st2P) {
       ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
       ctx.lineWidth = 3;
       
@@ -310,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.restore();
   }
 
-  function drawScene3Engine(x, y, p) {
+  function drawScene3Engine(x, y, pathP) {
     ctx.save();
     ctx.translate(x, y);
 
@@ -353,10 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.restore();
   }
 
-  function drawScene4Laptop(x, y, p) {
+  // SZENE 4: GESTAFFELTES AUSPLOPPEN DER CHARTS (rawP von 0.85 bis 1.00)
+  function drawScene4Laptop(x, y, rawP) {
     ctx.save();
     ctx.translate(x, y);
 
+    // Laptop-Gehäuse
     ctx.fillStyle = "#cbd5e1";
     ctx.fillRect(-20, -25, 40, 26);
     ctx.fillStyle = "#0f172a";
@@ -371,41 +388,53 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.closePath();
     ctx.fill();
 
-    if (p > 0.80) {
-      const pop = Math.min(1, (p - 0.80) / 0.15);
-
+    // Erst ab rawP >= 0.85 (wenn der Punkt am Laptop angekommen ist)
+    if (rawP >= 0.85) {
       const charts = [
-        { dx: -70, dy: -60, label: "Pie" },
-        { dx: 60, dy: -70, label: "Bar" },
-        { dx: 70, dy: 30, label: "Line" },
-        { dx: -60, dy: 50, label: "Grid" }
+        { dx: -70, dy: -60 },
+        { dx: 60, dy: -70 },
+        { dx: 70, dy: 30 },
+        { dx: -60, dy: 50 }
       ];
 
       charts.forEach((ch, i) => {
-        const curX = ch.dx * pop;
-        const curY = ch.dy * pop;
+        // Jedes Chart hat ein eigenes, leicht versetztes Zeitfenster
+        const chartStartP = 0.85 + i * 0.03;
+        const chartEndP = chartStartP + 0.05;
 
-        ctx.save();
-        ctx.translate(curX, curY);
-        ctx.scale(pop, pop);
-
-        ctx.fillStyle = "rgba(30, 41, 59, 0.95)";
-        ctx.strokeStyle = "#10b981";
-        ctx.lineWidth = 1.5;
-        ctx.fillRect(-22, -18, 44, 36);
-        ctx.strokeRect(-22, -18, 44, 36);
-
-        ctx.fillStyle = "#10b981";
-        if (i === 0) {
-          ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 1.3); ctx.lineTo(0, 0); ctx.fill();
-        } else if (i === 1) {
-          ctx.fillRect(-12, 2, 5, 8); ctx.fillRect(-4, -4, 5, 14); ctx.fillRect(4, -8, 5, 18);
-        } else {
-          ctx.beginPath(); ctx.moveTo(-12, 5); ctx.lineTo(-4, -5); ctx.lineTo(4, 2); ctx.lineTo(12, -8);
-          ctx.strokeStyle = "#38bdf8"; ctx.stroke();
+        let pop = 0;
+        if (rawP >= chartEndP) {
+          pop = 1;
+        } else if (rawP > chartStartP) {
+          pop = (rawP - chartStartP) / (chartEndP - chartStartP);
         }
 
-        ctx.restore();
+        if (pop > 0) {
+          const curX = ch.dx * pop;
+          const curY = ch.dy * pop;
+
+          ctx.save();
+          ctx.translate(curX, curY);
+          ctx.scale(pop, pop);
+
+          ctx.fillStyle = "rgba(30, 41, 59, 0.95)";
+          ctx.strokeStyle = "#10b981";
+          ctx.lineWidth = 1.5;
+          ctx.fillRect(-22, -18, 44, 36);
+          ctx.strokeRect(-22, -18, 44, 36);
+
+          ctx.fillStyle = "#10b981";
+          if (i === 0) {
+            ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 1.3); ctx.lineTo(0, 0); ctx.fill();
+          } else if (i === 1) {
+            ctx.fillRect(-12, 2, 5, 8); ctx.fillRect(-4, -4, 5, 14); ctx.fillRect(4, -8, 5, 18);
+          } else {
+            ctx.beginPath(); ctx.moveTo(-12, 5); ctx.lineTo(-4, -5); ctx.lineTo(4, 2); ctx.lineTo(12, -8);
+            ctx.strokeStyle = "#38bdf8"; ctx.stroke();
+          }
+
+          ctx.restore();
+        }
       });
     }
 
