@@ -305,31 +305,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.scale(gridScale, gridScale);
 
+    // Haupt-Grid Box (ETL-Router)
     ctx.strokeStyle = "#a855f7";
     ctx.lineWidth = 2;
-    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
     ctx.fillRect(-35, -35, 70, 70);
     ctx.strokeRect(-35, -35, 70, 70);
 
+    // Inneres Platinen-Gitter
     for (let i = -20; i <= 20; i += 10) {
       ctx.beginPath();
       ctx.moveTo(i, -35); ctx.lineTo(i, 35);
       ctx.moveTo(-35, i); ctx.lineTo(35, i);
-      ctx.strokeStyle = "rgba(168, 85, 247, 0.3)";
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.35)";
       ctx.stroke();
     }
 
+    // Sobald der Hauptpunkt durch das ETL-Grid fährt: Routing-Verzweigungen zeichnen!
     if (pathP > st2P) {
-      ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
-      ctx.lineWidth = 3;
+      // Fortschritt der Nebenzweige (0.0 bis 1.0)
+      const branchProgress = Math.min(1, (pathP - st2P) / 0.15);
+
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // Zweig 1: Nach OBEN (Platinen-Muster mit Abzweigungen)
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)"; // Cyan Glow
+      ctx.shadowColor = "#38bdf8";
+      ctx.shadowBlur = 8;
       
       ctx.beginPath();
-      ctx.moveTo(0, -35); ctx.lineTo(0, -80); ctx.lineTo(40, -80);
+      ctx.moveTo(0, -35);
+      ctx.lineTo(0, -65);
+      if (branchProgress > 0.3) ctx.lineTo(-30, -65);
+      if (branchProgress > 0.6) ctx.lineTo(-30, -100);
+      if (branchProgress > 0.8) ctx.lineTo(20, -100);
       ctx.stroke();
 
+      // Zweig 2: Nach UNTEN (Gusain-Muster mit Abzweigungen)
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.6)"; // Purple Glow
+      ctx.shadowColor = "#a855f7";
+      ctx.shadowBlur = 8;
+
       ctx.beginPath();
-      ctx.moveTo(0, 35); ctx.lineTo(0, 80); ctx.lineTo(40, 80);
+      ctx.moveTo(0, 35);
+      ctx.lineTo(0, 65);
+      if (branchProgress > 0.3) ctx.lineTo(35, 65);
+      if (branchProgress > 0.6) ctx.lineTo(35, 105);
+      if (branchProgress > 0.8) ctx.lineTo(-15, 105);
       ctx.stroke();
+
+      // Kleine pulsierende Endknoten an den Nebenzweigen
+      if (branchProgress >= 0.9) {
+        const pulse = Math.sin(Date.now() * 0.005) * 2;
+        
+        // Knoten Oben
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.arc(20, -100, 4 + pulse * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Knoten Unten
+        ctx.fillStyle = "#a855f7";
+        ctx.beginPath();
+        ctx.arc(-15, 105, 4 + pulse * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     ctx.restore();
