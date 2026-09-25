@@ -74,19 +74,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let rawScrollProgress = 0;
 
-  // GSAP ScrollTrigger: Fixierung am unteren Bildschirmrand
+  // GSAP ScrollTrigger mit Magnet-Snap und höherem Widerstand
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
     start: "bottom bottom", 
-    end: "+=3500",
+    end: "+=6000",          // Von 3500 auf 6000 erhöht -> Mehr Scroll-Widerstand gegen Durchrauschen!
     pin: true,
     pinSpacing: true,
-    scrub: 0.1,
+    scrub: 0.2,             // Etwas mehr "Gewicht" beim Scrollen für ein wertigeres Gefühl
+    
+    // MAGNET-EFFEKT (Einrasten an den 4 Stationen):
+    snap: {
+      snapTo: [0, 0.294, 0.647, 1.0], // Exakte Positionen der 4 Phasen
+      duration: { min: 0.2, max: 0.6 }, // Dauer des sanften Einrastens
+      delay: 0.1,                       // Wartet 0.1s nach Scroll-Ende, bevor es einrastet
+      ease: "power1.inOut"              // Sanfte Einrast-Bewegung
+    },
+    
     onUpdate: (self) => {
       rawScrollProgress = self.progress;
       updateHUD(rawScrollProgress);
     }
   });
+
 
   // PHASEN-EINTEILUNG: p in [0.15, 0.85] wird zu pathP in [0.0, 1.0] umgerechnet
   function getPathProgress(p) {
