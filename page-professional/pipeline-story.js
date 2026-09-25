@@ -74,21 +74,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let rawScrollProgress = 0;
 
-  // GSAP ScrollTrigger mit Magnet-Snap und höherem Widerstand
+  // GSAP ScrollTrigger mit mathematisch exakten Scroll-Rastpunkten (rawScrollProgress p)
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
     start: "bottom bottom", 
-    end: "+=6000",          // Von 3500 auf 6000 erhöht -> Mehr Scroll-Widerstand gegen Durchrauschen!
+    end: "+=5000",          // Angenehme Scroll-Länge
     pin: true,
     pinSpacing: true,
-    scrub: 0.2,             // Etwas mehr "Gewicht" beim Scrollen für ein wertigeres Gefühl
+    scrub: 0.3,             // Geschmeidige Verzögerung beim manuellen Scrollen
     
-    // MAGNET-EFFEKT (Einrasten an den 4 Stationen):
     snap: {
-      snapTo: [0, 0.294, 0.647, 1.0], // Exakte Positionen der 4 Phasen
-      duration: { min: 0.2, max: 0.6 }, // Dauer des sanften Einrastens
-      delay: 0.1,                       // Wartet 0.1s nach Scroll-Ende, bevor es einrastet
-      ease: "power1.inOut"              // Sanfte Einrast-Bewegung
+      // Exakt umgerechnete Rastpunkte auf der Scrollbar (p):
+      // St.1: 0.0 / St.2: 0.356 / St.3: 0.603 / St.4: 1.0
+      snapTo: [0.0, 0.356, 0.603, 1.0], 
+      duration: { min: 0.6, max: 1.2 }, // Langsames, sehr sanftes Einrasten (kein schnelles Springen!)
+      delay: 0.15,                      // Etwas Bedenkzeit nach dem Scroll-Stopp
+      ease: "power2.out"                // Sanft auslaufende Bremsbewegung
     },
     
     onUpdate: (self) => {
