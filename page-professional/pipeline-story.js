@@ -77,12 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let rawScrollProgress = 0;
 
   // GSAP ScrollTrigger
+  // GSAP ScrollTrigger: Fixierung orientiert sich am UNTEREN Bildschirmrand
   ScrollTrigger.create({
     trigger: "#pipeline-scrollytelling",
-    start: "top top+=70px",
-    end: "+=4500",
+    // Sobald die UNTERKANTE des Elements die UNTERKANTE des Viewports erreicht (vollständig sichtbar)
+    start: "bottom bottom", 
+    end: "+=3500",
     pin: true,
-    scrub: 0.3,
+    pinSpacing: true,
+    scrub: 0.1,
     onUpdate: (self) => {
       rawScrollProgress = self.progress;
       const easedP = getEasedProgress(rawScrollProgress);
